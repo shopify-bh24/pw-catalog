@@ -1,0 +1,230 @@
+{% if customer.id != blank %}
+
+<script	>
+  const base_url="https://phpstack-716941-2380340.cloudwaysapps.com/"
+  $(document).ready(function () {
+
+    //run this only on product detail page
+    var route= base_url + "get_social_proof"
+    $.ajax({
+      url: route,
+      method: 'GET',
+      data:{
+        customer_id : $(".product-detail-table").data('customer_id'),
+        product_id : $(".product-detail-table").data('product_id'),
+      },
+      success:function (response) {
+        //                     console.log(response);
+//         if(response.is_in_my_collection>0){
+//           $('.product__info-container .collection-btn').css({"background":"#f0ad4e","border":"1px solid #eea236","pointer-events": "none","cursor": "default"});
+//           $(".product__info-container .collection-btn").attr("disabled", "disabled");
+
+
+//         }
+
+//         if(response.is_in_my_wishlist>0){
+//           $('.product__info-container .wishlist-btn').css({"background":"#f0ad4e","border":"1px solid #eea236","pointer-events": "none","cursor": "default"});
+//           $(".product__info-container .wishlist-btn").attr("disabled", "disabled");
+
+//         }
+        if(response.social_proof==1){
+          $(".product__info-container .product-detail-table").show();
+          $('#collection_count').empty();
+          $('#collection_count').html(response.collection);
+          $('#wishlist_count').empty();
+          $('#wishlist_count').html(response.wish_list);
+        }
+
+      }
+    });
+    //run this only on collection page and product detail page
+    var route2= base_url + "get_all_product_count"
+    var customerId={{customer.id}};
+    //       alert(customerId);
+    $.ajax({
+      url: route2,
+      method: 'GET',
+      data:{
+        customer_id : customerId,
+      },
+      success:function (response) {
+        var wishlist=(response.wishlist);
+        var collection=(response.collection);
+//                                console.log(collection);
+
+        $('.product-btn .wishlist-btn').each(function() { 
+          var prd_id=$(this).data('product_id');
+          //                     console.log($.inArray( prd_id, wishlist ));
+          if( $.inArray( prd_id, wishlist ) >=0){
+            $(this).addClass('wish_btn');
+            $(this).html('Remove from Wishlist <i class="fa fa-heart" aria-hidden="true"></i>');
+            $(this).attr('data-action','remove_from_wishlist');
+            $(this).css({"background":"#000","border":"1px solid #000"});
+//             $(this).css({"background":"#000","border":"1px solid #000","pointer-events": "none","cursor": "default"});
+//             $(this).attr("disabled", "disabled");
+
+            //                        console.log(prd_id);
+          }
+
+        });
+        $('.product-btn .collection-btn').each(function() { 
+          var prd_id=$(this).data('product_id');
+          //                     console.log($.inArray( prd_id, wishlist ));
+          if( $.inArray( prd_id, collection ) >=0)
+          { $(this).addClass('coll_btn');
+            $(this).html('Remove from Collection <i class="fa fa-star" aria-hidden="true"></i>');
+            $(this).attr('data-action','remove_from_collection');
+            
+           $(this).css({"background":"#000","border":"1px solid #000"});
+//            $(this).attr("disabled", "disabled");
+
+           //                        console.log(prd_id);
+          }
+
+        });
+
+      }
+    });
+
+    $('body').on('click','.wishlist-btn',function () {
+      if($(this).attr('data-action')=='add_to_wishlist'){
+        $(this).addClass('wish_btn');
+        var route= base_url + "add_to_wishlist"
+        var btn=$(this);
+        $.ajax({
+          url: route,
+          method: 'GET',
+          data:{
+            customer_id : $(this).data('customer_id'),
+            product_id : $(this).data('product_id'),
+            product_price : $(this).data('product_price'),
+            collection_id: $(this).data('collection_id')
+          },
+          success:function (response) {
+            if(response=="added_to_wishlist"){
+              btn.css({"background":"#000","border":"1px solid #000"});
+//               btn.attr("disabled", "disabled");
+              btn.html('Remove from Wishlist <i class="fa fa-heart" aria-hidden="true"></i>');
+              btn.attr('data-action','remove_from_wishlist');
+              var html="<div class='alert'>\n"+
+                  "   <span class='closebtn' onclick='this.parentNode.parentNode.removeChild(this.parentNode);'>&times;</span>\n"+ 
+                  "   <span id='alert_msg'>Item successfully added to your wishlist!</span>\n"+
+                  "</div>\n";
+              $('#alert_div').empty();
+              $('#alert_div').append(html);
+              $(window).scrollTop(0);
+            }
+            //                     console.log(response);
+          }
+        });
+      }else{
+       $(this).removeClass('wish_btn');
+        var route= base_url + "remove_from_wishlist"
+        var btn=$(this);
+        $.ajax({
+          url: route,
+          method: 'GET',
+          data:{
+            customer_id : $(this).data('customer_id'),
+            product_id : $(this).data('product_id'),
+            product_price : $(this).data('product_price'),
+            collection_id: $(this).data('collection_id')
+          },
+          success:function (response) {
+            if(response=="wishlist_deleted"){
+              btn.css({"background":"#000","border":"1px solid #000"});
+//               btn.attr("disabled", "disabled");
+              btn.html('Add to Wishlist <i class="fa fa-heart" aria-hidden="true"></i>');
+              btn.attr('data-action','add_to_wishlist');
+              var html="<div class='alert'>\n"+
+                  "   <span class='closebtn' onclick='this.parentNode.parentNode.removeChild(this.parentNode);'>&times;</span>\n"+ 
+                  "   <span id='alert_msg'>Item successfully removed from your wishlist!</span>\n"+
+                  "</div>\n";
+              $('#alert_div').empty();
+              $('#alert_div').append(html);
+              $(window).scrollTop(0);
+            }
+            //                     console.log(response);
+          }
+        });
+      }
+    });
+    $('body').on('click','.collection-btn',function () {
+      var customer_id=$(this).data('customer_id');
+      var product_id=$(this).data('product_id');
+      var product_price=$(this).data('product_price');
+      var collection_id= $(this).data('collection_id');
+      var btn=$(this);
+
+
+      //         if (confirm('Do you want to add your item details?')) {
+      if(btn.attr('data-action')=='add_to_collection'){
+      	var route= base_url + "add_to_collection"
+      	btn.addClass('coll_btn');
+
+        $.ajax({
+          url: route,
+          method: 'GET',
+          data:{
+            customer_id :customer_id ,
+            product_id :product_id ,
+            product_price :product_price ,
+            collection_id: collection_id
+          },
+          success:function (response) {
+            //                     console.log(response);
+            //                   window.location.href = response;
+            btn.css({"background":"#000","border":"1px solid #000"});
+//             btn.attr("disabled", "disabled");
+            btn.html('Remove from Collection <i class="fa fa-star" aria-hidden="true"></i>');
+            btn.attr('data-action','remove_from_collection');
+            var html="<div class='alert'>\n"+
+                "   <span class='closebtn' onclick='this.parentNode.parentNode.removeChild(this.parentNode);'>&times;</span>\n"+ 
+                "   <span id='alert_msg'>Item successfully added to your collection! Add more details <a href='"+response+"'>here</a></span>\n"+
+                "</div>\n";
+            $('#alert_div').empty();
+            $('#alert_div').append(html);
+            $(window).scrollTop(0);
+
+          }
+        });
+      }
+      else{
+        var route= base_url + "remove_from_collection"
+      btn.removeClass('coll_btn');
+
+        $.ajax({
+          url: route,
+          method: 'GET',
+          data:{
+            customer_id :customer_id ,
+            product_id :product_id ,
+            product_price :product_price ,
+            collection_id: collection_id
+          },
+          success:function (response) {
+            //                     console.log(response);
+            //                   window.location.href = response;
+            btn.css({"background":"#000","border":"1px solid #000"});
+//             btn.attr("disabled", "disabled");
+            btn.html('Add to Collection <i class="fa fa-star" aria-hidden="true"></i>');
+            btn.attr('data-action','add_to_collection');
+            var html="<div class='alert'>\n"+
+                "   <span class='closebtn' onclick='this.parentNode.parentNode.removeChild(this.parentNode);'>&times;</span>\n"+ 
+                "   <span id='alert_msg'>Item successfully removed from your collection!</span>\n"+
+                "</div>\n";
+            $('#alert_div').empty();
+            $('#alert_div').append(html);
+            $(window).scrollTop(0);
+
+          }
+        });
+      }
+    });
+
+  });
+
+
+</script>
+
+{%- endif -%}
