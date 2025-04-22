@@ -8,40 +8,50 @@
 <noscript>{{ 'component-product-grid.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'section-product-recommendations.css' | asset_url | stylesheet_tag }}</noscript>
 
-{% if collection == null or collection.handle == 'frontpage' or collection.handle == 'all' %}
-  {% assign found_a_collection = false %}
-  {% for c in product.collections %}
-    {% if found_a_collection == false and c.handle != 'frontpage' and c.handle != 'all' and c.all_products_count > 1 %}
-      {% assign found_a_collection = true %}
-      {% assign collection = c %}
-    {% endif %}
-  {% endfor %}
+{% assign collection_handles = "meng,bruiser-brody,randy-savage,ric-flair,major-wrestling-figure-podcast,harley-race,dusty-rhodes,matt-cardona,brian-myers,earl-hebner,hawk,animal,andre-the-giant,sgt-slaughter" | split: "," %}
+{% assign random_index = "now" | date: "%s" | modulo: collection_handles.size %}
+{% assign selected_handle = collection_handles[random_index] %}
+{% assign collection = collections[selected_handle] %}
+
+{% if collection and collection.products_count > 0 %}
+  <section class="random related-products page-width">
+    <h2 class="product-recommendations__heading title">
+      {{ section.settings.heading | escape }}
+    </h2>
+    <div class="products-grid row owl-carousel">
+      <ul id="random-product-list" class="grid grid--2-col product-grid grid--4-col-desktop grid--quarter-max" role="list">
+        {% for product in collection.products %}
+          <li class="grid__item">
+            {% render 'product-card',
+              product_card_product: product,
+              media_size: section.settings.image_ratio,
+              show_secondary_image: section.settings.show_secondary_image,
+              add_image_padding: section.settings.add_image_padding,
+              show_vendor: section.settings.show_vendor,
+              show_image_outline: section.settings.show_image_outline,
+              show_rating: section.settings.show_rating
+            %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const list = document.getElementById("random-product-list");
+      const items = Array.from(list.children);
+      const shuffled = items.sort(() => 0.5 - Math.random());
+      list.innerHTML = ""; // Clear current list
+      shuffled.slice(0, 8).forEach(item => list.appendChild(item));
+    });
+  </script>
+{% else %}
+  <p>No products found in the selected random collection.</p>
 {% endif %}
 
-{% assign collection = section.settings.collection %}
-<section class="random related-products page-width">
-  <h2 class="product-recommendations__heading title">{{ section.settings.heading | escape }}</h2>
-  {%assign getproduct = shop.metafields.shop.products_handle |split:','%}
-  <div class="products-grid row owl-carousel">
-    <ul class="grid grid--2-col product-grid grid--4-col-desktop grid--quarter-max" role="list">
-  {%for hproduct in getproduct%}
-   {%assign product = all_products[hproduct] %}
-    <li class="grid__item">
-          {% render 'product-card',
-            product_card_product: product,
-            media_size: section.settings.image_ratio,
-            show_secondary_image: section.settings.show_secondary_image,
-            add_image_padding: section.settings.add_image_padding,
-            show_vendor: section.settings.show_vendor,
-            show_image_outline: section.settings.show_image_outline,
-            show_rating: section.settings.show_rating
-          %}
-    </li>
-      {%endfor%}
-    
-    </ul>
-  </div>
-</section>
+
+
 
 
 {% schema %}
