@@ -120,7 +120,10 @@
         {%endif%}
         {%if product.metafields.my_fields.characters != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Wrestlers Included:&nbsp;{{- product.metafields.my_fields.characters -}}
+          Wrestlers Included:&nbsp;
+          <a href="https://pwcatalog.com/collections/{{ product.metafields.my_fields.characters |  downcase |  replace: ' ', '-' }}">
+            {{- product.metafields.my_fields.characters -}}
+          </a>
         </p>
         {%endif%}
         {%if product.metafields.my_fields.publication_date2 != blank%}
