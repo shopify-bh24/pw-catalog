@@ -8,28 +8,32 @@
 <noscript>{{ 'component-product-grid.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'section-product-recommendations.css' | asset_url | stylesheet_tag }}</noscript>
 
-{% assign unique_seed = 'now' | date: "%s" %}
-{% assign collection_handles = "meng,bruiser-brody,randy-savage,ric-flair,major-wrestling-figure-podcast-action-toy-figures,harley-race,dusty-rhodes,matt-cardona,brian-myers,earl-hebner,hawk,animal,andre-the-giant,sgt-slaughter,100-lucha,100-lucha-micran-telefe-action-toy-figures,2-cold-scorpio,aaa-action-toy-figures,aaw-dvds,abdullah-the-butcher,abyss,accessories,accion-en-el-ring,action-figures-and-bobblehead-to-re-arrange,adam-bomb" | split: "," | shuffle %}
+{% assign collection_handles = "meng,bruiser-brody,randy-savage,ric-flair,major-wrestling-figure-podcast-action-toy-figures,harley-race,dusty-rhodes,matt-cardona,brian-myers,earl-hebner,hawk,animal,andre-the-giant,sgt-slaughter,100-lucha,100-lucha-micran-telefe-action-toy-figures,2-cold-scorpio,aaa-action-toy-figures,aaw-dvds,abdullah-the-butcher,abyss,accessories,accion-en-el-ring,action-figures-and-bobblehead-to-re-arrange,adam-bomb,adam-cole,adam-page,adam-pearce,adam-rose,adnan-al-kaissie,adrian-adonis,adrian-neville,adrian-street,aew-brawler-buddies,aew-music-albums,aew-ringside-chairs,afa,aggressive-women,agz-brochure,ahmed-johnson,aiden-english,aj-lee,aj-styles,ajpw-ats-toys-legend-figure-series,ajpw-boford-georgia-coffee-mini-figures,ajpw-character-product-charapro,ajpw-hao-collection,ajpw-music-albums,akebono,akeem,akira-taue,akira-tozawa,akito,akitoshi-saito,al-perez,al-snow,alberto-del-rio,aleister-black,alex-riley,alex-shelley,alex-wright,alexa-bliss,alexander-hammerstone,alexander-wolfe,alicia-fox,alundra-blayze,amazons-in-action," | split: "," %}
 
 <section class="random related-products page-width">
   <h2 class="product-recommendations__heading title">
     {{ section.settings.heading | escape }}
   </h2>
   <div class="products-grid row owl-carousel">
-    <ul class="grid grid--2-col product-grid grid--4-col-desktop grid--quarter-max" role="list">
-      {% assign count = 0 %}
+    <ul
+      id="random-products-list"
+      class="grid grid--2-col product-grid grid--4-col-desktop grid--quarter-max"
+      role="list">
+      {% comment %}
+        Store collection handles for JavaScript randomization
+      {% endcomment %}
+      <script>
+        window.collectionHandles = {{ collection_handles | json }};
+      </script>
+
+      {% comment %}
+        Get all products from collections
+      {% endcomment %}
       {% for handle in collection_handles %}
-        {% if count >= 8 %}
-          {% break %}
-        {% endif %}
         {% assign collection = collections[handle] %}
-        {% assign has_products = collection.products_count | plus: 0 %}
-        {% if collection and has_products > 0 %}
-          {% assign index_seed = unique_seed | plus: forloop.index0 %}
-          {% assign product_index = index_seed | modulo: collection.products.size %}
-          {% assign product = collection.products[product_index] %}
-          {% if product %}
-            <li class="grid__item">
+        {% if collection and collection.products_count > 0 %}
+          {% for product in collection.products %}
+            <li class="grid__item hidden" data-collection="{{ handle }}" data-product-id="{{ product.id }}">
               {% render 'product-card',
                 product_card_product: product,
                 media_size: section.settings.image_ratio,
@@ -40,36 +44,49 @@
                 show_rating: section.settings.show_rating
               %}
             </li>
-            {% assign count = count | plus: 1 %}
-          {% endif %}
+          {% endfor %}
         {% endif %}
       {% endfor %}
     </ul>
   </div>
 </section>
 
-
-
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const list = document.getElementById("random-product-list");
-    if (!list) return;
+  document.addEventListener("DOMContentLoaded", function() {
+    const productList = document.getElementById("random-products-list");
+    if (!productList) return;
 
-    const items = Array.from(list.children);
+    // Hide all products initially
+    const allProducts = productList.querySelectorAll('.grid__item');
+    allProducts.forEach(product => product.classList.add('hidden'));
 
-    // Shuffle array
-    const shuffled = items.sort(() => Math.random() - 0.5);
+    // Function to get random items from array
+    function getRandomItems(array, count) {
+      const shuffled = [...array].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
+    }
 
-    // Pick first 8
-    const selected = shuffled.slice(0, 8);
-
-    // Clear current list
-    list.innerHTML = "";
-
-    // Append only the selected ones
-    selected.forEach(item => list.appendChild(item));
+    // Get 8 random collections
+    const randomCollections = getRandomItems(window.collectionHandles, 8);
+    
+    // For each random collection, get one random product
+    randomCollections.forEach(collectionHandle => {
+      const collectionProducts = productList.querySelectorAll(`[data-collection="${collectionHandle}"]`);
+      if (collectionProducts.length > 0) {
+        const randomProduct = getRandomItems(Array.from(collectionProducts), 1)[0];
+        if (randomProduct) {
+          randomProduct.classList.remove('hidden');
+        }
+      }
+    });
   });
 </script>
+
+<style>
+  .hidden {
+    display: none;
+  }
+</style>
 
 
 
