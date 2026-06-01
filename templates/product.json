@@ -119,6 +119,10 @@
         "364eaa3f-d34f-4fb3-9f0a-d2c18b4af596",
         "6cbb7565-e804-46d2-8865-fc99c678574a"
       ],
+      "custom_css": [
+        "@media screen and (min-width:990px){.product .product__media-wrapper{max-width:45%!important;width:calc(45% - 1.5rem)!important}.product .product__info-wrapper{max-width:55%!important;width:calc(55% - 1.5rem)!important}}",
+        "@media screen and (max-width:749px){.product__media-wrapper{max-width:75%!important;margin:0 auto 2rem auto!important}}"
+      ],
       "settings": {
         "handle": "All",
         "enable_sticky_info": true,
