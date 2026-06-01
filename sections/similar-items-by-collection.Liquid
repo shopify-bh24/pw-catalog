@@ -9,19 +9,19 @@
 
             <div style="margin-bottom: 4rem; display: block; width: 100%;">
               
-              <!-- Section Header -->
+              <!-- Section Header Links -->
               <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 0.75rem;">
-                <h2 style="margin: 0; font-size: 1.8rem; font-weight: 400; letter-spacing: 0.06rem; text-transform: capitalize; color: rgb(18, 18, 18);">
+                <h2 style="margin: 0; font-size: 1.4rem; font-weight: 400; letter-spacing: 0.06rem; text-transform: capitalize; color: rgb(18, 18, 18);">
                   More items from {{ collection.title }}
                 </h2>
-                <a href="{{ collection.url }}" style="font-size: 1.3rem; color: rgb(18, 18, 18); text-decoration: underline; text-underline-offset: 0.3rem;">
+                <a href="{{ collection.url }}" style="font-size: 1.2rem; color: rgb(18, 18, 18); text-decoration: underline; text-underline-offset: 0.3rem;">
                   View all
                 </a>
               </div>
 
-              <!-- Explicit CSS Variable Grid to Bypass Theme Conflicts -->
+              <!-- Matching Layout Scoping Styles -->
               <style>
-                .custom-products-grid {
+                .matching-products-grid {
                   display: grid !important;
                   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
                   gap: 1.5rem !important;
@@ -30,62 +30,108 @@
                   margin: 0 !important;
                   width: 100% !important;
                 }
-                .custom-grid-item-card {
+                .matching-grid-item {
+                  display: flex !important;
+                  flex-direction: column !important;
+                }
+                .matching-card-link {
                   text-decoration: none !important;
                   color: inherit !important;
                   display: flex !important;
                   flex-direction: column !important;
                 }
-                .custom-grid-img-wrap {
+                .matching-img-border-wrap {
                   position: relative !important;
                   display: block !important;
                   aspect-ratio: 1 / 1 !important;
                   overflow: hidden !important;
-                  background-color: rgba(18, 18, 18, 0.03) !important;
-                  border-radius: 4px !important;
-                  margin-bottom: 1rem !important;
+                  background-color: #ffffff !important;
+                  border: 1px solid #e5e5e5 !important; /* Matches gray image outline */
+                  border-radius: 0px !important;
+                  margin-bottom: 0.75rem !important;
                   width: 100% !important;
                 }
-                .custom-grid-img-wrap img {
+                .matching-img-border-wrap img {
                   width: 100% !important;
                   height: 100% !important;
                   object-fit: contain !important;
-                  transition: transform 0.25s ease !important;
                 }
-                .custom-grid-item-card:hover .custom-grid-img-wrap img {
-                  transform: scale(1.03) !important;
+                .matching-btn-row {
+                  display: flex !important;
+                  gap: 0.5rem !important;
+                  margin-top: 0.75rem !important;
+                  width: 100% !important;
+                }
+                .matching-action-btn {
+                  flex: 1 !important;
+                  background: #000000 !important;
+                  color: #ffffff !important;
+                  border: none !important;
+                  padding: 0.6rem 0.2rem !important;
+                  font-size: 0.8rem !important;
+                  font-weight: bold !important;
+                  text-transform: uppercase !important;
+                  display: inline-flex !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  gap: 0.3rem !important;
+                  cursor: pointer !important;
+                  border-radius: 2px !important;
+                  white-space: nowrap !important;
+                }
+                .matching-action-btn svg {
+                  width: 10px !important;
+                  height: 10px !important;
+                  fill: currentColor !important;
                 }
                 @media screen and (max-width: 749px) {
-                  .custom-products-grid {
+                  .matching-products-grid {
                     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
                     gap: 1rem !important;
+                  }
+                  .matching-btn-row {
+                    flex-direction: column !important;
+                    gap: 0.25rem !important;
                   }
                 }
               </style>
 
-              <!-- 4 Column Grid -->
-              <ul class="custom-products-grid" role="list">
+              <!-- Duplicate Row Grid Matrix -->
+              <ul class="matching-products-grid" role="list">
                 {% for item in collection.products limit: 10 %}
                   {% if item.id != product.id %}
-                    <li>
-                      <a href="{{ item.url }}" class="custom-grid-item-card">
-                        
+                    <li class="matching-grid-item">
+                      
+                      <!-- Main Clickable Product Area -->
+                      <a href="{{ item.url }}" class="matching-card-link">
                         {% if item.featured_image %}
-                          <div class="custom-grid-img-wrap">
-                            {{ item.featured_image | image_url: width: 400 | image_tag: loading: 'lazy', class: 'motion-reduce' }}
+                          <div class="matching-img-border-wrap">
+                            {{ item.featured_image | image_url: width: 400 | image_tag: loading: 'lazy' }}
                           </div>
                         {% endif %}
 
                         <div>
-                          <h3 style="margin: 0 0 0.5rem 0; font-size: 1.3rem; font-weight: 400; line-height: 1.4; color: rgb(18, 18, 18); text-decoration: none;">
+                          <h3 style="margin: 0 0 0.25rem 0; font-size: 1.1rem; font-weight: 400; line-height: 1.3; color: #121212; text-decoration: none; min-height: 2.6rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                             {{ item.title }}
                           </h3>
-                          <div style="font-size: 1.4rem; color: rgb(18, 18, 18); font-weight: 400;">
+                          <div style="font-size: 1.2rem; color: #121212; font-weight: 400;">
                             {{ item.price | money }}
                           </div>
                         </div>
-
                       </a>
+
+                      <!-- Button Interface Simulation Row -->
+                      <div class="matching-btn-row">
+                        <button class="matching-action-btn">
+                          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                          Add to Collection
+                        </button>
+                        <button class="matching-action-btn">
+                          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                          Add to Wishlist
+                        </button>
+                      </div>
+
                     </li>
 
                     {% assign shown_count = shown_count | plus: 1 %}
