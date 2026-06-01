@@ -1,55 +1,72 @@
 {% if product and product.collections.size > 0 %}
-  <section class="similar-items-by-collection page-width">
-    {% comment %} 
-      Loop directly through the collections assigned to this specific product.
-      This eliminates the 20-collection global platform limit entirely.
-    {% endcomment %}
-    {% for collection in product.collections %}
-      {% unless collection.handle == 'all' or collection.handle == 'frontpage' %}
-        
-        {% comment %} Ensure the collection actually has other items to display {% endcomment %}
-        {% if collection.products_count > 1 %}
-          {% assign shown_count = 0 %}
+  <div class="color-background-1 gradient">
+    <section class="similar-items-by-collection page-width section-{{ section.id }}-padding" style="padding-top: 4rem; padding-bottom: 4rem;">
+      {% for collection in product.collections %}
+        {% unless collection.handle == 'all' or collection.handle == 'frontpage' %}
+          
+          {% if collection.products_count > 1 %}
+            {% assign shown_count = 0 %}
 
-          <div class="similar-items-by-collection__collection">
-            <div class="similar-items-by-collection__collection-header">
-              <h2 class="similar-items-by-collection__collection-title">
-                More items from {{ collection.title }}
-              </h2>
-              <a class="similar-items-by-collection__view-all" href="{{ collection.url }}">
-                View all
-              </a>
-            </div>
+            <div class="collection" style="margin-bottom: 4rem;">
+              <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 class="title inline-richtext" style="margin: 0;">
+                  More items from {{ collection.title }}
+                </h2>
+                <a class="link underlined-link large-up-hide" href="{{ collection.url }}">View all</a>
+              </div>
 
-            <div class="similar-items-by-collection__grid">
-              {% comment %} Retrieve products within this specific context collection {% endcomment %}
-              {% for item in collection.products limit: 10 %}
-                {% if item.id != product.id %}
-                  <a class="similar-items-by-collection__card" href="{{ item.url }}">
-                    {% if item.featured_image %}
-                      <div class="similar-items-by-collection__image-wrapper">
-                        {{ item.featured_image | image_url: width: 500 | image_tag: loading: 'lazy', class: 'similar-items-by-collection__image' }}
+              <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list" style="list-style: none; padding: 0; margin: 0; display: grid; gap: 2rem;">
+                {% for item in collection.products limit: 10 %}
+                  {% if item.id != product.id %}
+                    <li class="grid__item" style="width: 100%; max-width: 100%;">
+                      <div class="card-wrapper product-card-wrapper underline-links-hover">
+                        <a href="{{ item.url }}" class="full-unstyled-link" style="text-decoration: none; color: inherit; display: block;">
+                          
+                          {% if item.featured_image %}
+                            <div class="card__inner media media--square gradient" style="position: relative; display: block; aspect-ratio: 1/1; overflow: hidden; background-color: rgba(var(--color-foreground), 0.04); border-radius: 8px; margin-bottom: 1rem;">
+                              {{ item.featured_image | image_url: width: 533 | image_tag: loading: 'lazy', sizes: '(min-width: 1200px) 360px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)', class: 'motion-reduce', style: 'width: 100%; height: 100%; object-fit: cover;' }}
+                            </div>
+                          {% endif %}
+
+                          <div class="card__content">
+                            <div class="card__information">
+                              <h3 class="card__heading h5" style="margin: 0 0 0.5rem 0; font-size: 1.4rem; line-height: 1.3;">
+                                {{ item.title }}
+                              </h3>
+                              <div class="price">
+                                <div class="price__container">
+                                  <div class="price-item price-item--regular" style="font-size: 1.4rem;">
+                                    {{ item.price | money }}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                        </a>
                       </div>
+                    </li>
+
+                    {% assign shown_count = shown_count | plus: 1 %}
+                    {% if shown_count == 4 %}
+                      {% break %}
                     {% endif %}
-
-                    <div class="similar-items-by-collection__title">
-                      {{ item.title }}
-                    </div>
-                  </a>
-
-                  {% assign shown_count = shown_count | plus: 1 %}
-                  {% if shown_count == 4 %}
-                    {% break %}
                   {% endif %}
-                {% endif %}
-              {% endfor %}
+                {% endfor %}
+              </ul>
+              
+              <div class="center small-hide medium-hide" style="margin-top: 2rem; text-align: right;">
+                <a href="{{ collection.url }}" class="link underlined-link" style="font-size: 1.4rem;">
+                  View all from {{ collection.title }}
+                </a>
+              </div>
             </div>
-          </div>
-        {% endif %}
+          {% endif %}
 
-      {% endunless %}
-    {% endfor %}
-  </section>
+        {% endunless %}
+      {% endfor %}
+    </section>
+  </div>
 {% endif %}
 
 {% schema %}
