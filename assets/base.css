@@ -2508,6 +2508,19 @@ details-disclosure > details {
   .breadcrumb .first-comma{
     display: none;
   }
+/* Universal Store-Wide Hover Controls */
+.card-wrapper:hover .global-hover-media-box img.main-front-img:not(:only-child) {
+  opacity: 0 !important;
+}
 
+.card-wrapper:hover .global-hover-media-box img.secondary-hover-img {
+  opacity: 1 !important;
+  transform: scale(1.03) !important;
+}
+
+/* If the card only has one image, perform a gentle visual scale */
+.card-wrapper:hover .global-hover-media-box img.main-front-img:only-child {
+  transform: scale(1.04) !important;
+}
   
  
