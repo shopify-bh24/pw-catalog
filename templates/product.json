@@ -144,7 +144,6 @@
     },
     "1637575449e1f3e64a": {
       "type": "featured-product",
-      "disabled": true,
       "blocks": {
         "163757544952d94893-0": {
           "type": "text",
@@ -201,6 +200,7 @@
         "163757544952d94893-6",
         "163757544952d94893-7"
       ],
+      "disabled": true,
       "settings": {
         "product": "",
         "secondary_background": false,
