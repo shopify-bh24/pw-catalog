@@ -27,12 +27,20 @@
                     <div class="card-wrapper product-card-wrapper underline-links-hover">
                       <div class="card card--card card--media color-background-1 gradient">
                         
-                        <!-- Image Container -->
+                        <!-- Image Container with Native Hover Classes Enabled -->
                         <div class="card__inner" style="width: 100%; display: block; position: relative;">
                           {% if item.featured_image %}
-                            <div style="position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background: #ffffff; border: 1px solid rgba(var(--color-foreground), 0.04); border-radius: 4px;">
+                            <div class="media media--transparent media--hover-effect" style="position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background: #ffffff; border: 1px solid rgba(var(--color-foreground), 0.04); border-radius: 4px;">
                               <a href="{{ item.url }}" style="display: block; width: 100%; height: 100%;">
-                                {{ item.featured_image | image_url: width: 533 | image_tag: loading: 'lazy', class: 'motion-reduce', style: 'width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0;' }}
+                                
+                                <!-- Primary Image -->
+                                {{ item.featured_image | image_url: width: 533 | image_tag: loading: 'lazy', class: 'motion-reduce', style: 'width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; z-index: 1;' }}
+                                
+                                <!-- Secondary Hover Image (Loads only if the item has more than 1 image) -->
+                                {% if item.images.size > 1 %}
+                                  {{ item.images[1] | image_url: width: 533 | image_tag: loading: 'lazy', class: 'motion-reduce', style: 'width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0;' }}
+                                {% endif %}
+
                               </a>
                             </div>
                           {% endif %}
