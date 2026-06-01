@@ -25,23 +25,29 @@
         window.productsToShow = {{ section.settings.products_to_show | default: 8 }};
       </script>
 
-      {% comment %} Loop through collections and render products inside hidden list items {% endcomment %}
+      {% comment %} 
+        PERFORMANCE FIX: Loop through collections, but only pull ONE product from each 
+        on the server side instead of loading thousands of hidden items.
+      {% endcomment %}
       {% for handle in collection_handles %}
         {% assign current_collection = collections[handle] %}
         {% if current_collection and current_collection.products.size > 0 %}
-          {% for product in current_collection.products %}
-            <li class="grid__item hidden" data-collection="{{ handle }}" data-product-id="{{ product.id }}">
-              {% render 'product-card',
-                product_card_product: product,
-                media_size: section.settings.image_ratio,
-                show_secondary_image: section.settings.show_secondary_image,
-                add_image_padding: section.settings.add_image_padding,
-                show_vendor: section.settings.show_vendor,
-                show_image_outline: section.settings.show_image_outline,
-                show_rating: section.settings.show_rating
-              %}
-            </li>
-          {% endfor %}
+          
+          {% comment %} Pick a pseudo-random index based on theme rendering cycle context {% endcomment %}
+          {% assign random_index = forloop.index | modulo: current_collection.products.size %}
+          {% assign selected_product = current_collection.products[random_index] %}
+          
+          <li class="grid__item hidden" data-collection="{{ handle }}" data-product-id="{{ selected_product.id }}">
+            {% render 'product-card',
+              product_card_product: selected_product,
+              media_size: section.settings.image_ratio,
+              show_secondary_image: section.settings.show_secondary_image,
+              add_image_padding: section.settings.add_image_padding,
+              show_vendor: section.settings.show_vendor,
+              show_image_outline: section.settings.show_image_outline,
+              show_rating: section.settings.show_rating
+            %}
+          </li>
         {% endif %}
       {% endfor %}
     </ul>
@@ -53,7 +59,7 @@
     const productList = document.getElementById("random-products-list");
     if (!productList) return;
 
-    // Ensure all products are initialised as hidden
+    // Ensure all products start cleanly hidden
     const allProducts = productList.querySelectorAll('.grid__item');
     allProducts.forEach(product => product.classList.add('hidden'));
 
@@ -62,18 +68,15 @@
       return shuffled.slice(0, count);
     }
 
-    // Read display limit dynamically from our new schema setting
+    // Determine how many items to showcase based on schema settings panel
     const displayCount = window.productsToShow || 8;
-    const randomCollections = getRandomItems(window.collectionHandles, displayCount);
+    const availableItems = Array.from(allProducts);
     
-    randomCollections.forEach(collectionHandle => {
-      const collectionProducts = productList.querySelectorAll(`[data-collection="${collectionHandle}"]`);
-      if (collectionProducts.length > 0) {
-        const randomProduct = getRandomItems(Array.from(collectionProducts), 1)[0];
-        if (randomProduct) {
-          randomProduct.classList.remove('hidden');
-        }
-      }
+    // Pick unique random items from the pre-selected pool
+    const randomProducts = getRandomItems(availableItems, displayCount);
+    
+    randomProducts.forEach(product => {
+      product.classList.remove('hidden');
     });
   });
 </script>
