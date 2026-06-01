@@ -1,8 +1,4 @@
 {% if product and product.collections.size > 0 %}
-  {% comment %}
-    We inherit the exact product-recommendations class structure 
-    so the cards match the layout of your upper row.
-  {% endcomment %}
   <div class="product-recommendations page-width isolate">
     {% for collection in product.collections %}
       {% unless collection.handle == 'all' or collection.handle == 'frontpage' %}
@@ -12,7 +8,7 @@
 
           <div style="margin-top: 4rem; margin-bottom: 2rem;">
             
-            <!-- Unified Section Header Layout -->
+            <!-- Section Header -->
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; border-bottom: 1px solid rgba(var(--color-foreground), 0.08); padding-bottom: 0.75rem;">
               <h2 class="product-recommendations__heading h2" style="margin: 0; text-transform: capitalize;">
                 More items from {{ collection.title }}
@@ -22,42 +18,35 @@
               </a>
             </div>
 
-            <!-- Native 4-Column Grid Match -->
-            <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
+            <!-- Forced Size 4-Column Grid Layout -->
+            <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list" style="list-style: none; padding: 0; margin: 0;">
               {% for item in collection.products limit: 10 %}
                 {% if item.id != product.id %}
                   
                   <li class="grid__item">
                     <div class="card-wrapper product-card-wrapper underline-links-hover">
-                      <div class="card card--card card--media color-background-1 gradient" style="--ratio-percent: 100%;">
-                        <div class="card__inner bbc-product-card-border" style="--ratio-percent: 100%;">
-                          
-                          <!-- Dynamic Image Logic -->
+                      <div class="card card--card card--media color-background-1 gradient">
+                        
+                        <!-- Forced Image Wrapper Layout to prevent disappearing photos -->
+                        <div class="card__inner" style="width: 100%; display: block; position: relative;">
                           {% if item.featured_image %}
-                            <div class="card__media">
-                              <div class="media media--transparent media--hover-effect">
-                                {{ item.featured_image | image_url: width: 533 | image_tag: loading: 'lazy', sizes: '(min-width: 1200px) 360px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)', class: 'motion-reduce' }}
-                              </div>
+                            <div style="position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background: #ffffff; border: 1px solid rgba(var(--color-foreground), 0.04); border-radius: 4px;">
+                              <a href="{{ item.url }}" style="display: block; width: 100%; height: 100%;">
+                                {{ item.featured_image | image_url: width: 533 | image_tag: loading: 'lazy', class: 'motion-reduce', style: 'width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0;' }}
+                              </a>
                             </div>
                           {% endif %}
-
                         </div>
 
-                        <!-- Info Content Block matches the upper rows exactly -->
-                        <div class="card__content">
-                          <div class="card__information">
-                            <h3 class="card__heading h5">
-                              <a href="{{ item.url }}" class="full-unstyled-link">
+                        <!-- Info Content Block (Price Removed) -->
+                        <div class="card__content" style="padding-top: 1rem;">
+                          <div class="card__information" style="padding: 0;">
+                            <h3 class="card__heading h5" style="margin: 0; font-size: 1.3rem; line-height: 1.4;">
+                              <a href="{{ item.url }}" class="full-unstyled-link" style="text-decoration: none; color: inherit;">
                                 {{ item.title }}
                               </a>
                             </h3>
-                            <div class="price">
-                              <div class="price__container">
-                                <div class="price-item price-item--regular">
-                                  {{ item.price | money }}
-                                From Collection</div>
-                              </div>
-                            </div>
+                            {% comment %} Price block has been completely deleted from here {% endcomment %}
                           </div>
                         </div>
 
