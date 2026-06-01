@@ -16,6 +16,7 @@
     assign more_in_collection = true
   endif
 -%}
+
 <div class="collection page-width{% if section.settings.swipe_on_mobile == true and section.settings.collection.all_products_count > 2 and section.settings.products_to_show > 2 %} page-width-desktop{% endif %}">
   <div class="title-wrapper-with-link{% if section.settings.title == blank %} title-wrapper-with-link--no-heading{% endif %}{% if section.settings.collection.all_products_count > 2 and section.settings.swipe_on_mobile and section.settings.products_to_show > 2 %} title-wrapper--self-padded-tablet-down{% endif %}">
     <h2 class="title{% if section.settings.title == blank %} title--no-heading{% endif %}">{{ section.settings.title | escape }}</h2>
@@ -26,10 +27,10 @@
   </div>
 
   <slider-component class="slider-mobile-gutter">
-    <ul class="grid grid--2-col product-grid{% if products_to_display == 4 or section.settings.collection == blank %} grid--2-col-tablet grid--4-col-desktop{% else %} grid--3-col-tablet{% endif %}{% if products_to_display > 5 %} grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}{% if section.settings.collection.all_products_count > 2 and section.settings.swipe_on_mobile and section.settings.products_to_show > 2 %} slider slider--tablet grid--peek{% endif %}{% if section.settings.show_view_all == false or section.settings.collection.products.size < section.settings.products_to_show %} negative-margin{% endif %}{% if section.settings.show_view_all and section.settings.collection.products.size > section.settings.products_to_show %} negative-margin--small{% endif %}" role="list">
-     {% capture rendom %}{{ 'now' | date: '%S' | times: 40 | divided_by: 60 }}{% endcapture %}      
-      {%- for product in section.settings.collection.products offset:rendom limit:section.settings.products_to_show -%}
-        <li class="grid__item{% if section.settings.collection.all_products_count > 2 and section.settings.swipe_on_mobile and section.settings.products_to_show > 2 %} slider__slide{% endif %}">
+    <ul id="non-sequential-grid" class="grid grid--2-col product-grid{% if products_to_display == 4 or section.settings.collection == blank %} grid--2-col-tablet grid--4-col-desktop{% else %} grid--3-col-tablet{% endif %}{% if products_to_display > 5 %} grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}{% if section.settings.collection.all_products_count > 2 and section.settings.swipe_on_mobile and section.settings.products_to_show > 2 %} slider slider--tablet grid--peek{% endif %}{% if section.settings.show_view_all == false or section.settings.collection.products.size < section.settings.products_to_show %} negative-margin{% endif %}" role="list">
+      
+      {%- for product in section.settings.collection.products limit: 40 -%}
+        <li class="grid__item p-card-hide {% if section.settings.collection.all_products_count > 2 and section.settings.swipe_on_mobile and section.settings.products_to_show > 2 %} slider__slide{% endif %}" style="display: none;">
           {% render 'product-card',
             product_card_product: product,
             media_size: section.settings.image_ratio,
@@ -48,6 +49,7 @@
         {%- endfor -%}
       {%- endfor -%}
     </ul>
+    
     {%- if section.settings.collection.all_products_count > 2 and section.settings.swipe_on_mobile and section.settings.products_to_show > 2 -%}
       <div class="slider-buttons no-js-hidden{% if section.settings.collection.all_products_count < 4 %} medium-hide{% endif %}{% if section.settings.collection.all_products_count < 3 %} small-hide{% endif %}">
         <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
@@ -73,6 +75,32 @@
     </div>
   {%- endif -%}
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const gridContainer = document.getElementById("non-sequential-grid");
+    if (!gridContainer) return;
+
+    // Grab all loaded product card elements
+    const cards = Array.from(gridContainer.querySelectorAll('.p-card-hide'));
+    if (cards.length === 0) return;
+
+    // Cleanly shuffle the elements array
+    const shuffledCards = cards.sort(() => 0.5 - Math.random());
+
+    // Determine how many items the user wants to show from settings
+    const limit = {{ section.settings.products_to_show | default: 4 }};
+
+    // Clear the container to rebuild it out of sequence
+    gridContainer.innerHTML = "";
+
+    // Append only the selected number of truly random, non-sequential items
+    shuffledCards.slice(0, limit).forEach(card => {
+      card.style.display = "list-item"; // Make visible
+      gridContainer.appendChild(card);
+    });
+  });
+</script>
 
 {% schema %}
 {
