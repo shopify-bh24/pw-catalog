@@ -98,11 +98,11 @@
         {%endcomment%}
         {%if getcounter == 0%}
         {%assign getcounter = 1%}
-        {%if product.metafields.my_fields.promotion != blank%}
-        <p class="product__text caption-with-letter-spacing" {{ block.shopify_attributes }}>
-          {{- product.metafields.my_fields.promotion -}}
-        </p>
-        {%endif%}
+        {% if product.metafields.my_fields.promotion.value != blank %}
+  <p class="product__text caption-with-letter-spacing" {{ block.shopify_attributes }}>
+    {{ product.metafields.my_fields.promotion.value }}
+  </p>
+{% endif %}
         {%if product.metafields.my_fields.subcategory != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
           subcategory:&nbsp;{{- product.metafields.my_fields.subcategory -}}
