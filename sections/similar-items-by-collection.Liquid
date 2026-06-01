@@ -4,10 +4,8 @@
       {% unless collection.handle == 'all' or collection.handle == 'frontpage' %}
         
         {% if collection.products_count > 1 %}
-
           <div style="margin-top: 4rem; margin-bottom: 2rem;">
             
-            <!-- Modified Inline Header Area -->
             <div style="margin-bottom: 2rem; border-bottom: 1px solid rgba(var(--color-foreground), 0.08); padding-bottom: 0.75rem;">
               <h2 class="product-recommendations__heading h2" style="margin: 0; text-transform: capitalize; display: inline-block;">
                 More items from {{ collection.title }} 
@@ -17,9 +15,7 @@
               </h2>
             </div>
 
-            <!-- Shuffling 4-Column Grid Layout -->
             <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down dynamic-shuffled-grid" role="list" style="list-style: none; padding: 0; margin: 0;">
-              {% assign random_pool_count = 0 %}
               {% for item in collection.products limit: 25 %}
                 {% if item.id != product.id %}
                   
@@ -27,26 +23,20 @@
                     <div class="card-wrapper product-card-wrapper underline-links-hover">
                       <div class="card card--card card--media color-background-1 gradient">
                         
-                        <!-- Image Container with Native Hover Classes Enabled -->
                         <div class="card__inner" style="width: 100%; display: block; position: relative;">
                           {% if item.featured_image %}
-                            <div class="media media--transparent media--hover-effect" style="position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background: #ffffff; border: 1px solid rgba(var(--color-foreground), 0.04); border-radius: 4px;">
+                            <div class="media media--transparent media--hover-effect global-hover-media-box" style="position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background: #ffffff; border: 1px solid rgba(var(--color-foreground), 0.04); border-radius: 4px;">
                               <a href="{{ item.url }}" style="display: block; width: 100%; height: 100%;">
+                                <img src="{{ item.featured_image | image_url: width: 533 }}" loading="lazy" class="motion-reduce main-front-img" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; transition: transform 0.3s ease, opacity 0.3s ease;" />
                                 
-                                <!-- Primary Image -->
-                                {{ item.featured_image | image_url: width: 533 | image_tag: loading: 'lazy', class: 'motion-reduce', style: 'width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; z-index: 1;' }}
-                                
-                                <!-- Secondary Hover Image (Loads only if the item has more than 1 image) -->
                                 {% if item.images.size > 1 %}
-                                  {{ item.images[1] | image_url: width: 533 | image_tag: loading: 'lazy', class: 'motion-reduce', style: 'width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0;' }}
+                                  <img src="{{ item.images[1] | image_url: width: 533 }}" loading="lazy" class="motion-reduce secondary-hover-img" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease;" />
                                 {% endif %}
-
                               </a>
                             </div>
                           {% endif %}
                         </div>
 
-                        <!-- Card Content (Title Only) -->
                         <div class="card__content" style="padding-top: 1rem;">
                           <div class="card__information" style="padding: 0;">
                             <h3 class="card__heading h5" style="margin: 0; font-size: 1.3rem; line-height: 1.4;">
@@ -61,7 +51,6 @@
                     </div>
                   </li>
 
-                  {% assign random_pool_count = random_pool_count | plus: 1 %}
                 {% endif %}
               {% endfor %}
             </ul>
@@ -73,44 +62,23 @@
     {% endfor %}
   </div>
 
-  <!-- Client-Side Instant Shuffle Script -->
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       const grids = document.querySelectorAll('.dynamic-shuffled-grid');
-      
       grids.forEach(grid => {
         const items = Array.from(grid.querySelectorAll('.shuffled-product-card'));
         if (items.length === 0) return;
-
         for (let i = items.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [items[i], items[j]] = [items[j], items[i]];
         }
-
         grid.innerHTML = '';
         items.forEach(item => grid.appendChild(item));
-
         const finalSelection = grid.querySelectorAll('.shuffled-product-card');
         for (let k = 0; k < finalSelection.length; k++) {
-          if (k < 4) {
-            finalSelection[k].style.display = 'block';
-          } else {
-            finalSelection[k].remove();
-          }
+          if (k < 4) { finalSelection[k].style.display = 'block'; } else { finalSelection[k].remove(); }
         }
       });
     });
   </script>
 {% endif %}
-
-{% schema %}
-{
-  "name": "More From Collection",
-  "settings": [],
-  "presets": [
-    {
-      "name": "More From Collection"
-    }
-  ]
-}
-{% endschema %}
