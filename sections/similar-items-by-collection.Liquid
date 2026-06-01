@@ -7,23 +7,22 @@
 
           <div style="margin-top: 4rem; margin-bottom: 2rem;">
             
-            <!-- Section Header -->
-            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; border-bottom: 1px solid rgba(var(--color-foreground), 0.08); padding-bottom: 0.75rem;">
-              <h2 class="product-recommendations__heading h2" style="margin: 0; text-transform: capitalize;">
-                More items from {{ collection.title }}
+            <!-- Modified Inline Header Area -->
+            <div style="margin-bottom: 2rem; border-bottom: 1px solid rgba(var(--color-foreground), 0.08); padding-bottom: 0.75rem;">
+              <h2 class="product-recommendations__heading h2" style="margin: 0; text-transform: capitalize; display: inline-block;">
+                More items from {{ collection.title }} 
+                <span style="font-size: 1.3rem; font-weight: normal; text-transform: none; margin-left: 0.5rem; letter-spacing: normal;">
+                  (<a href="{{ collection.url }}" style="color: rgb(18, 18, 18); text-decoration: underline; text-underline-offset: 0.3rem;">view all</a>)
+                </span>
               </h2>
-              <a href="{{ collection.url }}" style="font-size: 1.3rem; color: rgb(18, 18, 18); text-decoration: underline; text-underline-offset: 0.3rem;">
-                View all
-              </a>
             </div>
 
-            <!-- Shuffling 4-Column Grid Layout (Pulls a pool of 24 items to randomize from) -->
+            <!-- Shuffling 4-Column Grid Layout -->
             <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down dynamic-shuffled-grid" role="list" style="list-style: none; padding: 0; margin: 0;">
               {% assign random_pool_count = 0 %}
               {% for item in collection.products limit: 25 %}
                 {% if item.id != product.id %}
                   
-                  <!-- Set items to hidden initially so they don't flash, JS will reveal them -->
                   <li class="grid__item shuffled-product-card" style="display: none;">
                     <div class="card-wrapper product-card-wrapper underline-links-hover">
                       <div class="card card--card card--media color-background-1 gradient">
@@ -75,23 +74,20 @@
         const items = Array.from(grid.querySelectorAll('.shuffled-product-card'));
         if (items.length === 0) return;
 
-        // Fisher-Yates Shuffle Algorithm to mix up the layout pool
         for (let i = items.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [items[i], items[j]] = [items[j], items[i]];
         }
 
-        // Wipe container clean and append the randomly sorted items back
         grid.innerHTML = '';
         items.forEach(item => grid.appendChild(item));
 
-        // Display exactly the first 4 randomized items and turn them visible
         const finalSelection = grid.querySelectorAll('.shuffled-product-card');
         for (let k = 0; k < finalSelection.length; k++) {
           if (k < 4) {
             finalSelection[k].style.display = 'block';
           } else {
-            finalSelection[k].remove(); // Trash excess items to keep page code light
+            finalSelection[k].remove();
           }
         }
       });
