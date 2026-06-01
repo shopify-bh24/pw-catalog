@@ -4,7 +4,6 @@
       {% unless collection.handle == 'all' or collection.handle == 'frontpage' %}
         
         {% if collection.products_count > 1 %}
-          {% assign shown_count = 0 %}
 
           <div style="margin-top: 4rem; margin-bottom: 2rem;">
             
@@ -18,16 +17,18 @@
               </a>
             </div>
 
-            <!-- Forced Size 4-Column Grid Layout -->
-            <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list" style="list-style: none; padding: 0; margin: 0;">
-              {% for item in collection.products limit: 10 %}
+            <!-- Shuffling 4-Column Grid Layout (Pulls a pool of 24 items to randomize from) -->
+            <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down dynamic-shuffled-grid" role="list" style="list-style: none; padding: 0; margin: 0;">
+              {% assign random_pool_count = 0 %}
+              {% for item in collection.products limit: 25 %}
                 {% if item.id != product.id %}
                   
-                  <li class="grid__item">
+                  <!-- Set items to hidden initially so they don't flash, JS will reveal them -->
+                  <li class="grid__item shuffled-product-card" style="display: none;">
                     <div class="card-wrapper product-card-wrapper underline-links-hover">
                       <div class="card card--card card--media color-background-1 gradient">
                         
-                        <!-- Forced Image Wrapper Layout to prevent disappearing photos -->
+                        <!-- Image Container -->
                         <div class="card__inner" style="width: 100%; display: block; position: relative;">
                           {% if item.featured_image %}
                             <div style="position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background: #ffffff; border: 1px solid rgba(var(--color-foreground), 0.04); border-radius: 4px;">
@@ -38,7 +39,7 @@
                           {% endif %}
                         </div>
 
-                        <!-- Info Content Block (Price Removed) -->
+                        <!-- Card Content (Title Only) -->
                         <div class="card__content" style="padding-top: 1rem;">
                           <div class="card__information" style="padding: 0;">
                             <h3 class="card__heading h5" style="margin: 0; font-size: 1.3rem; line-height: 1.4;">
@@ -46,7 +47,6 @@
                                 {{ item.title }}
                               </a>
                             </h3>
-                            {% comment %} Price block has been completely deleted from here {% endcomment %}
                           </div>
                         </div>
 
@@ -54,10 +54,7 @@
                     </div>
                   </li>
 
-                  {% assign shown_count = shown_count | plus: 1 %}
-                  {% if shown_count == 4 %}
-                    {% break %}
-                  {% endif %}
+                  {% assign random_pool_count = random_pool_count | plus: 1 %}
                 {% endif %}
               {% endfor %}
             </ul>
@@ -68,6 +65,38 @@
       {% endunless %}
     {% endfor %}
   </div>
+
+  <!-- Client-Side Instant Shuffle Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const grids = document.querySelectorAll('.dynamic-shuffled-grid');
+      
+      grids.forEach(grid => {
+        const items = Array.from(grid.querySelectorAll('.shuffled-product-card'));
+        if (items.length === 0) return;
+
+        // Fisher-Yates Shuffle Algorithm to mix up the layout pool
+        for (let i = items.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [items[i], items[j]] = [items[j], items[i]];
+        }
+
+        // Wipe container clean and append the randomly sorted items back
+        grid.innerHTML = '';
+        items.forEach(item => grid.appendChild(item));
+
+        // Display exactly the first 4 randomized items and turn them visible
+        const finalSelection = grid.querySelectorAll('.shuffled-product-card');
+        for (let k = 0; k < finalSelection.length; k++) {
+          if (k < 4) {
+            finalSelection[k].style.display = 'block';
+          } else {
+            finalSelection[k].remove(); // Trash excess items to keep page code light
+          }
+        }
+      });
+    });
+  </script>
 {% endif %}
 
 {% schema %}
