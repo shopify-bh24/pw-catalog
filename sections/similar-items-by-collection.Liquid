@@ -1,13 +1,13 @@
 {% if product %}
   <section class="similar-items-by-collection page-width">
     {% comment %} 
-      We loop through ALL collections in your store to see which ones contain this product.
-      This completely bypasses the empty 'product.collections' bug.
+      Loop through all collections in the store to find which ones contain this product.
+      This completely bypasses Shopify's blank 'product.collections' bug.
     {% endcomment %}
     {% for collection in collections %}
       {% unless collection.handle == 'all' or collection.handle == 'frontpage' %}
         
-        {% comment %} Check if the current product actually lives in this collection {% endcomment %}
+        {% comment %} Check if the product lives inside this specific collection {% endcomment %}
         {% assign product_in_collection = false %}
         {% for col_product in collection.products %}
           {% if col_product.id == product.id %}
