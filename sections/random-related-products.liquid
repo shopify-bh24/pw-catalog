@@ -31,8 +31,8 @@
       {% endcomment %}
       {% for handle in collection_handles %}
         {% assign collection = collections[handle] %}
-        {% assign limit = section.settings.products_to_show | plus: 0 %} {% if limit > 0 %}
-          {% for product in collection.products %}
+{% assign limit = section.settings.products_to_show | plus: 0 %}
+{% if limit > 0 %}          {% for product in collection.products %}
             <li class="grid__item hidden" data-collection="{{ handle }}" data-product-id="{{ product.id }}">
               {% render 'product-card',
                 product_card_product: product,
