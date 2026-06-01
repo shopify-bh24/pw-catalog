@@ -1,22 +1,14 @@
-{% if product %}
+{% if product and product.collections.size > 0 %}
   <section class="similar-items-by-collection page-width">
     {% comment %} 
-      Loop through all collections in the store to find which ones contain this product.
-      This completely bypasses Shopify's blank 'product.collections' bug.
+      Loop directly through the collections assigned to this specific product.
+      This eliminates the 20-collection global platform limit entirely.
     {% endcomment %}
-    {% for collection in collections %}
+    {% for collection in product.collections %}
       {% unless collection.handle == 'all' or collection.handle == 'frontpage' %}
         
-        {% comment %} Check if the product lives inside this specific collection {% endcomment %}
-        {% assign product_in_collection = false %}
-        {% for col_product in collection.products %}
-          {% if col_product.id == product.id %}
-            {% assign product_in_collection = true %}
-            {% break %}
-          {% endif %}
-        {% endfor %}
-
-        {% if product_in_collection %}
+        {% comment %} Ensure the collection actually has other items to display {% endcomment %}
+        {% if collection.products_count > 1 %}
           {% assign shown_count = 0 %}
 
           <div class="similar-items-by-collection__collection">
@@ -30,7 +22,8 @@
             </div>
 
             <div class="similar-items-by-collection__grid">
-              {% for item in collection.products %}
+              {% comment %} Retrieve products within this specific context collection {% endcomment %}
+              {% for item in collection.products limit: 10 %}
                 {% if item.id != product.id %}
                   <a class="similar-items-by-collection__card" href="{{ item.url }}">
                     {% if item.featured_image %}
