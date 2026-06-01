@@ -1,153 +1,83 @@
 {% if product and product.collections.size > 0 %}
-  <div class="color-background-1 gradient" style="clear: both; display: block; width: 100%;">
-    <section class="page-width" style="padding-top: 3rem; padding-bottom: 3rem; max-width: 1200px; margin: 0 auto; padding-left: 1.5rem; padding-right: 1.5rem;">
-      {% for collection in product.collections %}
-        {% unless collection.handle == 'all' or collection.handle == 'frontpage' %}
-          
-          {% if collection.products_count > 1 %}
-            {% assign shown_count = 0 %}
+  {% comment %}
+    We inherit the exact product-recommendations class structure 
+    so the cards match the layout of your upper row.
+  {% endcomment %}
+  <div class="product-recommendations page-width isolate">
+    {% for collection in product.collections %}
+      {% unless collection.handle == 'all' or collection.handle == 'frontpage' %}
+        
+        {% if collection.products_count > 1 %}
+          {% assign shown_count = 0 %}
 
-            <div style="margin-bottom: 4rem; display: block; width: 100%;">
-              
-              <!-- Section Header Links -->
-              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 0.75rem;">
-                <h2 style="margin: 0; font-size: 1.4rem; font-weight: 400; letter-spacing: 0.06rem; text-transform: capitalize; color: rgb(18, 18, 18);">
-                  More items from {{ collection.title }}
-                </h2>
-                <a href="{{ collection.url }}" style="font-size: 1.2rem; color: rgb(18, 18, 18); text-decoration: underline; text-underline-offset: 0.3rem;">
-                  View all
-                </a>
-              </div>
+          <div style="margin-top: 4rem; margin-bottom: 2rem;">
+            
+            <!-- Unified Section Header Layout -->
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; border-bottom: 1px solid rgba(var(--color-foreground), 0.08); padding-bottom: 0.75rem;">
+              <h2 class="product-recommendations__heading h2" style="margin: 0; text-transform: capitalize;">
+                More items from {{ collection.title }}
+              </h2>
+              <a href="{{ collection.url }}" style="font-size: 1.3rem; color: rgb(18, 18, 18); text-decoration: underline; text-underline-offset: 0.3rem;">
+                View all
+              </a>
+            </div>
 
-              <!-- Matching Layout Scoping Styles -->
-              <style>
-                .matching-products-grid {
-                  display: grid !important;
-                  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-                  gap: 1.5rem !important;
-                  list-style: none !important;
-                  padding: 0 !important;
-                  margin: 0 !important;
-                  width: 100% !important;
-                }
-                .matching-grid-item {
-                  display: flex !important;
-                  flex-direction: column !important;
-                }
-                .matching-card-link {
-                  text-decoration: none !important;
-                  color: inherit !important;
-                  display: flex !important;
-                  flex-direction: column !important;
-                }
-                .matching-img-border-wrap {
-                  position: relative !important;
-                  display: block !important;
-                  aspect-ratio: 1 / 1 !important;
-                  overflow: hidden !important;
-                  background-color: #ffffff !important;
-                  border: 1px solid #e5e5e5 !important; /* Matches gray image outline */
-                  border-radius: 0px !important;
-                  margin-bottom: 0.75rem !important;
-                  width: 100% !important;
-                }
-                .matching-img-border-wrap img {
-                  width: 100% !important;
-                  height: 100% !important;
-                  object-fit: contain !important;
-                }
-                .matching-btn-row {
-                  display: flex !important;
-                  gap: 0.5rem !important;
-                  margin-top: 0.75rem !important;
-                  width: 100% !important;
-                }
-                .matching-action-btn {
-                  flex: 1 !important;
-                  background: #000000 !important;
-                  color: #ffffff !important;
-                  border: none !important;
-                  padding: 0.6rem 0.2rem !important;
-                  font-size: 0.8rem !important;
-                  font-weight: bold !important;
-                  text-transform: uppercase !important;
-                  display: inline-flex !important;
-                  align-items: center !important;
-                  justify-content: center !important;
-                  gap: 0.3rem !important;
-                  cursor: pointer !important;
-                  border-radius: 2px !important;
-                  white-space: nowrap !important;
-                }
-                .matching-action-btn svg {
-                  width: 10px !important;
-                  height: 10px !important;
-                  fill: currentColor !important;
-                }
-                @media screen and (max-width: 749px) {
-                  .matching-products-grid {
-                    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                    gap: 1rem !important;
-                  }
-                  .matching-btn-row {
-                    flex-direction: column !important;
-                    gap: 0.25rem !important;
-                  }
-                }
-              </style>
+            <!-- Native 4-Column Grid Match -->
+            <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
+              {% for item in collection.products limit: 10 %}
+                {% if item.id != product.id %}
+                  
+                  <li class="grid__item">
+                    <div class="card-wrapper product-card-wrapper underline-links-hover">
+                      <div class="card card--card card--media color-background-1 gradient" style="--ratio-percent: 100%;">
+                        <div class="card__inner bbc-product-card-border" style="--ratio-percent: 100%;">
+                          
+                          <!-- Dynamic Image Logic -->
+                          {% if item.featured_image %}
+                            <div class="card__media">
+                              <div class="media media--transparent media--hover-effect">
+                                {{ item.featured_image | image_url: width: 533 | image_tag: loading: 'lazy', sizes: '(min-width: 1200px) 360px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)', class: 'motion-reduce' }}
+                              </div>
+                            </div>
+                          {% endif %}
 
-              <!-- Duplicate Row Grid Matrix -->
-              <ul class="matching-products-grid" role="list">
-                {% for item in collection.products limit: 10 %}
-                  {% if item.id != product.id %}
-                    <li class="matching-grid-item">
-                      
-                      <!-- Main Clickable Product Area -->
-                      <a href="{{ item.url }}" class="matching-card-link">
-                        {% if item.featured_image %}
-                          <div class="matching-img-border-wrap">
-                            {{ item.featured_image | image_url: width: 400 | image_tag: loading: 'lazy' }}
-                          </div>
-                        {% endif %}
+                        </div>
 
-                        <div>
-                          <h3 style="margin: 0 0 0.25rem 0; font-size: 1.1rem; font-weight: 400; line-height: 1.3; color: #121212; text-decoration: none; min-height: 2.6rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                            {{ item.title }}
-                          </h3>
-                          <div style="font-size: 1.2rem; color: #121212; font-weight: 400;">
-                            {{ item.price | money }}
+                        <!-- Info Content Block matches the upper rows exactly -->
+                        <div class="card__content">
+                          <div class="card__information">
+                            <h3 class="card__heading h5">
+                              <a href="{{ item.url }}" class="full-unstyled-link">
+                                {{ item.title }}
+                              </a>
+                            </h3>
+                            <div class="price">
+                              <div class="price__container">
+                                <div class="price-item price-item--regular">
+                                  {{ item.price | money }}
+                                From Collection</div>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </a>
 
-                      <!-- Button Interface Simulation Row -->
-                      <div class="matching-btn-row">
-                        <button class="matching-action-btn">
-                          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-                          Add to Collection
-                        </button>
-                        <button class="matching-action-btn">
-                          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-                          Add to Wishlist
-                        </button>
                       </div>
+                    </div>
+                  </li>
 
-                    </li>
-
-                    {% assign shown_count = shown_count | plus: 1 %}
-                    {% if shown_count == 4 %}
-                      {% break %}
-                    {% endif %}
+                  {% assign shown_count = shown_count | plus: 1 %}
+                  {% if shown_count == 4 %}
+                    {% break %}
                   {% endif %}
-                {% endfor %}
-              </ul>
-              
-            </div>
-          {% endif %}
+                {% endif %}
+              {% endfor %}
+            </ul>
 
-        {% endunless %}
-      {% endfor %}
-    </section>
+          </div>
+        {% endif %}
+
+      {% endunless %}
+    {% endfor %}
   </div>
 {% endif %}
 
