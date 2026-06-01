@@ -1,0 +1,72 @@
+{% if product %}
+  <section class="similar-items-by-collection page-width">
+    {% comment %} 
+      We loop through ALL collections in your store to see which ones contain this product.
+      This completely bypasses the empty 'product.collections' bug.
+    {% endcomment %}
+    {% for collection in collections %}
+      {% unless collection.handle == 'all' or collection.handle == 'frontpage' %}
+        
+        {% comment %} Check if the current product actually lives in this collection {% endcomment %}
+        {% assign product_in_collection = false %}
+        {% for col_product in collection.products %}
+          {% if col_product.id == product.id %}
+            {% assign product_in_collection = true %}
+            {% break %}
+          {% endif %}
+        {% endfor %}
+
+        {% if product_in_collection %}
+          {% assign shown_count = 0 %}
+
+          <div class="similar-items-by-collection__collection">
+            <div class="similar-items-by-collection__collection-header">
+              <h2 class="similar-items-by-collection__collection-title">
+                More items from {{ collection.title }}
+              </h2>
+              <a class="similar-items-by-collection__view-all" href="{{ collection.url }}">
+                View all
+              </a>
+            </div>
+
+            <div class="similar-items-by-collection__grid">
+              {% for item in collection.products %}
+                {% if item.id != product.id %}
+                  <a class="similar-items-by-collection__card" href="{{ item.url }}">
+                    {% if item.featured_image %}
+                      <div class="similar-items-by-collection__image-wrapper">
+                        {{ item.featured_image | image_url: width: 500 | image_tag: loading: 'lazy', class: 'similar-items-by-collection__image' }}
+                      </div>
+                    {% endif %}
+
+                    <div class="similar-items-by-collection__title">
+                      {{ item.title }}
+                    </div>
+                  </a>
+
+                  {% assign shown_count = shown_count | plus: 1 %}
+                  {% if shown_count == 4 %}
+                    {% break %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+      {% endunless %}
+    {% endfor %}
+  </section>
+{% endif %}
+
+{% schema %}
+{
+  "name": "More From Collection",
+  "settings": [],
+  "presets": [
+    {
+      "name": "More From Collection"
+    }
+  ]
+}
+{% endschema %}
