@@ -1,13 +1,13 @@
 {% comment %} 
   Dynamic fetch from Metaobject 'collection_mapping' 
-  Assuming your Metaobject has a field named 'collection' (type: collection)
+  Adjust the field names ('collection' and 'value') if your Metaobject 
+  schema uses different handles.
 {% endcomment %}
-
 {%- assign collection_handles = shop.metaobjects.collection_mapping.values | map: 'collection' | map: 'value' | map: 'handle' -%}
 
 <section class="random related-products page-width">
   <h2 class="product-recommendations__heading title">
-    {{ section.settings.heading | escape }}
+    Random wrestlers
   </h2>
   <div class="products-grid row owl-carousel">
     <ul
@@ -23,17 +23,20 @@
         {% assign collection = collections[handle] %}
         {% if collection and collection.products_count > 0 %}
           {% for product in collection.products %}
-            <li class="grid__item hidden" data-collection="{{ handle }}" data-product-id="{{ product.id }}">
-              {% render 'product-card',
-                product_card_product: product,
-                media_size: section.settings.image_ratio,
-                show_secondary_image: section.settings.show_secondary_image,
-                add_image_padding: section.settings.add_image_padding,
-                show_vendor: section.settings.show_vendor,
-                show_image_outline: section.settings.show_image_outline,
-                show_rating: section.settings.show_rating
-              %}
-            </li>
+            {% comment %} We only need one product per collection to represent the wrestler {% endcomment %}
+            {% if forloop.first %}
+              <li class="grid__item hidden" data-collection="{{ handle }}" data-product-id="{{ product.id }}">
+                {% render 'product-card',
+                  product_card_product: product,
+                  media_size: section.settings.image_ratio,
+                  show_secondary_image: section.settings.show_secondary_image,
+                  add_image_padding: section.settings.add_image_padding,
+                  show_vendor: section.settings.show_vendor,
+                  show_image_outline: section.settings.show_image_outline,
+                  show_rating: section.settings.show_rating
+                %}
+              </li>
+            {% endif %}
           {% endfor %}
         {% endif %}
       {% endfor %}
@@ -46,30 +49,21 @@
     const productList = document.getElementById("random-products-list");
     if (!productList) return;
 
-    const allProducts = productList.querySelectorAll('.grid__item');
-    allProducts.forEach(product => product.classList.add('hidden'));
-
-    function getRandomItems(array, count) {
-      // Fisher-Yates shuffle is better for true randomness than sort()
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        [array[i], array[j]] = [array[j], array[i]];
       }
-      return shuffled.slice(0, count);
+      return array;
     }
 
-    // UPDATED: Now choosing 4 random collections as requested
-    const randomCollections = getRandomItems(window.collectionHandles, 4);
+    const allItems = Array.from(productList.querySelectorAll('.grid__item'));
+    // Shuffle the available items and show only the first 4
+    const shuffledItems = shuffle(allItems);
     
-    randomCollections.forEach(collectionHandle => {
-      const collectionProducts = productList.querySelectorAll(`[data-collection="${collectionHandle}"]`);
-      if (collectionProducts.length > 0) {
-        // Pick one random product from the chosen collection
-        const randomProduct = getRandomItems(Array.from(collectionProducts), 1)[0];
-        if (randomProduct) {
-          randomProduct.classList.remove('hidden');
-        }
+    shuffledItems.forEach((item, index) => {
+      if (index < 4) {
+        item.classList.remove('hidden');
       }
     });
   });
