@@ -1,43 +1,37 @@
 {% comment %} 
-  Dynamic fetch from Metaobject 'collection_mapping' 
-  Adjust the field names ('collection' and 'value') if your Metaobject 
-  schema uses different handles.
+  Fetch from Metaobject 
+  Ensure 'collection_mapping' is the API Handle of your definition
+  Ensure 'collection' is the API Handle of the field inside that definition
 {% endcomment %}
-{%- assign collection_handles = shop.metaobjects.collection_mapping.values | map: 'collection' | map: 'value' | map: 'handle' -%}
+
+{%- assign collection_handles = "" -%}
+{%- for entry in shop.metaobjects.collection_mapping.values -%}
+  {%- if entry.collection.value -%}
+    {%- assign collection_handles = collection_handles | append: entry.collection.value.handle | append: "," -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign collection_handles = collection_handles | split: "," | uniq -%}
 
 <section class="random related-products page-width">
-  <h2 class="product-recommendations__heading title">
-    Random wrestlers
-  </h2>
-  
+  <h2 class="product-recommendations__heading title">Random wrestlers</h2>
   <div class="products-grid row owl-carousel">
-    <ul
-      id="random-products-list"
-      class="grid grid--2-col product-grid grid--4-col-desktop grid--quarter-max"
-      role="list">
+    <ul id="random-products-list" class="grid grid--2-col product-grid grid--4-col-desktop grid--quarter-max" role="list">
       
-      <script>
-        window.collectionHandles = {{ collection_handles | json }};
-      </script>
-
       {% for handle in collection_handles %}
         {% assign collection = collections[handle] %}
         {% if collection and collection.products_count > 0 %}
-          {% for product in collection.products %}
-            {% comment %} We only need one product per collection to represent the wrestler {% endcomment %}
-            {% if forloop.first %}
-              <li class="grid__item hidden" data-collection="{{ handle }}" data-product-id="{{ product.id }}">
-                {% render 'product-card',
-                  product_card_product: product,
-                  media_size: section.settings.image_ratio,
-                  show_secondary_image: section.settings.show_secondary_image,
-                  add_image_padding: section.settings.add_image_padding,
-                  show_vendor: section.settings.show_vendor,
-                  show_image_outline: section.settings.show_image_outline,
-                  show_rating: section.settings.show_rating
-                %}
-              </li>
-            {% endif %}
+          {% for product in collection.products limit: 1 %}
+            <li class="grid__item hidden" data-collection="{{ handle }}" data-product-id="{{ product.id }}">
+              {% render 'product-card',
+                product_card_product: product,
+                media_size: section.settings.image_ratio,
+                show_secondary_image: section.settings.show_secondary_image,
+                add_image_padding: section.settings.add_image_padding,
+                show_vendor: section.settings.show_vendor,
+                show_image_outline: section.settings.show_image_outline,
+                show_rating: section.settings.show_rating
+              %}
+            </li>
           {% endfor %}
         {% endif %}
       {% endfor %}
@@ -47,25 +41,12 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {
-    const productList = document.getElementById("random-products-list");
-    if (!productList) return;
-
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
-    const allItems = Array.from(productList.querySelectorAll('.grid__item'));
-    // Shuffle the available items and show only the first 4
-    const shuffledItems = shuffle(allItems);
+    const list = document.getElementById("random-products-list");
+    const items = Array.from(list.querySelectorAll('.grid__item'));
     
-    shuffledItems.forEach((item, index) => {
-      if (index < 4) {
-        item.classList.remove('hidden');
-      }
+    // Shuffle and pick 4
+    items.sort(() => 0.5 - Math.random()).slice(0, 4).forEach(item => {
+      item.classList.remove('hidden');
     });
   });
 </script>
