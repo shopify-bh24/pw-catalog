@@ -22,26 +22,29 @@
   <nav aria-label="Home" class="breadcrumb">
     <a class="Breadcrumbs" href="{{ routes.root_url }}">Home </a> 
     
-    {%- comment -%} Loop through the product's collections (up to 3) {%- endcomment -%}
     {%- for collection in product.collections limit: 3 -%} 
       
-      {%- comment -%} Check if this collection's handle matches your Metaobject mapping list {%- endcomment -%}
-      {%- assign mapped_wrestler = shop.metaobjects.collection_mapping[collection.handle] -%}
-      {%- if mapped_wrestler == blank -%}
-        {%- assign mapped_wrestler = shop.metaobjects.collection_mappings[collection.handle] -%}
-      {%- endif -%}
+      {%- comment -%} 1. Rule: Hide "All" collections {%- endcomment -%}
+      {%- assign collection_handle_downcased = collection.handle | downcase -%}
+      {%- unless collection_handle_downcased == 'all' -%}
+        
+        {%- comment -%} 2. Rule: Hide mapped wrestlers from metaobjects {%- endcomment -%}
+        {%- assign mapped_wrestler = shop.metaobjects.collection_mapping[collection.handle] -%}
+        {%- if mapped_wrestler == blank -%}
+          {%- assign mapped_wrestler = shop.metaobjects.collection_mappings[collection.handle] -%}
+        {%- endif -%}
 
-      {%- comment -%} Only show the collection if it is NOT in your Metaobjects list {%- endcomment -%}
-      {%- unless mapped_wrestler -%}
-        {{ collection.title | link_to: collection.url | prepend: ' / ' }}
+        {%- unless mapped_wrestler -%}
+          {{ collection.title | link_to: collection.url | prepend: ' / ' }}
+        {%- endunless -%}
+
       {%- endunless -%}
       
     {%- endfor -%} 
     <span>/</span>
     <span class="breadcrumb__link" aria-current="page" style="font-weight:bold;"> {{ product.title }}</span>
   </nav>
-</section>
-  <div class="product grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+</section>  <div class="product grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
     <div class="grid__item product__media-wrapper">
       <slider-component class="slider-mobile-gutter">
         <a class="skip-to-content-link button visually-hidden" href="#ProductInfo-{{ section.id }}">
