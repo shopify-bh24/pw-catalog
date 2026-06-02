@@ -62,22 +62,40 @@
     {% endfor %}
   </div>
 
+  <style>
+    .shuffled-product-card:hover .secondary-hover-img {
+      opacity: 1 !important;
+    }
+    .shuffled-product-card:hover .main-front-img {
+      transform: scale(1.03);
+    }
+  </style>
+
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       const grids = document.querySelectorAll('.dynamic-shuffled-grid');
+      
       grids.forEach(grid => {
-        const items = Array.from(grid.querySelectorAll('.shuffled-product-card'));
+        let items = Array.from(grid.querySelectorAll('.shuffled-product-card'));
         if (items.length === 0) return;
+        
+        // Fisher-Yates shuffle algorithm
         for (let i = items.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [items[i], items[j]] = [items[j], items[i]];
         }
+        
+        // Slice exactly 4 elements
+        const randomSelection = items.slice(0, 4);
+        
+        // Clear layout container
         grid.innerHTML = '';
-        items.forEach(item => grid.appendChild(item));
-        const finalSelection = grid.querySelectorAll('.shuffled-product-card');
-        for (let k = 0; k < finalSelection.length; k++) {
-          if (k < 4) { finalSelection[k].style.display = 'block'; } else { finalSelection[k].remove(); }
-        }
+        
+        // Inject and show only our 4 random items
+        randomSelection.forEach(item => {
+          item.style.display = 'block';
+          grid.appendChild(item);
+        });
       });
     });
   </script>
