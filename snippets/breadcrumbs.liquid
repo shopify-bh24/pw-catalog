@@ -57,9 +57,19 @@
         </li>
       {%- when 'product' -%}
         {%- if collection.url -%}
-          <li class="breadcrumbs__item">
-            {{ collection.title | link_to: collection.url }}
-          </li>
+          {%- comment -%}
+            Look up the current collection handle inside the collection_mapping list
+          {%- endcomment -%}
+          {%- assign mapped_wrestler = shop.metaobjects.collection_mapping[collection.handle] -%}
+          
+          {%- comment -%}
+            Only display the collection in the breadcrumb path if it is NOT on your list
+          {%- endcomment -%}
+          {%- unless mapped_wrestler -%}
+            <li class="breadcrumbs__item">
+              {{ collection.title | link_to: collection.url }}
+            </li>
+          {%- endunless -%}
         {%- endif -%}
         <li class="breadcrumbs__item">
           <a class="breadcrumbs__link" href="{{ product.url }}" aria-current="page">{{ product.title }}</a>
