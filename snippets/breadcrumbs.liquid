@@ -57,7 +57,7 @@
         </li>
       {%- when 'product' -%}
         {%- comment -%}
-          1. Determine the active collection context. Fall back to the product's first collection if landed on directly.
+          1. Fallback: Find the right collection handle even on direct product URL entries
         {%- endcomment -%}
         {%- assign current_product_collection = collection -%}
         {%- if current_product_collection == blank and product.collections.size > 0 -%}
@@ -66,12 +66,15 @@
 
         {%- if current_product_collection.url -%}
           {%- comment -%}
-            2. Look up this collection handle inside your metaobject list
+            2. Test both singular and plural Metaobject handles just in case Shopify transformed it
           {%- endcomment -%}
           {%- assign mapped_wrestler = shop.metaobjects.collection_mapping[current_product_collection.handle] -%}
+          {%- if mapped_wrestler == blank -%}
+            {%- assign mapped_wrestler = shop.metaobjects.collection_mappings[current_product_collection.handle] -%}
+          {%- endif -%}
           
           {%- comment -%}
-            3. Only display the collection link if it's NOT on your list
+            3. Only print the item link if the metaobject lookup came back empty
           {%- endcomment -%}
           {%- unless mapped_wrestler -%}
             <li class="breadcrumbs__item">
