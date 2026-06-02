@@ -21,16 +21,26 @@
 <section class="page-width">
   <nav aria-label="Home" class="breadcrumb">
     <a class="Breadcrumbs" href="{{ routes.root_url }}">Home </a> 
-    {% assign excluded_title = section.settings.handle | split: "," %}
-    {% for collection in product.collections limit: 3 -%} 
+    
+    {%- comment -%} Loop through the product's collections (up to 3) {%- endcomment -%}
+    {%- for collection in product.collections limit: 3 -%} 
+      
+      {%- comment -%} Check if this collection's handle matches your Metaobject mapping list {%- endcomment -%}
+      {%- assign mapped_wrestler = shop.metaobjects.collection_mapping[collection.handle] -%}
+      {%- if mapped_wrestler == blank -%}
+        {%- assign mapped_wrestler = shop.metaobjects.collection_mappings[collection.handle] -%}
+      {%- endif -%}
 
-    {% unless excluded_title contains collection.title  %}
-    {{ collection.title | link_to: collection.url | prepend: ' / ' }}
-    {% endunless %}
+      {%- comment -%} Only show the collection if it is NOT in your Metaobjects list {%- endcomment -%}
+      {%- unless mapped_wrestler -%}
+        {{ collection.title | link_to: collection.url | prepend: ' / ' }}
+      {%- endunless -%}
+      
     {%- endfor -%} 
     <span>/</span>
-    <span class="breadcrumb__link" aria-current="page" style="font-weight:bold;"> {{ product.title}}</span>
+    <span class="breadcrumb__link" aria-current="page" style="font-weight:bold;"> {{ product.title }}</span>
   </nav>
+</section>
   <div class="product grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
     <div class="grid__item product__media-wrapper">
       <slider-component class="slider-mobile-gutter">
