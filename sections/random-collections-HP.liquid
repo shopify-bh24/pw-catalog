@@ -2,20 +2,24 @@
   <h2 class="title">{{ section.settings.heading }}</h2>
   
   <div class="any-random-grid">
+    {% comment %} 1. Get all entries and shuffle them {% endcomment %}
     {% assign shuffled_entries = shop.metaobjects.collection_mapping.values | shuffle %}
+    
     {% assign count = 0 %}
     
     {% for entry in shuffled_entries %}
-      {% comment %} We access the 'handle' directly from the object value {% endcomment %}
-      {% assign col_handle = entry.wrestler_collection.value.handle %}
-      {% assign target_col = collections[col_handle] %}
+      {% comment %} 2. Access the collection from the metaobject {% endcomment %}
+      {% assign target_col = entry.wrestler_collection.value %}
       
+      {% comment %} 3. Only display if a valid collection reference exists {% endcomment %}
       {% if target_col != blank and count < 8 %}
         <div class="rc-item">
           <a href="{{ target_col.url }}">
-            <img src="{{ target_col.featured_image | image_url: width: 400 }}" 
-                 alt="{{ target_col.title | escape }}" 
-                 loading="lazy">
+            {% if target_col.featured_image %}
+              <img src="{{ target_col.featured_image | image_url: width: 400 }}" 
+                   alt="{{ target_col.title | escape }}" 
+                   loading="lazy">
+            {% endif %}
             <h3>{{ target_col.title }}</h3>
           </a>
         </div>
@@ -32,14 +36,29 @@
     gap: 20px !important; 
     margin-top: 20px !important;
   }
+  
   @media screen and (max-width: 749px) {
-    .random-collections-any .any-random-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .random-collections-any .any-random-grid { 
+      grid-template-columns: repeat(2, 1fr) !important; 
+    }
   }
-  .random-collections-any .rc-item { text-align: center; }
+
+  .random-collections-any .rc-item { 
+    text-align: center; 
+  }
+  
   .random-collections-any .rc-item img { 
-    width: 100% !important; aspect-ratio: 1 / 1 !important; object-fit: cover !important; border-radius: 8px !important; display: block !important;
+    width: 100% !important; 
+    aspect-ratio: 1 / 1 !important; 
+    object-fit: cover !important; 
+    border-radius: 8px !important; 
+    display: block !important;
   }
-  .random-collections-any .rc-item h3 { margin-top: 10px; font-size: 1.1rem; }
+  
+  .random-collections-any .rc-item h3 { 
+    margin-top: 10px; 
+    font-size: 1.1rem; 
+  }
 </style>
 
 {% schema %}
