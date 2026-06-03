@@ -1,11 +1,12 @@
-<div class="page-width">
-  <h2>Wrestler List</h2>
-  <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+<div class="page-width" style="padding: 20px 0;">
+  <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
     {% for entry in metaobjects.collection_mapping.values %}
-      <div class="wrestler-card" style="border: 1px solid #ddd; padding: 10px;">
-        <p><strong>Name:</strong> {{ entry.wrestler-name }}</p>
-        <p><strong>Collection:</strong> {{ entry.wrestler-collection }}</p>
+      <div class="wrestler-card" style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px;">
+        <h3 style="margin-top: 0;">Name: {{ entry.wrestler-name }}</h3>
+        <p>Collection: {{ entry.wrestler-collection }}</p>
       </div>
+    {% else %}
+      <p>No wrestler entries found. Please ensure your metaobjects are set to "Active".</p>
     {% endfor %}
   </div>
 </div>
