@@ -1,5 +1,6 @@
 .abc-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-.abc-link { text-decoration: none; padding: 5px; font-weight: bold; }
+.abc-link { text-decoration: none; padding: 5px; font-weight: bold; color: #000; }
+.abc-link.active { border-bottom: 2px solid #000; }
 .directory-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .any-random-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 #back-to-top { position: fixed; bottom: 20px; right: 20px; display: none; padding: 10px 15px; background: #000; color: #fff; border-radius: 5px; cursor: pointer; z-index: 1000; }
