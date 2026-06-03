@@ -1,4 +1,26 @@
-<section class="page-width random-collections-any">
+<style>
+  .random-collections-any .any-random-grid { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 20px; 
+    margin-top: 20px;
+  }
+  .random-collections-any .rc-item { 
+    text-align: center; 
+  }
+  .random-collections-any .rc-item img { 
+    width: 100%; 
+    /* Changed height to match width to create a perfect square */
+    aspect-ratio: 1 / 1; 
+    object-fit: cover; 
+    border-radius: 8px; 
+    display: block;
+  }
+  .random-collections-any .rc-item h3 { 
+    margin-top: 10px; 
+    font-size: 1.1rem; 
+  }
+</style>
   <h2 class="title">{{ section.settings.heading }}</h2>
   
   <div class="any-random-grid">
