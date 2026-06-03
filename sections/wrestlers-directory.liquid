@@ -4,7 +4,7 @@
   <!-- Dropdown Filter -->
   <div class="limit-selector" style="margin-bottom: 20px; text-align: right;">
     <label for="limit">Show: </label>
-    <select id="limit" onchange="window.location.href = window.location.pathname + '?limit=' + this.value;">
+    <select id="limit" onchange="window.location.href = window.location.pathname + '?page=1&limit=' + this.value;">
       <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
       <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
       <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
@@ -36,16 +36,16 @@
         </div>
       {% endfor %}
       
-      <!-- Manual Pagination Controls -->
+      <!-- Fixed Pagination -->
       <div style="grid-column: 1 / -1; text-align: center; margin-top: 20px;">
         {% if paginate.previous %}
-          <a href="{{ paginate.previous.url | replace: '?', '&' | prepend: paginate.previous.url | split: '&' | first }}?page={{ paginate.previous.current_page }}&limit={{ limit }}">Previous</a>
+          <a href="{{ paginate.previous.url }}&limit={{ limit }}">Previous</a>
         {% endif %}
-
+        
         <span style="margin: 0 15px;">Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
-
+        
         {% if paginate.next %}
-          <a href="{{ paginate.next.url | replace: '?', '&' | prepend: paginate.next.url | split: '&' | first }}?page={{ paginate.next.current_page }}&limit={{ limit }}">Next</a>
+          <a href="{{ paginate.next.url }}&limit={{ limit }}">Next</a>
         {% endif %}
       </div>
     {% endpaginate %}
