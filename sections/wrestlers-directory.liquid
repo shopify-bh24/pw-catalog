@@ -1,17 +1,14 @@
 <div class="page-width">
-  <p>Count of entries: {{ metaobjects.collection_mapping.values.size }}</p>
-  
-  {% for entry in metaobjects.collection_mapping.values limit: 5 %}
-    <p>Entry {{ forloop.index }}: {{ entry['wrestler-name'] }}</p>
-  {% else %}
-    <p>The system cannot find any entries for 'collection_mapping'.</p>
+  <h3>Debug Inspector</h3>
+  {% for entry in metaobjects.collection_mapping.values limit: 1 %}
+    <pre>{{ entry | json }}</pre>
   {% endfor %}
 </div>
 
 {% schema %}
 {
-  "name": "Wrestler Debug",
+  "name": "Wrestler Debugger",
   "settings": [],
-  "presets": [{ "name": "Wrestler Debug" }]
+  "presets": [{ "name": "Wrestler Debugger" }]
 }
 {% endschema %}
