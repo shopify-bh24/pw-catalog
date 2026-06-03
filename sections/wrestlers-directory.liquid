@@ -1,6 +1,37 @@
 <section class="page-width wrestler-directory">
   <h1>{{ page.title }}</h1>
+
   <div id="wrestler-container" class="any-random-grid">
-    <p id="status">Loading catalog...</p>
+    {% comment %} 
+      'paginate ... by 50' tells Shopify to split the 800+ items into pages of 50.
+    {% endcomment %}
+    {% paginate shop.metaobjects['collection_mapping'].values by 50 %}
+      
+      {% for entry in paginate.items %}
+        {% assign col_handle = entry['wrestler_collection'].value | strip %}
+        {% assign target = collections[col_handle] %}
+        
+        {% if target != blank %}
+          <div class="wrestler-item" data-name="{{ target.title | escape }}">
+            <a href="{{ target.url }}">
+              <h3>{{ target.title }}</h3>
+            </a>
+          </div>
+        {% endif %}
+      {% endfor %}
+
+      {% comment %} Pagination Controls {% endcomment %}
+      <div class="pagination">
+        {% if paginate.previous %}
+          <a href="{{ paginate.previous.url }}">« Previous</a>
+        {% endif %}
+
+        <span>Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
+
+        {% if paginate.next %}
+          <a href="{{ paginate.next.url }}">Next »</a>
+        {% endif %}
+      </div>
+    {% endpaginate %}
   </div>
 </section>
