@@ -6,32 +6,48 @@ document.addEventListener("DOMContentLoaded", () => {
   const abcLinks = document.querySelectorAll('.abc-link');
   const backToTop = document.getElementById('back-to-top');
 
+  // Track state
+  let currentFilter = 'ALL';
+
   function render(list, limit) {
     container.innerHTML = '';
     list.slice(0, limit).forEach(item => container.appendChild(item));
   }
 
-  perPageSelect.addEventListener('change', (e) => render(items, parseInt(e.target.value)));
+  function getFilteredItems() {
+    if (currentFilter === 'ALL') return [...items];
+    return items.filter(item => item.dataset.name.toUpperCase().startsWith(currentFilter));
+  }
 
-  sortSelect.addEventListener('change', (e) => {
-    let sorted = [...items];
-    if (e.target.value === 'name') sorted.sort((a,b) => a.dataset.name.localeCompare(b.dataset.name));
-    if (e.target.value === 'count') sorted.sort((a,b) => b.dataset.count - a.dataset.count);
-    render(sorted, parseInt(perPageSelect.value));
-  });
+  function applyLogic() {
+    let list = getFilteredItems();
+    
+    // Apply Sort
+    const sortVal = sortSelect.value;
+    if (sortVal === 'name') list.sort((a,b) => a.dataset.name.localeCompare(b.dataset.name));
+    if (sortVal === 'count') list.sort((a,b) => b.dataset.count - a.dataset.count);
+    
+    // Apply Pagination
+    const limit = parseInt(perPageSelect.value);
+    render(list, limit);
+  }
+
+  perPageSelect.addEventListener('change', applyLogic);
+  sortSelect.addEventListener('change', applyLogic);
 
   abcLinks.forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
       abcLinks.forEach(l => l.classList.remove('active'));
       e.target.classList.add('active');
-      const filtered = items.filter(item => item.dataset.name.toUpperCase().startsWith(e.target.dataset.letter));
-      render(filtered, 2500); 
+      currentFilter = e.target.dataset.letter;
+      applyLogic();
     });
   });
 
   window.addEventListener('scroll', () => backToTop.style.display = window.scrollY > 300 ? 'block' : 'none');
   backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-render(items, items.length);
+  // Initial render
+  applyLogic();
 });
