@@ -3,16 +3,21 @@
   
   <div id="random-collections-list" class="grid grid--2-col grid--4-col-desktop">
     {% for entry in shop.metaobjects.collection_mapping.values %}
-      {% assign collection = entry.wrestler_collection.value %}
+      {% comment %} Retrieve the collection reference {% endcomment %}
+      {% assign target_collection = entry.wrestler_collection.value %}
       
-      {% if collection %}
+      {% if target_collection != blank %}
         <div class="grid__item collection-item hidden">
-          {% comment %} Linking directly to the collection found in the Metaobject {% endcomment %}
-          <a href="{{ collection.url }}">
-            {% if collection.featured_image %}
-              <img src="{{ collection.featured_image | image_url: width: 300 }}" alt="{{ collection.title | escape }}" loading="lazy">
+          <a href="{{ target_collection.url }}">
+            {% if target_collection.featured_image %}
+              {% comment %} Use image_url for the collection image {% endcomment %}
+              <img src="{{ target_collection.featured_image | image_url: width: 400 }}" 
+                   alt="{{ target_collection.title | escape }}" 
+                   loading="lazy" 
+                   width="400" 
+                   height="auto">
             {% endif %}
-            <h3>{{ collection.title }}</h3>
+            <h3>{{ target_collection.title }}</h3>
           </a>
         </div>
       {% endif %}
@@ -25,9 +30,11 @@
     const list = document.getElementById("random-collections-list");
     if (!list) return;
     
+    // Select all items initially hidden
     const items = Array.from(list.querySelectorAll('.collection-item'));
     
     // Shuffle and pick 8
+    // If there are fewer than 8, it will just show all of them
     items.sort(() => 0.5 - Math.random()).slice(0, 8).forEach(item => {
       item.classList.remove('hidden');
     });
@@ -36,8 +43,9 @@
 
 <style>
   .hidden { display: none !important; }
-  /* Ensure images look good in the grid */
-  .collection-item img { width: 100%; height: auto; display: block; }
+  .grid__item { text-align: center; }
+  .grid__item img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
+  .grid__item h3 { margin-top: 10px; font-size: 1.1rem; }
 </style>
 
 {% schema %}
