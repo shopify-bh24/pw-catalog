@@ -10,16 +10,15 @@
   </div>
 </section>
 
-{% comment %} 
-  Store the data in a hidden JSON script tag for JS to read 
-{% endcomment %}
 <script id="wrestler-data" type="application/json">
   [
     {% for entry in shop.metaobjects['collection_mapping'].values %}
+      {% assign target = collections[entry.wrestler_collection.value] %}
       {
-        "title": "{{ collections[entry.wrestler_collection.value].title | escape }}",
-        "url": "{{ collections[entry.wrestler_collection.value].url }}",
-        "count": {{ collections[entry.wrestler_collection.value].products_count | default: 0 }}
+        "title": "{{ target.title | escape }}",
+        "url": "{{ target.url }}",
+        "count": {{ target.products_count | default: 0 }},
+        "image": "{{ target.featured_image | image_url: width: 400 }}"
       }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ]
