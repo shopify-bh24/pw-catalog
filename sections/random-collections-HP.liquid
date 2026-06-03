@@ -1,76 +1,70 @@
 <section class="page-width random-collections-any">
   <h2 class="title">{{ section.settings.heading }}</h2>
-  
   <div class="any-random-grid" id="random-collections-container">
-    {% assign shuffled_entries = shop.metaobjects.collection_mapping.values %}
-    
-    {% for entry in shuffled_entries %}
-      {% assign col_handle = entry.wrestler_collection.value | strip %}
-      {% assign target_col = collections[col_handle] %}
-      
-      {% if target_col != blank %}
-        <div class="rc-item" style="display: none;">
-          <a href="{{ target_col.url }}">
-            {% if target_col.featured_image %}
-              <img src="{{ target_col.featured_image | image_url: width: 400 }}" 
-                   alt="{{ target_col.title | escape }}" 
-                   loading="lazy">
-            {% endif %}
-            <h3>{{ target_col.title }}</h3>
-          </a>
-        </div>
-      {% endif %}
-    {% endfor %}
+    <!-- Items will be injected here by JavaScript -->
   </div>
 </section>
+
+{% comment %} 1. Store the full list in a JSON block for JS to read safely {% endcomment %}
+<script id="all-collections-data" type="application/json">
+[
+  {% for entry in shop.metaobjects.collection_mapping.values %}
+    {% assign col_handle = entry.wrestler_collection.value | strip %}
+    {% assign col = collections[col_handle] %}
+    {% if col != blank %}
+      {
+        "title": {{ col.title | json }},
+        "url": {{ col.url | json }},
+        "image": {{ col.featured_image | image_url: width: 400 | json }}
+      }{% unless forloop.last %},{% endunless %}
+    {% endif %}
+  {% endfor %}
+]
+</script>
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     const container = document.getElementById('random-collections-container');
-    if (!container) return;
+    const data = JSON.parse(document.getElementById('all-collections-data').textContent);
     
-    const allItems = Array.from(container.querySelectorAll('.rc-item'));
-    
-    // Fisher-Yates Shuffle Algorithm for true randomness
-    for (let i = allItems.length - 1; i > 0; i--) {
+    // Fisher-Yates shuffle on the entire array of 800-2500 items
+    for (let i = data.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [allItems[i], allItems[j]] = [allItems[j], allItems[i]];
+        [data[i], data[j]] = [data[j], data[i]];
     }
     
-    // Clear existing and append only the first 8 shuffled items
-    container.innerHTML = '';
-    const selected = allItems.slice(0, 8);
+    // Pick the first 8
+    const selected = data.slice(0, 8);
     
+    // Build the HTML
+    let html = '';
     selected.forEach(item => {
-      item.style.display = 'block';
-      container.appendChild(item);
+      html += `
+        <div class="rc-item">
+          <a href="${item.url}">
+            ${item.image ? `<img src="${item.image}" alt="${item.title}" loading="lazy">` : ''}
+            <h3>${item.title}</h3>
+          </a>
+        </div>
+      `;
     });
+    
+    container.innerHTML = html;
   });
 </script>
 
 <style>
-  .random-collections-any .any-random-grid { 
-    display: grid !important; 
-    grid-template-columns: repeat(4, 1fr) !important; 
-    gap: 20px !important; 
-    margin-top: 20px !important;
-  }
-  @media screen and (max-width: 749px) {
-    .random-collections-any .any-random-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  }
+  .random-collections-any .any-random-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 20px !important; margin-top: 20px !important; }
+  @media screen and (max-width: 749px) { .random-collections-any .any-random-grid { grid-template-columns: repeat(2, 1fr) !important; } }
   .random-collections-any .rc-item { text-align: center; }
-  .random-collections-any .rc-item img { 
-    width: 100% !important; aspect-ratio: 1 / 1 !important; object-fit: cover !important; border-radius: 8px !important; display: block !important;
-  }
+  .random-collections-any .rc-item img { width: 100% !important; aspect-ratio: 1 / 1 !important; object-fit: cover !important; border-radius: 8px !important; display: block !important; }
   .random-collections-any .rc-item h3 { margin-top: 10px; font-size: 1.1rem; }
 </style>
 
 {% schema %}
 {
   "name": "Mapped Collections Random",
-  "settings": [
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Random Wrestlers" }
-  ],
+  "settings": [ { "type": "text", "id": "heading", "label": "Heading", "default": "Random Wrestlers" } ],
   "presets": [{ "name": "Mapped Collections Random" }]
 }
 {% endschema %}
