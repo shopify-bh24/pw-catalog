@@ -11,11 +11,11 @@
 
     <div class="filter-controls">
       <select id="items-per-page">
-  <option value="20">20</option>
-  <option value="50">50</option>
-  <option value="100">100</option>
-  <option value="9999" selected>Show All</option>
-</select>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="1000" selected>Show All</option>
+      </select>
       <select id="directory-sort">
         <option value="name">Name (A-Z)</option>
         <option value="count">Most items</option>
@@ -24,14 +24,17 @@
   </div>
 
   <div id="wrestler-container" class="any-random-grid">
-    {% for entry in shop.metaobjects.collection_mapping.values %}
+    {% comment %} 
+      Using .all fetches the full list, limit: 1000 forces Shopify to load more than the default limit.
+    {% endcomment %}
+    {% for entry in shop.metaobjects.collection_mapping.values limit: 1000 %}
       {% assign col_handle = entry.wrestler_collection.value | strip %}
       {% assign target = collections[col_handle] %}
       {% if target != blank %}
         <div class="wrestler-item" data-name="{{ target.title | escape }}" data-count="{{ target.products_count }}">
           <a href="{{ target.url }}">
             {% if target.featured_image %}
-              <img src="{{ target.featured_image | image_url: width: 400 }}" alt="{{ target.title | escape }}" loading="lazy">
+              <img src="{{ target.featured_image | image_url: width: 400 }}" alt="{{ target.title | escape }}" loading="lazy" width="400" height="400">
             {% endif %}
             <h3>{{ target.title }} ({{ target.products_count }} items)</h3>
           </a>
@@ -44,5 +47,8 @@
 </section>
 
 {% schema %}
-{ "name": "Wrestler Directory", "presets": [{ "name": "Wrestler Directory" }] }
+{ 
+  "name": "Wrestler Directory", 
+  "presets": [{ "name": "Wrestler Directory" }] 
+}
 {% endschema %}
