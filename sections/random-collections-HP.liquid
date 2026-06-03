@@ -33,14 +33,14 @@
     
     const selected = allData.slice(0, 8);
     
-    // Build HTML with the specific format: Name (Number of Items)
+    // Build HTML with the format: Name (Number items)
     let html = '';
     selected.forEach(item => {
       html += `
         <div class="rc-item">
           <a href="${item.dataset.url}">
             <img src="${item.dataset.img}" alt="${item.dataset.title}" loading="lazy">
-            <h3>${item.dataset.title} (${item.dataset.count})</h3>
+            <h3>${item.dataset.title} (${item.dataset.count} items)</h3>
           </a>
         </div>
       `;
