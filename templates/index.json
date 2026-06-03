@@ -30,7 +30,7 @@
         "heading": {
           "type": "heading",
           "settings": {
-            "heading": "Welcome to PW Catalog, the world’s largest collection of professional wrestling merchandise and memorabilia. ",
+            "heading": "Welcome to PW Catalog, the world’s largest collection of professional wrestling merchandise and memorabilia.",
             "heading_size": "h1"
           }
         },
@@ -69,8 +69,8 @@
     "1648731174892c9d62": {
       "type": "random-related-products",
       "settings": {
-        "collection": "all",
         "heading": "Random items from our 70K catalog!!",
+        "products_to_show": 8,
         "image_ratio": "square",
         "show_secondary_image": true,
         "add_image_padding": false,
@@ -78,12 +78,20 @@
         "show_vendor": false,
         "show_rating": false
       }
+    },
+    "random_collections_hp_iFDhPE": {
+      "type": "random-collections-HP",
+      "name": "Random Collections HP",
+      "settings": {
+        "heading": "Wrestlers"
+      }
     }
   },
   "order": [
     "image_banner",
     "rich_text",
     "featured_products",
-    "1648731174892c9d62"
+    "1648731174892c9d62",
+    "random_collections_hp_iFDhPE"
   ]
 }
