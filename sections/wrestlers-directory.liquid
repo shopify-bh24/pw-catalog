@@ -13,12 +13,16 @@
 <script id="wrestler-data" type="application/json">
   [
     {% for entry in shop.metaobjects['collection_mapping'].values %}
-      {% assign target = collections[entry.wrestler_collection.value] %}
+      {% assign target = collections[entry['wrestler_collection'].value] %}
       {
-        "title": "{{ target.title | escape }}",
-        "url": "{{ target.url }}",
+        "title": {{ target.title | json }},
+        "url": {{ target.url | json }},
         "count": {{ target.products_count | default: 0 }},
-        "image": "{{ target.featured_image | image_url: width: 400 }}"
+        {% if target.featured_image %}
+          "image": {{ target.featured_image | image_url: width: 400 | json }}
+        {% else %}
+          "image": "{{ 'placeholder.png' | asset_img_url: '400x400' }}"
+        {% endif %}
       }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ]
