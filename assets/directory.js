@@ -1,32 +1,30 @@
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
+  const data = JSON.parse(document.getElementById('wrestler-data').textContent);
   const container = document.getElementById('wrestler-container');
-  const loadingMsg = document.getElementById('loading-msg');
-  
-  // 1. Fetch ALL metaobjects from Shopify API
-  async function fetchAllData() {
-    const query = `query { metaobjects(type: "collection_mapping", first: 1000) { nodes { fields { key value } } } }`;
-    const response = await fetch('/api/2026-01/graphql.json', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Shopify-Storefront-Access-Token': 'YOUR_PUBLIC_STOREFRONT_TOKEN' },
-      body: JSON.stringify({ query })
-    });
-    const { data } = await response.json();
-    return data.metaobjects.nodes;
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const pageInfo = document.getElementById('page-info');
+
+  let currentPage = 1;
+  const itemsPerPage = 50;
+
+  function render() {
+    const start = (currentPage - 1) * itemsPerPage;
+    const paginatedItems = data.slice(start, start + itemsPerPage);
+    
+    container.innerHTML = paginatedItems.map(item => `
+      <div class="wrestler-item">
+        <a href="${item.url}"><h3>${item.title} (${item.count} items)</h3></a>
+      </div>
+    `).join('');
+
+    pageInfo.innerText = `Page ${currentPage} of ${Math.ceil(data.length / itemsPerPage)}`;
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage >= Math.ceil(data.length / itemsPerPage);
   }
 
-  // 2. Build the list
-  const rawNodes = await fetchAllData();
-  loadingMsg.remove();
-  
-  rawNodes.forEach(node => {
-    const colHandle = node.fields.find(f => f.key === 'wrestler_collection').value;
-    const item = document.createElement('div');
-    item.className = 'wrestler-item';
-    item.dataset.name = colHandle; // Ensure this matches your data
-    item.innerHTML = `<a href="/collections/${colHandle}"><h3>${colHandle}</h3></a>`;
-    container.appendChild(item);
-  });
+  prevBtn.addEventListener('click', () => { currentPage--; render(); });
+  nextBtn.addEventListener('click', () => { currentPage++; render(); });
 
-  // 3. Initialize your existing filter/sort logic
-  // [Insert all your existing filtering, sorting, and ABC logic functions here]
+  render();
 });
