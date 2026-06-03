@@ -1,35 +1,54 @@
 <div class="page-width" style="padding: 20px 0;">
-  <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-    
-    {% paginate metaobjects.collection_mapping.values by 1000 %}
-      {% for entry in metaobjects.collection_mapping.values %}
+  
+  {%- comment -%} 1. Setup Pagination Variables {%- endcomment -%}
+  {%- assign paginate_by = request.query_parameters.paginateBy | default: 25 | plus: 0 -%}
+  {%- if paginate_by == 0 -%}{%- assign paginate_by = 1000 -%}{%- endif -%}
+
+  {%- comment -%} 2. Setup the Array properly to satisfy the Liquid parser {%- endcomment -%}
+  {%- assign options_string = "25,50,100,ALL" -%}
+  {%- assign options_array = options_string | split: "," -%}
+
+  <div class="pagination-controls" style="margin-bottom: 20px; text-align: right;">
+    <label for="wrestler-paginate-select" style="margin-right: 10px;">Show:</label>
+    <select id="wrestler-paginate-select" 
+            onchange="window.location.href = window.location.pathname + '?paginateBy=' + this.value;" 
+            style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+      
+      {% for val in options_array %}
+        {%- assign val_low = val | downcase -%}
+        {%- assign val_num = 1000 -%}
+        {%- if val_low != 'all' -%}{%- assign val_num = val_low | plus: 0 -%}{%- endif -%}
         
+        <option value="{{ val_num }}" {% if paginate_by == val_num %}selected{% endif %}>
+          {{ val }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+    {%- assign count = 0 -%}
+    {% for entry in metaobjects.collection_mapping.values %}
+      {%- if count < paginate_by -%}
         {%- assign collection_handle = entry.wrestler_collection -%}
         {%- assign target_collection = collections[collection_handle] -%}
         
         <div class="wrestler-card" style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px; text-align: center;">
-          
           <a href="{{ target_collection.url }}">
             {% if target_collection.featured_image != blank %}
-              <img src="{{ target_collection.featured_image | image_url: width: 400 }}" 
-                   alt="{{ target_collection.title | escape }}" 
-                   style="width: 100%; height: 250px; object-fit: cover; border-radius: 4px;">
+              <img src="{{ target_collection.featured_image | image_url: width: 400 }}" alt="{{ target_collection.title | escape }}" style="width: 100%; height: 250px; object-fit: cover; border-radius: 4px;">
             {% else %}
               <div style="height: 250px; background: #f4f4f4; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>
             {% endif %}
           </a>
-
           <h3 style="margin: 15px 0 5px; font-size: 1.2em;">{{ entry.wrestler_name }}</h3>
-          
           <p style="margin: 0; font-size: 0.9em; color: #666;">
-            <a href="{{ target_collection.url }}" style="color: #666; text-decoration: none;">
-              {{ target_collection.all_products_count }} Items
-            </a>
+            <a href="{{ target_collection.url }}" style="color: #666; text-decoration: none;">{{ target_collection.all_products_count }} Items</a>
           </p>
         </div>
-      {% endfor %}
-    {% endpaginate %}
-
+        {%- assign count = count | plus: 1 -%}
+      {%- endif -%}
+    {% endfor %}
   </div>
 </div>
 
@@ -37,10 +56,6 @@
 {
   "name": "Wrestler List",
   "settings": [],
-  "presets": [
-    {
-      "name": "Wrestler List"
-    }
-  ]
+  "presets": [{ "name": "Wrestler List" }]
 }
 {% endschema %}
