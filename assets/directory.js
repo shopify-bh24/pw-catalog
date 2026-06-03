@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById('wrestler-container');
+  // This will now capture all 800+ items because the Liquid loop is no longer truncated
   const items = Array.from(document.querySelectorAll('.wrestler-item'));
   const perPageSelect = document.getElementById('items-per-page');
   const sortSelect = document.getElementById('directory-sort');
   const abcLinks = document.querySelectorAll('.abc-link');
   const backToTop = document.getElementById('back-to-top');
 
-  // Track state
   let currentFilter = 'ALL';
 
   function render(list, limit) {
@@ -14,22 +14,16 @@ document.addEventListener("DOMContentLoaded", () => {
     list.slice(0, limit).forEach(item => container.appendChild(item));
   }
 
-  function getFilteredItems() {
-    if (currentFilter === 'ALL') return [...items];
-    return items.filter(item => item.dataset.name.toUpperCase().startsWith(currentFilter));
-  }
-
   function applyLogic() {
-    let list = getFilteredItems();
+    let filtered = currentFilter === 'ALL' 
+      ? [...items] 
+      : items.filter(i => i.dataset.name.toUpperCase().startsWith(currentFilter));
     
-    // Apply Sort
-    const sortVal = sortSelect.value;
-    if (sortVal === 'name') list.sort((a,b) => a.dataset.name.localeCompare(b.dataset.name));
-    if (sortVal === 'count') list.sort((a,b) => b.dataset.count - a.dataset.count);
+    // Sort
+    if (sortSelect.value === 'name') filtered.sort((a,b) => a.dataset.name.localeCompare(b.dataset.name));
+    if (sortSelect.value === 'count') filtered.sort((a,b) => b.dataset.count - a.dataset.count);
     
-    // Apply Pagination
-    const limit = parseInt(perPageSelect.value);
-    render(list, limit);
+    render(filtered, parseInt(perPageSelect.value) || 9999);
   }
 
   perPageSelect.addEventListener('change', applyLogic);
@@ -45,9 +39,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  window.addEventListener('scroll', () => backToTop.style.display = window.scrollY > 300 ? 'block' : 'none');
-  backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-
-  // Initial render
   applyLogic();
 });
