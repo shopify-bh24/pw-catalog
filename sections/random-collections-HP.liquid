@@ -8,7 +8,6 @@
         {% assign target = collections[col_handle] %}
         
         {% if target != blank %}
-          {% comment %} Added data-count attribute here {% endcomment %}
           <div class="rc-item-data" 
                data-url="{{ target.url }}" 
                data-img="{{ target.featured_image | image_url: width: 400 }}" 
@@ -34,15 +33,14 @@
     
     const selected = allData.slice(0, 8);
     
-    // Build HTML including the product count
+    // Build HTML with the specific format: Name (Number of Items)
     let html = '';
     selected.forEach(item => {
       html += `
         <div class="rc-item">
           <a href="${item.dataset.url}">
             <img src="${item.dataset.img}" alt="${item.dataset.title}" loading="lazy">
-            <h3>${item.dataset.title}</h3>
-            <p class="rc-count">${item.dataset.count} Products</p>
+            <h3>${item.dataset.title} (${item.dataset.count})</h3>
           </a>
         </div>
       `;
@@ -57,8 +55,7 @@
   @media screen and (max-width: 749px) { .random-collections-any .any-random-grid { grid-template-columns: repeat(2, 1fr) !important; } }
   .random-collections-any .rc-item { text-align: center; }
   .random-collections-any .rc-item img { width: 100% !important; aspect-ratio: 1 / 1 !important; object-fit: cover !important; border-radius: 8px !important; display: block !important; }
-  .random-collections-any .rc-item h3 { margin-top: 10px; margin-bottom: 0; font-size: 1.1rem; }
-  .random-collections-any .rc-count { margin-top: 5px; font-size: 0.9rem; color: #666; }
+  .random-collections-any .rc-item h3 { margin-top: 10px; font-size: 1.1rem; }
 </style>
 
 {% schema %}
