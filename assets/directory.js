@@ -33,5 +33,5 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener('scroll', () => backToTop.style.display = window.scrollY > 300 ? 'block' : 'none');
   backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-  render(items, 20); 
+render(items, items.length);
 });
