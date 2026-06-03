@@ -1,16 +1,57 @@
-<section class="page-width" style="padding: 50px; border: 5px solid red;">
-  <h2>DIAGNOSTIC TEST: What is in 'wrestler_collection'?</h2>
-  <div style="background: #eee; padding: 20px;">
-    {% for entry in shop.metaobjects.collection_mapping.values %}
-      <p>
-        <strong>Entry:</strong> {{ entry.wrestler_name }}<br>
-        <strong>Raw Value:</strong> {{ entry.wrestler_collection.value }}<br>
-        <strong>Type of Value:</strong> {{ entry.wrestler_collection.value.class }}
-      </p>
+<section class="page-width random-collections-any">
+  <h2 class="title">{{ section.settings.heading }}</h2>
+  
+  <div class="any-random-grid">
+    {% comment %} 1. Shuffle the entries {% endcomment %}
+    {% assign shuffled_entries = shop.metaobjects.collection_mapping.values | shuffle %}
+    {% assign count = 0 %}
+    
+    {% for entry in shuffled_entries %}
+      {% comment %} 2. Use the text handle to look up the collection {% endcomment %}
+      {% assign col_handle = entry.wrestler_collection.value | strip %}
+      {% assign target_col = collections[col_handle] %}
+      
+      {% comment %} 3. Only display if the collection exists and we have fewer than 8 {% endcomment %}
+      {% if target_col != blank and count < 8 %}
+        <div class="rc-item">
+          <a href="{{ target_col.url }}">
+            {% if target_col.featured_image %}
+              <img src="{{ target_col.featured_image | image_url: width: 400 }}" 
+                   alt="{{ target_col.title | escape }}" 
+                   loading="lazy">
+            {% endif %}
+            <h3>{{ target_col.title }}</h3>
+          </a>
+        </div>
+        {% assign count = count | plus: 1 %}
+      {% endif %}
     {% endfor %}
   </div>
 </section>
 
+<style>
+  .random-collections-any .any-random-grid { 
+    display: grid !important; 
+    grid-template-columns: repeat(4, 1fr) !important; 
+    gap: 20px !important; 
+    margin-top: 20px !important;
+  }
+  @media screen and (max-width: 749px) {
+    .random-collections-any .any-random-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+  .random-collections-any .rc-item { text-align: center; }
+  .random-collections-any .rc-item img { 
+    width: 100% !important; aspect-ratio: 1 / 1 !important; object-fit: cover !important; border-radius: 8px !important; display: block !important;
+  }
+  .random-collections-any .rc-item h3 { margin-top: 10px; font-size: 1.1rem; }
+</style>
+
 {% schema %}
-{ "name": "Diagnostic", "presets": [{ "name": "Diagnostic" }] }
+{
+  "name": "Mapped Collections",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Random Wrestlers" }
+  ],
+  "presets": [{ "name": "Mapped Collections" }]
+}
 {% endschema %}
