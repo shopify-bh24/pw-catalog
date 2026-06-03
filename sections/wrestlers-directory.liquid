@@ -1,46 +1,53 @@
 <div class="page-width" style="padding: 20px 0;">
+  
+  {%- comment -%} 1. Get URL Params {%- endcomment -%}
+  {%- assign paginate_by = request.query_parameters.paginateBy | default: 25 | plus: 0 -%}
+  {%- if paginate_by == 0 -%}{%- assign paginate_by = 1000 -%}{%- endif -%}
+  {%- assign sort_by = request.query_parameters.sort_by | default: 'name_asc' -%}
+
+  {%- comment -%} 2. Build and Sort Array {%- endcomment -%}
+  {%- capture sorted_list -%}
+    {%- for entry in metaobjects.collection_mapping.values -%}
+      {%- assign col = collections[entry.wrestler_collection] -%}
+      {%- comment -%} We prefix with values to make them sortable {%- endcomment -%}
+      {%- if sort_by == 'name_asc' %}{{ entry.wrestler_name | downcase }}|{{ entry.wrestler_name }}|{{ entry.wrestler_collection }}{%- elsif sort_by == 'name_desc' %}{{ entry.wrestler_name | downcase | reverse_string }}|{{ entry.wrestler_name }}|{{ entry.wrestler_collection }}{%- elsif sort_by == 'items_high' %}{{ col.all_products_count | prepend: '000000' | slice: -6, 6 }}|{{ entry.wrestler_name }}|{{ entry.wrestler_collection }}{%- else %}{{ col.all_products_count | prepend: '000000' | slice: -6, 6 | reverse_string }}|{{ entry.wrestler_name }}|{{ entry.wrestler_collection }}{%- endif -%}
+      {%- unless forloop.last %}^{% endunless -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+  {%- assign sorted_array = sorted_list | split: '^' | sort -%}
+
+  {%- comment -%} 3. Controls {%- endcomment -%}
+  <div class="pagination-controls" style="margin-bottom: 20px; text-align: right; display: flex; gap: 10px; justify-content: flex-end;">
+    <select onchange="window.location.href = window.location.pathname + '?paginateBy={{ paginate_by }}&sort_by=' + this.value;">
+      <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+      <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+      <option value="items_high" {% if sort_by == 'items_high' %}selected{% endif %}>Most Items</option>
+      <option value="items_low" {% if sort_by == 'items_low' %}selected{% endif %}>Fewest Items</option>
+    </select>
+  </div>
+
   <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-    
-    {% paginate metaobjects.collection_mapping.values by 1000 %}
-      {% for entry in metaobjects.collection_mapping.values %}
-        
-        {%- assign collection_handle = entry.wrestler_collection -%}
-        {%- assign target_collection = collections[collection_handle] -%}
+    {%- assign count = 0 -%}
+    {%- for item in sorted_array -%}
+      {%- if count < paginate_by -%}
+        {%- assign parts = item | split: '|' -%}
+        {%- assign target_collection = collections[parts[2]] -%}
         
         <div class="wrestler-card" style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px; text-align: center;">
-          
           <a href="{{ target_collection.url }}">
             {% if target_collection.featured_image != blank %}
-              <img src="{{ target_collection.featured_image | image_url: width: 400 }}" 
-                   alt="{{ target_collection.title | escape }}" 
-                   style="width: 100%; height: 250px; object-fit: cover; border-radius: 4px;">
+              <img src="{{ target_collection.featured_image | image_url: width: 400 }}" alt="{{ target_collection.title | escape }}" style="width: 100%; height: 250px; object-fit: cover; border-radius: 4px;">
             {% else %}
               <div style="height: 250px; background: #f4f4f4; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>
             {% endif %}
           </a>
-
-          <h3 style="margin: 15px 0 5px; font-size: 1.2em;">{{ entry.wrestler_name }}</h3>
-          
+          <h3 style="margin: 15px 0 5px; font-size: 1.2em;">{{ parts[1] }}</h3>
           <p style="margin: 0; font-size: 0.9em; color: #666;">
-            <a href="{{ target_collection.url }}" style="color: #666; text-decoration: none;">
-              {{ target_collection.all_products_count }} Items
-            </a>
+            <a href="{{ target_collection.url }}" style="color: #666; text-decoration: none;">{{ target_collection.all_products_count }} Items</a>
           </p>
         </div>
-      {% endfor %}
-    {% endpaginate %}
-
+        {%- assign count = count | plus: 1 -%}
+      {%- endif -%}
+    {%- endfor -%}
   </div>
 </div>
-
-{% schema %}
-{
-  "name": "Wrestler List",
-  "settings": [],
-  "presets": [
-    {
-      "name": "Wrestler List"
-    }
-  ]
-}
-{% endschema %}
