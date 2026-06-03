@@ -1,0 +1,54 @@
+<section class="page-width">
+  <h2 class="title">{{ section.settings.heading }}</h2>
+  
+  <div id="random-collections-list" class="grid grid--2-col grid--4-col-desktop">
+    {% for entry in shop.metaobjects.collection_mapping.values %}
+      {% if entry.collection.value %}
+        {% assign collection = entry.collection.value %}
+        <div class="grid__item collection-item hidden">
+          <a href="{{ collection.url }}">
+            {% if collection.featured_image %}
+              <img src="{{ collection.featured_image | img_url: 'medium' }}" alt="{{ collection.title }}">
+            {% endif %}
+            <h3>{{ collection.title }}</h3>
+          </a>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const list = document.getElementById("random-collections-list");
+    const items = Array.from(list.querySelectorAll('.collection-item'));
+    
+    // Shuffle and pick 8
+    items.sort(() => 0.5 - Math.random()).slice(0, 8).forEach(item => {
+      item.classList.remove('hidden');
+    });
+  });
+</script>
+
+<style>
+  .hidden { display: none !important; }
+</style>
+
+{% schema %}
+{
+  "name": "Random Collections HP",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Wrestlers"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Random Collections HP"
+    }
+  ]
+}
+{% endschema %}
