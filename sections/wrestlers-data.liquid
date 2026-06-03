@@ -1,0 +1,13 @@
+{% layout none %}
+[
+  {% for entry in shop.metaobjects['collection_mapping'].values %}
+    {
+      "name": "{{ entry.wrestler_collection.value | collection_handle }}",
+      "title": "{{ collections[entry.wrestler_collection.value].title | escape }}",
+      "url": "{{ collections[entry.wrestler_collection.value].url }}",
+      "image": "{{ collections[entry.wrestler_collection.value].featured_image | image_url: width: 400 }}",
+      "count": {{ collections[entry.wrestler_collection.value].products_count | default: 0 }}
+    }{% unless forloop.last %},{% endunless %}
+  {% endfor %}
+]
+{% schema %} {"name": "Data Feed"} {% endschema %}
