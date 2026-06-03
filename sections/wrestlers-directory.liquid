@@ -4,13 +4,22 @@
   <!-- Dropdown Filter -->
   <div class="limit-selector" style="margin-bottom: 20px; text-align: right;">
     <label for="limit">Show: </label>
-    <select id="limit" onchange="window.location.href = window.location.pathname + '?page=1&limit=' + this.value;">
+    <select id="limit" onchange="updateLimit(this.value);">
       <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
       <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
       <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
       <option value="1000" {% if limit == 1000 %}selected{% endif %}>All</option>
     </select>
   </div>
+
+  <script>
+    function updateLimit(val) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('limit', val);
+      url.searchParams.set('page', 1);
+      window.location.href = url.toString();
+    }
+  </script>
 
   <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
     
@@ -36,7 +45,7 @@
         </div>
       {% endfor %}
       
-      <!-- Fixed Pagination -->
+      <!-- Fixed Pagination Links -->
       <div style="grid-column: 1 / -1; text-align: center; margin-top: 20px;">
         {% if paginate.previous %}
           <a href="{{ paginate.previous.url }}&limit={{ limit }}">Previous</a>
