@@ -1,48 +1,23 @@
-<section class="page-width wrestler-directory">
-  <h1>{{ page.title }}</h1>
-
-  <div class="directory-toolbar">
-    <div class="abc-nav">
-      {% assign alphabet = "A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z" | split: "," %}
-      {% for letter in alphabet %}
-        <a href="#" class="abc-link" data-letter="{{ letter }}">{{ letter }}</a>
-      {% endfor %}
-    </div>
-
-    <div class="filter-controls">
-      <select id="items-per-page">
-  <option value="20">20</option>
-  <option value="50">50</option>
-  <option value="100">100</option>
-  <option value="9999" selected>Show All</option>
-</select>
-      <select id="directory-sort">
-        <option value="name">Name (A-Z)</option>
-        <option value="count">Most items</option>
-      </select>
-    </div>
-  </div>
-
-  <div id="wrestler-container" class="any-random-grid">
-    {% for entry in shop.metaobjects.collection_mapping.values %}
-      {% assign col_handle = entry.wrestler_collection.value | strip %}
-      {% assign target = collections[col_handle] %}
-      {% if target != blank %}
-        <div class="wrestler-item" data-name="{{ target.title | escape }}" data-count="{{ target.products_count }}">
-          <a href="{{ target.url }}">
-            {% if target.featured_image %}
-              <img src="{{ target.featured_image | image_url: width: 400 }}" alt="{{ target.title | escape }}" loading="lazy">
-            {% endif %}
-            <h3>{{ target.title }} ({{ target.products_count }} items)</h3>
-          </a>
-        </div>
-      {% endif %}
+<div class="page-width">
+  <h2>Wrestler List</h2>
+  <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+    {% for entry in metaobjects.collection_mapping.values %}
+      <div class="wrestler-card" style="border: 1px solid #ddd; padding: 10px;">
+        <p><strong>Name:</strong> {{ entry.wrestler-name }}</p>
+        <p><strong>Collection:</strong> {{ entry.wrestler-collection }}</p>
+      </div>
     {% endfor %}
   </div>
-
-  <button id="back-to-top" title="Back to Top">↑ Top</button>
-</section>
+</div>
 
 {% schema %}
-{ "name": "Wrestler Directory", "presets": [{ "name": "Wrestler Directory" }] }
+{
+  "name": "Wrestler List",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Wrestler List"
+    }
+  ]
+}
 {% endschema %}
