@@ -11,18 +11,18 @@
           
           <a href="{{ target_collection.url }}">
             {% if target_collection.featured_image != blank %}
-              <img src="{{ target_collection.featured_image | image_url: width: 300 }}" 
+              <img src="{{ target_collection.featured_image | image_url: width: 400 }}" 
                    alt="{{ target_collection.title | escape }}" 
-                   style="width: 100%; height: auto; border-radius: 4px;">
+                   style="width: 100%; height: 250px; object-fit: cover; border-radius: 4px;">
             {% else %}
-              <div style="height: 150px; background: #f4f4f4; display: flex; align-items: center; justify-content: center;">No Image</div>
+              <div style="height: 250px; background: #f4f4f4; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>
             {% endif %}
           </a>
 
-          <h3 style="margin: 10px 0 5px;">{{ entry.wrestler_name }}</h3>
+          <h3 style="margin: 15px 0 5px; font-size: 1.2em;">{{ entry.wrestler_name }}</h3>
           
           <p style="margin: 0; font-size: 0.9em; color: #666;">
-            <a href="{{ target_collection.url }}">
+            <a href="{{ target_collection.url }}" style="color: #666; text-decoration: none;">
               {{ target_collection.all_products_count }} Items
             </a>
           </p>
@@ -32,3 +32,15 @@
 
   </div>
 </div>
+
+{% schema %}
+{
+  "name": "Wrestler List",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Wrestler List"
+    }
+  ]
+}
+{% endschema %}
