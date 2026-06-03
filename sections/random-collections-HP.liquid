@@ -31,13 +31,19 @@
     
     const allItems = Array.from(container.querySelectorAll('.rc-item'));
     
-    // Shuffle and pick 8
-    const shuffled = allItems.sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 8);
+    // Fisher-Yates Shuffle Algorithm for true randomness
+    for (let i = allItems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allItems[i], allItems[j]] = [allItems[j], allItems[i]];
+    }
     
-    // Show only the 8 selected
+    // Clear existing and append only the first 8 shuffled items
+    container.innerHTML = '';
+    const selected = allItems.slice(0, 8);
+    
     selected.forEach(item => {
       item.style.display = 'block';
+      container.appendChild(item);
     });
   });
 </script>
