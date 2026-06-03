@@ -2,17 +2,14 @@
   .breadcrumbs {
     margin: 0 0 2em;
   }
-
   .breadcrumbs__list {
     list-style-type: none;
     margin: 0;
     padding: 0;
   }
-
   .breadcrumbs__item {
     display: inline-block;
   }
-
   .breadcrumbs__item:not(:last-child):after {
     border-style: solid;
     border-width: .10em .10em 0 0;
@@ -25,17 +22,14 @@
     vertical-align: middle;
     width: .20em;
   }
-
   .breadcrumbs__link {
     text-decoration: underline;
   }
-
   .breadcrumbs__link[aria-current="page"] {
     color: inherit;
     font-weight: normal;
     text-decoration: none;
   }
-
   .breadcrumbs__link[aria-current="page"]:hover,
   .breadcrumbs__link[aria-current="page"]:focus {
     text-decoration: underline;
@@ -62,11 +56,7 @@
         {%- endif -%}
 
         {%- if current_product_collection.url -%}
-          {%- comment -%}
-            Checking explicit entry handles AND checking all entries loops
-          {%- endcomment -%}
           {%- assign is_mapped = false -%}
-          
           {%- assign direct_check = shop.metaobjects.collection_mapping[current_product_collection.handle] -%}
           {%- if direct_check == blank -%}
             {%- assign direct_check = shop.metaobjects.collection_mappings[current_product_collection.handle] -%}
@@ -75,16 +65,15 @@
           {%- if direct_check != blank -%}
             {%- assign is_mapped = true -%}
           {%- else -%}
-            {%- comment -%} Loop fallback search {%- endcomment -%}
             {%- for item in shop.metaobjects.collection_mapping.values -%}
               {%- if item.wrestler_collection == current_product_collection.handle or item.handle == current_product_collection.handle -%}
                 {%- assign is_mapped = true -%}
-                {%- break -%}/
+                {%- break -%}
               {%- endif -%}
             {%- endfor -%}
             {%- for item in shop.metaobjects.collection_mappings.values -%}
               {%- if item.wrestler_collection == current_product_collection.handle or item.handle == current_product_collection.handle -%}
-                {%- assign is_mapped = true -%}-
+                {%- assign is_mapped = true -%}
                 {%- break -%}
               {%- endif -%}
             {%- endfor -%}
@@ -92,21 +81,17 @@
           
           {%- unless is_mapped -%}
             <li class="breadcrumbs__item">
-              {{ current_product_collection.title | link_to: current_product_collection.url }}
+              <a class="breadcrumbs__link" href="{{ current_product_collection.url }}" aria-current="page">{{ current_product_collection.title }}</a>
             </li>
           {%- endunless -%}
         {%- endif -%}
         
-        <li class="breadcrumbs__item">
-          <a class="breadcrumbs__link" href="{{ product.url }}" aria-current="page">{{ product.title }}</a>
-        </li>
       {%- when 'collection' and collection.handle -%}
         {%- assign is_mapped = false -%}
         {%- assign direct_check = shop.metaobjects.collection_mapping[collection.handle] -%}
         {%- if direct_check == blank -%}
           {%- assign direct_check = shop.metaobjects.collection_mappings[collection.handle] -%}
         {%- endif -%}
-
         {%- if direct_check != blank -%}
           {%- assign is_mapped = true -%}
         {%- else -%}
@@ -123,7 +108,6 @@
             {%- endif -%}
           {%- endfor -%}
         {%- endif -%}
-
         {%- if current_tags -%}
           <li class="breadcrumbs__item">
             {{ collection.title | link_to: collection.url }}
