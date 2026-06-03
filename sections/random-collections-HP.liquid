@@ -1,22 +1,17 @@
 <section class="page-width">
   <h2 class="title">{{ section.settings.heading }}</h2>
   
-  <div style="border: 2px solid red; padding: 10px;">
-    <h3>DEBUG INFO:</h3>
-    <p>Total Metaobject entries: {{ shop.metaobjects.collection_mapping.values.size }}</p>
-    
-    {% for entry in shop.metaobjects.collection_mapping.values %}
-      <p>Entry {{ forloop.index }}: {{ entry.system.handle }} | 
-         Collection detected: {% if entry.collection.value %}YES{% else %}NO{% endif %}</p>
-    {% endfor %}
-  </div>
-
   <div id="random-collections-list" class="grid grid--2-col grid--4-col-desktop">
     {% for entry in shop.metaobjects.collection_mapping.values %}
-      {% assign collection = entry.collection.value %}
+      {% comment %} Using the correct field handle: wrestler_collection {% endcomment %}
+      {% assign collection = entry.wrestler_collection.value %}
+      
       {% if collection %}
-        <div class="grid__item collection-item">
+        <div class="grid__item collection-item hidden">
           <a href="{{ collection.url }}">
+            {% if collection.featured_image %}
+              <img src="{{ collection.featured_image | image_url: width: 300 }}" alt="{{ collection.title | escape }}" loading="lazy">
+            {% endif %}
             <h3>{{ collection.title }}</h3>
           </a>
         </div>
@@ -24,3 +19,40 @@
     {% endfor %}
   </div>
 </section>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const list = document.getElementById("random-collections-list");
+    if (!list) return;
+    
+    const items = Array.from(list.querySelectorAll('.collection-item'));
+    
+    // Shuffle and pick 8
+    items.sort(() => 0.5 - Math.random()).slice(0, 8).forEach(item => {
+      item.classList.remove('hidden');
+    });
+  });
+</script>
+
+<style>
+  .hidden { display: none !important; }
+</style>
+
+{% schema %}
+{
+  "name": "Random Collections HP",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Wrestlers"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Random Collections HP"
+    }
+  ]
+}
+{% endschema %}
