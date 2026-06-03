@@ -20,7 +20,7 @@
 
 <section class="page-width">
   <nav aria-label="Home" class="breadcrumb">
-    <a class="Breadcrumbs" href="{{ routes.root_url }}">Home </a> 
+    <a class="Breadcrumbs" href="{{ routes.root_url }}">Home</a> 
     
     {%- for collection in product.collections limit: 3 -%} 
       
@@ -35,12 +35,19 @@
         {%- endif -%}
 
         {%- unless mapped_wrestler -%}
-          {{ collection.title | link_to: collection.url | prepend: ' / ' }}
+          <span aria-hidden="true"> / </span>
+          <a class="Breadcrumbs" href="{{ collection.url }}">{{ collection.title }}</a>
         {%- endunless -%}
 
       {%- endunless -%}
-      
-    {%- endfor -%} 
+    {%- endfor -%}
+    
+    {%- comment -%} 
+      Product title was removed from here. 
+      Ensure no other liquid tags (like {{ product.title }}) exist below this.
+    {%- endcomment -%}
+  </nav>
+</section>
     <span>/</span>
     <span class="breadcrumb__link" aria-current="page" style="font-weight:bold;"> {{ product.title }}</span>
   </nav>
