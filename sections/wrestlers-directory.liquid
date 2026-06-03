@@ -1,34 +1,25 @@
 {%- assign limit = request.query_parameters.limit | default: 50 | plus: 0 -%}
 
 <div class="page-width" style="padding: 20px 0;">
+  <!-- Dropdown Filter -->
   <div class="limit-selector" style="margin-bottom: 20px; text-align: right;">
     <label for="limit">Show: </label>
-    <select id="limit" onchange="updateLimit(this.value);">
+    <select id="limit" onchange="window.location.href = window.location.pathname + '?limit=' + this.value;">
       <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
       <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
       <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
-      <option value="1000" {% if limit == 1000 %}selected{% endif %}>All</option>
     </select>
   </div>
-
-  <script>
-    function updateLimit(val) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('limit', val);
-      url.searchParams.set('page', 1);
-      window.location.href = url.toString();
-    }
-  </script>
 
   <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
     
     {% comment %} 
-      We pass the 'limit' variable directly into the 'by' parameter.
-      This forces Shopify to update the actual page count dynamically.
+      We paginate by 250 (the max allowed) to ensure Shopify fetches enough data.
+      We DO NOT use a variable here because Shopify does not support it.
     {% endcomment %}
-    {% paginate metaobjects.collection_mapping.values by limit %}
+    {% paginate metaobjects.collection_mapping.values by 250 %}
       
-      {% for entry in metaobjects.collection_mapping.values %}
+      {% for entry in metaobjects.collection_mapping.values limit: limit %}
         {%- assign collection_handle = entry.wrestler_collection -%}
         {%- assign target_collection = collections[collection_handle] -%}
         
@@ -49,16 +40,9 @@
         </div>
       {% endfor %}
       
+      <!-- Pagination Note -->
       <div style="grid-column: 1 / -1; text-align: center; margin-top: 20px;">
-        {% if paginate.previous %}
-          <a href="{{ paginate.previous.url }}&limit={{ limit }}">Previous</a>
-        {% endif %}
-        
-        <span style="margin: 0 15px;">Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
-        
-        {% if paginate.next %}
-          <a href="{{ paginate.next.url }}&limit={{ limit }}">Next</a>
-        {% endif %}
+        <p>Showing {{ limit }} items per page.</p>
       </div>
     {% endpaginate %}
   </div>
