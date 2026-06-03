@@ -5,7 +5,8 @@
   </div>
 </section>
 
-{% comment %} 1. Store the full list in a JSON block for JS to read safely {% endcomment %}
+{% comment %} 1. Use paginate to access all metaobject entries without truncation {% endcomment %}
+{% paginate shop.metaobjects.collection_mapping.values by 2500 %}
 <script id="all-collections-data" type="application/json">
 [
   {% for entry in shop.metaobjects.collection_mapping.values %}
@@ -21,19 +22,23 @@
   {% endfor %}
 ]
 </script>
+{% endpaginate %}
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     const container = document.getElementById('random-collections-container');
+    if (!container) return;
+    
+    // Parse the data provided by the Liquid script tag
     const data = JSON.parse(document.getElementById('all-collections-data').textContent);
     
-    // Fisher-Yates shuffle on the entire array of 800-2500 items
+    // Fisher-Yates shuffle on the entire array to ensure true randomness
     for (let i = data.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [data[i], data[j]] = [data[j], data[i]];
     }
     
-    // Pick the first 8
+    // Pick the first 8 from the shuffled array
     const selected = data.slice(0, 8);
     
     // Build the HTML
