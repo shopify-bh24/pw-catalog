@@ -25,9 +25,10 @@
 
   <div id="wrestler-container" class="any-random-grid">
     {% comment %} 
-      Using .all fetches the full list, limit: 1000 forces Shopify to load more than the default limit.
+      FIX: Changed .values to .all. 
+      The .all property returns the complete list of metaobjects.
     {% endcomment %}
-    {% for entry in shop.metaobjects.collection_mapping.values limit: 1000 %}
+    {% for entry in shop.metaobjects.collection_mapping.all %}
       {% assign col_handle = entry.wrestler_collection.value | strip %}
       {% assign target = collections[col_handle] %}
       {% if target != blank %}
