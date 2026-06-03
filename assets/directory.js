@@ -1,43 +1,32 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const container = document.getElementById('wrestler-container');
-  // This will now capture all 800+ items because the Liquid loop is no longer truncated
-  const items = Array.from(document.querySelectorAll('.wrestler-item'));
-  const perPageSelect = document.getElementById('items-per-page');
-  const sortSelect = document.getElementById('directory-sort');
-  const abcLinks = document.querySelectorAll('.abc-link');
-  const backToTop = document.getElementById('back-to-top');
-
-  let currentFilter = 'ALL';
-
-  function render(list, limit) {
-    container.innerHTML = '';
-    list.slice(0, limit).forEach(item => container.appendChild(item));
-  }
-
-  function applyLogic() {
-    let filtered = currentFilter === 'ALL' 
-      ? [...items] 
-      : items.filter(i => i.dataset.name.toUpperCase().startsWith(currentFilter));
-    
-    // Sort
-    if (sortSelect.value === 'name') filtered.sort((a,b) => a.dataset.name.localeCompare(b.dataset.name));
-    if (sortSelect.value === 'count') filtered.sort((a,b) => b.dataset.count - a.dataset.count);
-    
-    render(filtered, parseInt(perPageSelect.value) || 9999);
-  }
-
-  perPageSelect.addEventListener('change', applyLogic);
-  sortSelect.addEventListener('change', applyLogic);
-
-  abcLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      abcLinks.forEach(l => l.classList.remove('active'));
-      e.target.classList.add('active');
-      currentFilter = e.target.dataset.letter;
-      applyLogic();
+  const loadingMsg = document.getElementById('loading-msg');
+  
+  // 1. Fetch ALL metaobjects from Shopify API
+  async function fetchAllData() {
+    const query = `query { metaobjects(type: "collection_mapping", first: 1000) { nodes { fields { key value } } } }`;
+    const response = await fetch('/api/2026-01/graphql.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Shopify-Storefront-Access-Token': 'YOUR_PUBLIC_STOREFRONT_TOKEN' },
+      body: JSON.stringify({ query })
     });
+    const { data } = await response.json();
+    return data.metaobjects.nodes;
+  }
+
+  // 2. Build the list
+  const rawNodes = await fetchAllData();
+  loadingMsg.remove();
+  
+  rawNodes.forEach(node => {
+    const colHandle = node.fields.find(f => f.key === 'wrestler_collection').value;
+    const item = document.createElement('div');
+    item.className = 'wrestler-item';
+    item.dataset.name = colHandle; // Ensure this matches your data
+    item.innerHTML = `<a href="/collections/${colHandle}"><h3>${colHandle}</h3></a>`;
+    container.appendChild(item);
   });
 
-  applyLogic();
+  // 3. Initialize your existing filter/sort logic
+  // [Insert all your existing filtering, sorting, and ABC logic functions here]
 });
