@@ -1,19 +1,15 @@
 <section class="page-width random-collections-any">
   <h2 class="title">{{ section.settings.heading }}</h2>
   
-  <div class="any-random-grid">
-    {% comment %} 1. Shuffle the entries {% endcomment %}
-    {% assign shuffled_entries = shop.metaobjects.collection_mapping.values | shuffle %}
-    {% assign count = 0 %}
+  <div class="any-random-grid" id="random-collections-container">
+    {% assign shuffled_entries = shop.metaobjects.collection_mapping.values %}
     
     {% for entry in shuffled_entries %}
-      {% comment %} 2. Use the text handle to look up the collection {% endcomment %}
       {% assign col_handle = entry.wrestler_collection.value | strip %}
       {% assign target_col = collections[col_handle] %}
       
-      {% comment %} 3. Only display if the collection exists and we have fewer than 8 {% endcomment %}
-      {% if target_col != blank and count < 8 %}
-        <div class="rc-item">
+      {% if target_col != blank %}
+        <div class="rc-item" style="display: none;">
           <a href="{{ target_col.url }}">
             {% if target_col.featured_image %}
               <img src="{{ target_col.featured_image | image_url: width: 400 }}" 
@@ -23,11 +19,28 @@
             <h3>{{ target_col.title }}</h3>
           </a>
         </div>
-        {% assign count = count | plus: 1 %}
       {% endif %}
     {% endfor %}
   </div>
 </section>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const container = document.getElementById('random-collections-container');
+    if (!container) return;
+    
+    const allItems = Array.from(container.querySelectorAll('.rc-item'));
+    
+    // Shuffle and pick 8
+    const shuffled = allItems.sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 8);
+    
+    // Show only the 8 selected
+    selected.forEach(item => {
+      item.style.display = 'block';
+    });
+  });
+</script>
 
 <style>
   .random-collections-any .any-random-grid { 
@@ -48,10 +61,10 @@
 
 {% schema %}
 {
-  "name": "Mapped Collections",
+  "name": "Mapped Collections Random",
   "settings": [
     { "type": "text", "id": "heading", "label": "Heading", "default": "Random Wrestlers" }
   ],
-  "presets": [{ "name": "Mapped Collections" }]
+  "presets": [{ "name": "Mapped Collections Random" }]
 }
 {% endschema %}
