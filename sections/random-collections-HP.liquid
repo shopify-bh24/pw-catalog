@@ -2,9 +2,21 @@
   <h2 class="title">{{ section.settings.heading }}</h2>
   
   <div class="any-random-grid">
-    {% assign random_collections = collections | sort: 'title' | shuffle %}
+    {% comment %} We loop through the Metaobjects first to enforce the whitelist condition {% endcomment %}
+    {% assign valid_collections = "" | split: "," %}
     
-    {% for collection in random_collections limit: 8 %}
+    {% for entry in shop.metaobjects.collection_mapping.values %}
+      {% assign target_col = entry.wrestler_collection.value %}
+      
+      {% if target_col %}
+        {% assign valid_collections = valid_collections | push: target_col %}
+      {% endif %}
+    {% endfor %}
+    
+    {% comment %} Now we shuffle the valid, mapped collections and limit to 8 {% endcomment %}
+    {% assign display_collections = valid_collections | shuffle %}
+    
+    {% for collection in display_collections limit: 8 %}
       <div class="rc-item">
         <a href="{{ collection.url }}">
           {% if collection.featured_image %}
@@ -27,7 +39,6 @@
     margin-top: 20px !important;
   }
   
-  /* Mobile responsiveness: 2 columns on mobile */
   @media screen and (max-width: 749px) {
     .random-collections-any .any-random-grid { 
       grid-template-columns: repeat(2, 1fr) !important; 
@@ -54,10 +65,10 @@
 
 {% schema %}
 {
-  "name": "Any 8 Collections",
+  "name": "Mapped Collections",
   "settings": [
     { "type": "text", "id": "heading", "label": "Heading", "default": "Random Wrestlers" }
   ],
-  "presets": [{ "name": "Any 8 Collections" }]
+  "presets": [{ "name": "Mapped Collections" }]
 }
 {% endschema %}
