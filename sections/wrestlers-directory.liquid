@@ -3,7 +3,12 @@
     {% for entry in metaobjects.collection_mapping.values %}
       <div class="wrestler-card" style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px;">
         <h3 style="margin-top: 0;">Name: {{ entry.wrestler_name }}</h3>
-        <p>Collection: {{ entry.wrestler_collection }}</p>
+        <p>
+          Collection: 
+          <a href="https://pwcatalog.com/collections/{{ entry.wrestler_collection }}">
+            {{ entry.wrestler_collection }}
+          </a>
+        </p>
       </div>
     {% endfor %}
   </div>
