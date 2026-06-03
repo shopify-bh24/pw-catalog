@@ -4,7 +4,7 @@
   <!-- Dropdown Filter -->
   <div class="limit-selector" style="margin-bottom: 20px; text-align: right;">
     <label for="limit">Show: </label>
-    <select id="limit" onchange="window.location.href = '?limit=' + this.value;">
+    <select id="limit" onchange="window.location.href = window.location.pathname + '?limit=' + this.value;">
       <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
       <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
       <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
@@ -14,7 +14,7 @@
 
   <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
     
-    {% paginate metaobjects.collection_mapping.values by limit %}
+    {% paginate metaobjects.collection_mapping.values by limit, params: request.query_parameters %}
       {% for entry in metaobjects.collection_mapping.values %}
         {%- assign collection_handle = entry.wrestler_collection -%}
         {%- assign target_collection = collections[collection_handle] -%}
