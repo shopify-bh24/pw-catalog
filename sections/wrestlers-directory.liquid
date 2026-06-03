@@ -1,36 +1,43 @@
 <div class="page-width" style="padding: 20px 0;">
   
-  {%- assign paginate_by = request.query_parameters.paginateBy | default: 25 | plus: 0 -%}
+  {%- assign paginate_by_str = request.query_parameters.paginateBy | default: "25" -%}
+  {%- assign paginate_by = paginate_by_str | plus: 0 -%}
   {%- if paginate_by == 0 -%}{%- assign paginate_by = 1000 -%}{%- endif -%}
-  
-  {%- assign current_page = request.query_parameters.page | default: 1 | plus: 0 -%}
-  {%- assign offset = current_page | minus: 1 | times: paginate_by -%}
-  
-  {%- assign wrestler_list = metaobjects.collection_mapping.values -%}
-  {%- assign total_items = wrestler_list.size -%}
+
+  {%- capture options -%}25,50,100,ALL{%- endcapture -%}
+  {%- assign options_array = options | split: "," -%}
 
   <div class="pagination-controls" style="margin-bottom: 20px; text-align: right;">
     <label for="paginate-select" style="margin-right: 10px; font-weight: bold;">Show:</label>
     <select id="paginate-select" 
-            onchange="window.location.href = '{{ request.path }}?paginateBy=' + this.value + '&page=1';" 
+            onchange="window.location.href = this.value;" 
             style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; cursor: pointer;">
-      <option value="25" {% if paginate_by == 25 %}selected{% endif %}>25</option>
-      <option value="50" {% if paginate_by == 50 %}selected{% endif %}>50</option>
-      <option value="100" {% if paginate_by == 100 %}selected{% endif %}>100</option>
-      <option value="1000" {% if paginate_by == 1000 %}selected{% endif %}>ALL</option>
+      
+      {% for val in options_array %}
+        {%- assign v = val | downcase -%}
+        {%- if v == 'all' -%}
+          {%- assign v_num = 1000 -%}
+        {%- else -%}
+          {%- assign v_num = v | plus: 0 -%}
+        {%- endif -%}
+        
+        <option value="{{ request.path }}?paginateBy={{ v_num }}" 
+                {% if v_num == paginate_by %}selected{% endif %}>
+          {{ val }}
+        </option>
+      {% endfor %}
     </select>
   </div>
 
   <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-    {% comment %} Slice safely {% endcomment %}
-    {% assign display_list = wrestler_list | slice: offset, paginate_by %}
     
-    {% for entry in display_list %}
+    {% paginate metaobjects.collection_mapping.values by paginate_by %}
+      {% for entry in metaobjects.collection_mapping.values %}
         {%- assign collection_handle = entry.wrestler_collection -%}
         {%- assign target_collection = collections[collection_handle] -%}
         
         <div class="wrestler-card" style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px; text-align: center;">
-          <a href="{{ target_collection.url | default: '#' }}">
+          <a href="{{ target_collection.url }}">
             {% if target_collection.featured_image != blank %}
               <img src="{{ target_collection.featured_image | image_url: width: 400 }}" 
                    alt="{{ target_collection.title | escape }}" 
@@ -41,14 +48,15 @@
           </a>
           <h3 style="margin: 15px 0 5px; font-size: 1.2em;">{{ entry.wrestler_name }}</h3>
           <p style="margin: 0; font-size: 0.9em; color: #666;">
-            {% if target_collection %}
-              <a href="{{ target_collection.url }}" style="color: #666; text-decoration: none;">{{ target_collection.all_products_count }} Items</a>
-            {% else %}
-              <span>Collection not found</span>
-            {% endif %}
+            <a href="{{ target_collection.url }}" style="color: #666; text-decoration: none;">{{ target_collection.all_products_count }} Items</a>
           </p>
         </div>
-    {% endfor %}
+      {% endfor %}
+      
+      {% if paginate.pages > 1 %}
+        <div style="grid-column: 1 / -1; margin-top: 20px; text-align: center;">{{ paginate | default_pagination }}</div>
+      {% endif %}
+    {% endpaginate %}
   </div>
 </div>
 
