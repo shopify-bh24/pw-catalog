@@ -3,7 +3,7 @@
   {% paginate shop.metaobjects.collection_mapping.values by 1000 %}
 
     {% comment %} Sticky controls bar {% endcomment %}
-    <div id="sticky-controls" style="position:sticky; top:0; z-index:100; background:#fff; padding:10px 0; border-bottom:1px solid #e1e1e1; margin-bottom:20px;">
+    <div id="sticky-controls" style="position:sticky; top:0; z-index:10; background:#fff; padding:10px 0; border-bottom:1px solid #e1e1e1; margin-bottom:20px;">
       <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
         
         {% comment %} Left: Letter index {% endcomment %}
@@ -87,6 +87,7 @@
   var sortSelect = document.getElementById('sort-select');
   var ppSelect   = document.getElementById('per-page-select');
   var letterBtns = Array.from(document.querySelectorAll('.letter-btn'));
+  var stickyBar  = document.getElementById('sticky-controls');
 
   var activeLetter = 'all';
   var currentPage  = 1;
@@ -100,9 +101,16 @@
   if ([25, 50, 100, 250].indexOf(pp) !== -1) ppSelect.value = pp;
   if (params.get('letter')) activeLetter = params.get('letter');
 
-  // Detect navbar height so sticky bar sits just below it
+  // Detect navbar height — tries common Shopify theme header selectors
   function getNavHeight() {
-    var selectors = ['header', '.header', '#header', '.site-header', '.navbar', '[role="banner"]'];
+    var selectors = [
+      '.header-wrapper',
+      '.site-header',
+      'header.header',
+      '#shopify-section-header',
+      'header',
+      '[role="banner"]'
+    ];
     for (var i = 0; i < selectors.length; i++) {
       var el = document.querySelector(selectors[i]);
       if (el) {
@@ -114,11 +122,13 @@
   }
 
   function applyNavOffset() {
-    var offset = getNavHeight();
-    document.getElementById('sticky-controls').style.top = offset + 'px';
+    var h = getNavHeight();
+    stickyBar.style.top = h + 'px';
   }
 
+  // Run on load and after a short delay to catch lazy-rendered headers
   applyNavOffset();
+  setTimeout(applyNavOffset, 300);
   window.addEventListener('resize', applyNavOffset);
 
   function saveURL() {
