@@ -2,31 +2,36 @@
 
   {% paginate shop.metaobjects.collection_mapping.values by 1000 %}
 
-    {% comment %} Controls bar {% endcomment %}
-    <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:16px; gap:10px; flex-wrap:wrap;">
-      <label for="sort-select" style="font-size:0.9em; color:#555;">Sort by:</label>
-      <select id="sort-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
-        <option value="az">A → Z</option>
-        <option value="za">Z → A</option>
-        <option value="most">Most Products</option>
-        <option value="least">Fewest Products</option>
-      </select>
-      <label for="per-page-select" style="font-size:0.9em; color:#555;">Items per page:</label>
-      <select id="per-page-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
-        <option value="25">25</option>
-        <option value="50" selected>50</option>
-        <option value="100">100</option>
-        <option value="250">250</option>
-      </select>
-    </div>
+    {% comment %} Sticky controls bar {% endcomment %}
+    <div id="sticky-controls" style="position:sticky; top:0; z-index:100; background:#fff; padding:10px 0; border-bottom:1px solid #e1e1e1; margin-bottom:20px;">
+      
+      {% comment %} Dropdowns row {% endcomment %}
+      <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+        <label for="sort-select" style="font-size:0.9em; color:#555;">Sort by:</label>
+        <select id="sort-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
+          <option value="az">A → Z</option>
+          <option value="za">Z → A</option>
+          <option value="most">Most Products</option>
+          <option value="least">Fewest Products</option>
+        </select>
+        <label for="per-page-select" style="font-size:0.9em; color:#555;">Items per page:</label>
+        <select id="per-page-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+          <option value="250">250</option>
+        </select>
+      </div>
 
-    {% comment %} Letter index {% endcomment %}
-    <div id="letter-index" style="display:flex; flex-wrap:wrap; gap:3px; margin-bottom:20px; font-size:0.8em;">
-      <a href="#" data-letter="all" class="letter-btn" style="padding:3px 7px; border:1px solid #333; border-radius:4px; color:#fff; background:#333; text-decoration:none;">All</a>
-      {% assign letters = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' %}
-      {% for letter in letters %}
-        <a href="#" data-letter="{{ letter | downcase }}" class="letter-btn" style="padding:3px 7px; border:1px solid #d1d1d1; border-radius:4px; color:#333; background:#fff; text-decoration:none;">{{ letter }}</a>
-      {% endfor %}
+      {% comment %} Letter index row {% endcomment %}
+      <div id="letter-index" style="display:flex; flex-wrap:wrap; gap:3px; font-size:0.8em;">
+        <a href="#" data-letter="all" class="letter-btn" style="padding:3px 7px; border:1px solid #333; border-radius:4px; color:#fff; background:#333; text-decoration:none;">All</a>
+        {% assign letters = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' %}
+        {% for letter in letters %}
+          <a href="#" data-letter="{{ letter | downcase }}" class="letter-btn" style="padding:3px 7px; border:1px solid #d1d1d1; border-radius:4px; color:#333; background:#fff; text-decoration:none;">{{ letter }}</a>
+        {% endfor %}
+      </div>
+
     </div>
 
     {% comment %} Grid {% endcomment %}
@@ -66,18 +71,17 @@
 <script>
 (function () {
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  var allCards    = Array.from(document.querySelectorAll('#wrestler-grid .wrestler-card'));
-  var grid        = document.getElementById('wrestler-grid');
-  var controls    = document.getElementById('pagination-controls');
-  var sortSelect  = document.getElementById('sort-select');
-  var ppSelect    = document.getElementById('per-page-select');
-  var letterBtns  = Array.from(document.querySelectorAll('.letter-btn'));
+  var allCards   = Array.from(document.querySelectorAll('#wrestler-grid .wrestler-card'));
+  var grid       = document.getElementById('wrestler-grid');
+  var controls   = document.getElementById('pagination-controls');
+  var sortSelect = document.getElementById('sort-select');
+  var ppSelect   = document.getElementById('per-page-select');
+  var letterBtns = Array.from(document.querySelectorAll('.letter-btn'));
 
   var activeLetter = 'all';
   var currentPage  = 1;
 
-  // ── Restore from URL ───────────────────────────────────────────────────────
+  // Restore from URL
   var params = new URLSearchParams(window.location.search);
   if (params.get('sort') && sortSelect.querySelector('[value="' + params.get('sort') + '"]')) {
     sortSelect.value = params.get('sort');
@@ -86,7 +90,6 @@
   if ([25, 50, 100, 250].indexOf(pp) !== -1) ppSelect.value = pp;
   if (params.get('letter')) activeLetter = params.get('letter');
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
   function saveURL() {
     var u = new URL(window.location.href);
     u.searchParams.set('sort',     sortSelect.value);
@@ -98,24 +101,21 @@
   function setLetterStyles() {
     letterBtns.forEach(function (btn) {
       var active = btn.dataset.letter === activeLetter;
-      btn.style.background   = active ? '#333' : '#fff';
-      btn.style.color        = active ? '#fff' : '#333';
-      btn.style.borderColor  = active ? '#333' : '#d1d1d1';
+      btn.style.background  = active ? '#333' : '#fff';
+      btn.style.color       = active ? '#fff' : '#333';
+      btn.style.borderColor = active ? '#333' : '#d1d1d1';
     });
   }
 
-  // ── Core render ────────────────────────────────────────────────────────────
   function render() {
     var sort    = sortSelect.value;
     var perPage = parseInt(ppSelect.value);
     var letter  = activeLetter;
 
-    // 1. Filter
     var filtered = allCards.filter(function (c) {
       return letter === 'all' || c.dataset.name.charAt(0) === letter;
     });
 
-    // 2. Sort
     filtered.sort(function (a, b) {
       if (sort === 'az')    return a.dataset.name.localeCompare(b.dataset.name);
       if (sort === 'za')    return b.dataset.name.localeCompare(a.dataset.name);
@@ -124,14 +124,11 @@
       return 0;
     });
 
-    // 3. Re-order DOM to match sorted result
     filtered.forEach(function (c) { grid.appendChild(c); });
 
-    // 4. Clamp page
     var totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
     if (currentPage > totalPages) currentPage = 1;
 
-    // 5. Show/hide
     var start = (currentPage - 1) * perPage;
     var end   = start + perPage;
     allCards.forEach(function (c) { c.style.display = 'none'; });
@@ -139,14 +136,10 @@
       c.style.display = (i >= start && i < end) ? '' : 'none';
     });
 
-    // 6. Pagination buttons
     buildPagination(totalPages);
-
-    // 7. Letter highlight
     setLetterStyles();
   }
 
-  // ── Pagination UI ──────────────────────────────────────────────────────────
   function buildPagination(totalPages) {
     controls.innerHTML = '';
     if (totalPages <= 1) return;
@@ -154,7 +147,7 @@
     var base   = 'padding:6px 11px;border:1px solid #d1d1d1;border-radius:5px;background:#fff;cursor:pointer;font-size:0.88em;color:#333;text-decoration:none;display:inline-block;';
     var active = 'padding:6px 11px;border:1px solid #333;border-radius:5px;background:#333;cursor:default;font-size:0.88em;color:#fff;display:inline-block;';
 
-    function btn(label, page) {
+    function makeBtn(label, page) {
       var a = document.createElement('a');
       a.href = '#';
       a.innerHTML = label;
@@ -170,7 +163,7 @@
       return a;
     }
 
-    if (currentPage > 1) controls.appendChild(btn('&laquo; Prev', currentPage - 1));
+    if (currentPage > 1) controls.appendChild(makeBtn('&laquo; Prev', currentPage - 1));
 
     var pages = [];
     for (var i = 1; i <= totalPages; i++) {
@@ -184,24 +177,19 @@
         dots.style.cssText = 'padding:6px 5px;font-size:0.88em;color:#999;';
         controls.appendChild(dots);
       }
-      controls.appendChild(btn(p, p));
+      controls.appendChild(makeBtn(p, p));
       last = p;
     });
 
-    if (currentPage < totalPages) controls.appendChild(btn('Next &raquo;', currentPage + 1));
+    if (currentPage < totalPages) controls.appendChild(makeBtn('Next &raquo;', currentPage + 1));
   }
 
-  // ── Event listeners ────────────────────────────────────────────────────────
   sortSelect.addEventListener('change', function () {
-    currentPage = 1;
-    saveURL();
-    render();
+    currentPage = 1; saveURL(); render();
   });
 
   ppSelect.addEventListener('change', function () {
-    currentPage = 1;
-    saveURL();
-    render();
+    currentPage = 1; saveURL(); render();
   });
 
   letterBtns.forEach(function (btn) {
@@ -209,7 +197,6 @@
       e.preventDefault();
       activeLetter = btn.dataset.letter;
       currentPage  = 1;
-      // Snap to A→Z when a specific letter is chosen
       if (activeLetter !== 'all' && sortSelect.value !== 'az' && sortSelect.value !== 'za') {
         sortSelect.value = 'az';
       }
@@ -218,7 +205,6 @@
     });
   });
 
-  // ── Init ───────────────────────────────────────────────────────────────────
   render();
 
 })();
