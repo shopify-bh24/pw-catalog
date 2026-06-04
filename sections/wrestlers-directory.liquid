@@ -1,30 +1,34 @@
+{%- assign limit = request.query_parameters.limit | default: 50 | plus: 0 -%}
+{%- if limit == 0 -%}{%- assign limit = 50 -%}{%- endif -%}
+
 <div class="page-width" style="padding: 20px 0;">
-  {% comment %} 
-    We paginate by 50 to ensure the page loads quickly. 
-    You can increase this to 100 if needed, but 50-100 is best for performance.
-  {% endcomment %}
-  {% paginate shop.metaobjects.collection_mapping.values by 100 %}
-    
+  
+  {% comment %} Dropdown for selecting items per page {% endcomment %}
+  <div class="pagination-controls" style="margin-bottom: 20px;">
+    <label for="per-page"><strong>Wrestlers per page: </strong></label>
+    <select id="per-page" onchange="window.location.href = this.value;" style="padding: 5px;">
+      <option value="?limit=25" {% if limit == 25 %}selected{% endif %}>25</option>
+      <option value="?limit=50" {% if limit == 50 %}selected{% endif %}>50</option>
+      <option value="?limit=100" {% if limit == 100 %}selected{% endif %}>100</option>
+      <option value="?limit=250" {% if limit == 250 %}selected{% endif %}>250</option>
+    </select>
+  </div>
+
+  {% paginate shop.metaobjects.collection_mapping.values by limit %}
     <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-      {% for entry in shop.metaobjects.collection_mapping.values %}
+      {% for entry in paginate.collection %}
         {%- assign collection_handle = entry.wrestler_collection.value | strip -%}
         {%- assign target_collection = collections[collection_handle] -%}
         
         <div class="wrestler-card" style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px; text-align: center;">
           <a href="{{ target_collection.url | default: '#' }}">
             {% if target_collection.featured_image != blank %}
-              <img src="{{ target_collection.featured_image | image_url: width: 400 }}"
-                   alt="{{ target_collection.title | escape }}"
-                   loading="lazy"
-                   style="width: 100%; height: 250px; object-fit: cover; border-radius: 4px;">
+              <img src="{{ target_collection.featured_image | image_url: width: 400 }}" alt="{{ target_collection.title | escape }}" loading="lazy" style="width: 100%; height: 250px; object-fit: cover; border-radius: 4px;">
             {% else %}
               <div style="height: 250px; background: #f4f4f4; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>
             {% endif %}
           </a>
-
-          {% comment %} Using the wrestler_name field from your metaobject {% endcomment %}
           <h3 style="margin: 15px 0 5px; font-size: 1.2em;">{{ entry.wrestler_name }}</h3>
-          
           <p style="margin: 0; font-size: 0.9em; color: #666;">
             <a href="{{ target_collection.url | default: '#' }}" style="color: #666; text-decoration: none;">
               {{ target_collection.all_products_count | default: 0 }} Items
@@ -34,7 +38,6 @@
       {% endfor %}
     </div>
 
-    {% comment %} Add pagination links so users can see more than the first page {% endcomment %}
     {% if paginate.pages > 1 %}
       <div class="pagination" style="text-align: center; margin-top: 30px;">
         {{ paginate | default_pagination }}
@@ -42,15 +45,3 @@
     {% endif %}
   {% endpaginate %}
 </div>
-
-{% schema %}
-{
-  "name": "Wrestler List",
-  "settings": [],
-  "presets": [
-    {
-      "name": "Wrestler List"
-    }
-  ]
-}
-{% endschema %}
