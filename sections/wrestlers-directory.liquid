@@ -8,8 +8,6 @@
       <select id="sort-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
         <option value="az">A → Z</option>
         <option value="za">Z → A</option>
-        <option value="newest">Last Updated</option>
-        <option value="oldest">Oldest Updated</option>
         <option value="most">Most Products</option>
         <option value="least">Fewest Products</option>
       </select>
@@ -30,7 +28,6 @@
         {%- assign target_collection = collections[collection_handle] -%}
         <div class="wrestler-card"
              data-name="{{ entry.wrestler_name | downcase | escape }}"
-             data-updated="{{ target_collection.updated_at | date: '%s' }}"
              data-count="{{ target_collection.all_products_count | default: 0 }}"
              style="border:1px solid #e1e1e1; padding:15px; border-radius:8px; text-align:center;">
           <a href="{{ target_collection.url | default: '#' }}">
@@ -67,7 +64,6 @@
   var controls = document.getElementById('pagination-controls');
   var currentPage = 1;
 
-  // Restore saved preferences from URL
   var params = new URLSearchParams(window.location.search);
   var savedPerPage = parseInt(params.get('per_page'));
   if ([25, 50, 100, 250].indexOf(savedPerPage) !== -1) {
@@ -82,31 +78,19 @@
   function sortCards() {
     var sorted = cards.slice().sort(function(a, b) {
       switch (getSort()) {
-        case 'az':
-          return a.dataset.name.localeCompare(b.dataset.name);
-        case 'za':
-          return b.dataset.name.localeCompare(a.dataset.name);
-        case 'newest':
-          return parseInt(b.dataset.updated) - parseInt(a.dataset.updated);
-        case 'oldest':
-          return parseInt(a.dataset.updated) - parseInt(b.dataset.updated);
-        case 'most':
-          return parseInt(b.dataset.count) - parseInt(a.dataset.count);
-        case 'least':
-          return parseInt(a.dataset.count) - parseInt(b.dataset.count);
-        default:
-          return 0;
+        case 'az':   return a.dataset.name.localeCompare(b.dataset.name);
+        case 'za':   return b.dataset.name.localeCompare(a.dataset.name);
+        case 'most': return parseInt(b.dataset.count) - parseInt(a.dataset.count);
+        case 'least':return parseInt(a.dataset.count) - parseInt(b.dataset.count);
+        default:     return 0;
       }
     });
-    // Re-append in sorted order
     sorted.forEach(function(card) { grid.appendChild(card); });
-    // Update our working array to match new DOM order
     cards = sorted;
   }
 
   function render() {
     sortCards();
-
     var perPage = getPerPage();
     var totalPages = Math.ceil(cards.length / perPage);
     if (currentPage > totalPages) currentPage = 1;
