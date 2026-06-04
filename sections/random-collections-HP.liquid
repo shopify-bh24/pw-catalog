@@ -2,20 +2,21 @@
   <h2 class="title">{{ section.settings.heading }}</h2>
   
   <div class="any-random-grid" id="random-collections-container">
-    {% comment %} Capped at 1000 to prevent server timeout {% endcomment %}
-    {% for entry in shop.metaobjects.collection_mapping.values limit: 1000 %}
-      {% assign col_handle = entry.wrestler_collection.value | strip %}
-      {% assign target = collections[col_handle] %}
-      
-      {% if target != blank %}
-        <div class="rc-item-data" 
-             data-url="{{ target.url }}" 
-             data-img="{{ target.featured_image | image_url: width: 400 }}" 
-             data-title="{{ target.title | escape }}" 
-             data-count="{{ target.products_count }}"
-             style="display:none;"></div>
-      {% endif %}
-    {% endfor %}
+    {% paginate shop.metaobjects.collection_mapping.values by 2500 %}
+      {% for entry in shop.metaobjects.collection_mapping.values %}
+        {% assign col_handle = entry.wrestler_collection.value | strip %}
+        {% assign target = collections[col_handle] %}
+        
+        {% if target != blank %}
+          <div class="rc-item-data" 
+               data-url="{{ target.url }}" 
+               data-img="{{ target.featured_image | image_url: width: 400 }}" 
+               data-title="{{ target.title | escape }}" 
+               data-count="{{ target.products_count }}"
+               style="display:none;"></div>
+        {% endif %}
+      {% endfor %}
+    {% endpaginate %}
   </div>
 </section>
 
@@ -24,8 +25,6 @@
     const container = document.getElementById('random-collections-container');
     const allData = Array.from(document.querySelectorAll('.rc-item-data'));
     
-    if (allData.length === 0) return;
-
     // Fisher-Yates Shuffle
     for (let i = allData.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
