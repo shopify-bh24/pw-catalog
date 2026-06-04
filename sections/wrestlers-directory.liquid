@@ -2,8 +2,8 @@
 
   {% paginate shop.metaobjects.collection_mapping.values by 1000 %}
 
-    <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:20px; gap:10px; flex-wrap:wrap;">
-      
+    {% comment %} Controls bar {% endcomment %}
+    <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:16px; gap:10px; flex-wrap:wrap;">
       <label for="sort-select" style="font-size:0.9em; color:#555;">Sort by:</label>
       <select id="sort-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
         <option value="az">A → Z</option>
@@ -11,7 +11,6 @@
         <option value="most">Most Products</option>
         <option value="least">Fewest Products</option>
       </select>
-
       <label for="per-page-select" style="font-size:0.9em; color:#555;">Items per page:</label>
       <select id="per-page-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
         <option value="25">25</option>
@@ -19,18 +18,18 @@
         <option value="100">100</option>
         <option value="250">250</option>
       </select>
-
     </div>
 
     {% comment %} Letter index {% endcomment %}
-    <div id="letter-index" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:20px;">
-      <a href="#" data-letter="all" class="letter-btn" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:5px; font-size:0.85em; color:#333; text-decoration:none; background:#333; color:#fff;">All</a>
+    <div id="letter-index" style="display:flex; flex-wrap:wrap; gap:3px; margin-bottom:20px; font-size:0.8em;">
+      <a href="#" data-letter="all" class="letter-btn" style="padding:3px 7px; border:1px solid #333; border-radius:4px; color:#fff; background:#333; text-decoration:none;">All</a>
       {% assign letters = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' %}
       {% for letter in letters %}
-        <a href="#" data-letter="{{ letter | downcase }}" class="letter-btn" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:5px; font-size:0.85em; color:#333; text-decoration:none; background:#fff;">{{ letter }}</a>
+        <a href="#" data-letter="{{ letter | downcase }}" class="letter-btn" style="padding:3px 7px; border:1px solid #d1d1d1; border-radius:4px; color:#333; background:#fff; text-decoration:none;">{{ letter }}</a>
       {% endfor %}
     </div>
 
+    {% comment %} Grid {% endcomment %}
     <div id="wrestler-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px;">
       {% for entry in shop.metaobjects.collection_mapping.values %}
         {%- assign collection_handle = entry.wrestler_collection.value | strip -%}
@@ -59,173 +58,169 @@
       {% endfor %}
     </div>
 
-    <div id="pagination-controls" style="text-align:center; margin-top:30px; display:flex; justify-content:center; gap:6px; flex-wrap:wrap;"></div>
+    <div id="pagination-controls" style="margin-top:30px; display:flex; justify-content:center; gap:6px; flex-wrap:wrap;"></div>
 
   {% endpaginate %}
 </div>
 
 <script>
 (function () {
-  var grid = document.getElementById('wrestler-grid');
-  var allCards = Array.from(grid.querySelectorAll('.wrestler-card'));
-  var cards = allCards.slice();
-  var select = document.getElementById('per-page-select');
-  var sortSelect = document.getElementById('sort-select');
-  var controls = document.getElementById('pagination-controls');
-  var letterBtns = Array.from(document.querySelectorAll('.letter-btn'));
-  var currentPage = 1;
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  var allCards    = Array.from(document.querySelectorAll('#wrestler-grid .wrestler-card'));
+  var grid        = document.getElementById('wrestler-grid');
+  var controls    = document.getElementById('pagination-controls');
+  var sortSelect  = document.getElementById('sort-select');
+  var ppSelect    = document.getElementById('per-page-select');
+  var letterBtns  = Array.from(document.querySelectorAll('.letter-btn'));
+
   var activeLetter = 'all';
+  var currentPage  = 1;
 
-  var btnStyle = 'padding:7px 13px; border:1px solid #d1d1d1; border-radius:5px; background:#fff; cursor:pointer; font-size:0.9em; color:#333; text-decoration:none; display:inline-block;';
-  var activeStyle = 'padding:7px 13px; border:1px solid #333; border-radius:5px; background:#333; cursor:default; font-size:0.9em; color:#fff; display:inline-block;';
-  var letterDefault = 'padding:6px 10px; border:1px solid #d1d1d1; border-radius:5px; font-size:0.85em; color:#333; text-decoration:none; background:#fff;';
-  var letterActive = 'padding:6px 10px; border:1px solid #333; border-radius:5px; font-size:0.85em; color:#fff; text-decoration:none; background:#333;';
-
-  // Restore from URL
+  // ── Restore from URL ───────────────────────────────────────────────────────
   var params = new URLSearchParams(window.location.search);
-  var savedPerPage = parseInt(params.get('per_page'));
-  if ([25, 50, 100, 250].indexOf(savedPerPage) !== -1) select.value = savedPerPage;
-  var savedSort = params.get('sort');
-  if (savedSort) sortSelect.value = savedSort;
-  var savedLetter = params.get('letter');
-  if (savedLetter) activeLetter = savedLetter;
+  if (params.get('sort') && sortSelect.querySelector('[value="' + params.get('sort') + '"]')) {
+    sortSelect.value = params.get('sort');
+  }
+  var pp = parseInt(params.get('per_page'));
+  if ([25, 50, 100, 250].indexOf(pp) !== -1) ppSelect.value = pp;
+  if (params.get('letter')) activeLetter = params.get('letter');
 
-  function getPerPage() { return parseInt(select.value); }
-  function getSort() { return sortSelect.value; }
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function saveURL() {
+    var u = new URL(window.location.href);
+    u.searchParams.set('sort',     sortSelect.value);
+    u.searchParams.set('per_page', ppSelect.value);
+    u.searchParams.set('letter',   activeLetter);
+    window.history.replaceState({}, '', u.toString());
+  }
 
-  function updateLetterButtons() {
-    letterBtns.forEach(function(btn) {
-      btn.style.cssText = (btn.dataset.letter === activeLetter) ? letterActive : letterDefault;
+  function setLetterStyles() {
+    letterBtns.forEach(function (btn) {
+      var active = btn.dataset.letter === activeLetter;
+      btn.style.background   = active ? '#333' : '#fff';
+      btn.style.color        = active ? '#fff' : '#333';
+      btn.style.borderColor  = active ? '#333' : '#d1d1d1';
     });
   }
 
-  function filterAndSort() {
-    // Filter by letter
-    if (activeLetter === 'all') {
-      cards = allCards.slice();
-    } else {
-      cards = allCards.filter(function(card) {
-        return card.dataset.name.charAt(0) === activeLetter;
-      });
-    }
-
-    // Sort
-    cards.sort(function(a, b) {
-      switch (getSort()) {
-        case 'az':    return a.dataset.name.localeCompare(b.dataset.name);
-        case 'za':    return b.dataset.name.localeCompare(a.dataset.name);
-        case 'most':  return parseInt(b.dataset.count) - parseInt(a.dataset.count);
-        case 'least': return parseInt(a.dataset.count) - parseInt(b.dataset.count);
-        default:      return 0;
-      }
-    });
-
-    // Re-append all cards; filtered-out ones get hidden via display:none below
-    allCards.forEach(function(card) { grid.appendChild(card); });
-  }
-
+  // ── Core render ────────────────────────────────────────────────────────────
   function render() {
-    filterAndSort();
-    updateLetterButtons();
+    var sort    = sortSelect.value;
+    var perPage = parseInt(ppSelect.value);
+    var letter  = activeLetter;
 
-    var perPage = getPerPage();
-    var totalPages = Math.ceil(cards.length / perPage);
+    // 1. Filter
+    var filtered = allCards.filter(function (c) {
+      return letter === 'all' || c.dataset.name.charAt(0) === letter;
+    });
+
+    // 2. Sort
+    filtered.sort(function (a, b) {
+      if (sort === 'az')    return a.dataset.name.localeCompare(b.dataset.name);
+      if (sort === 'za')    return b.dataset.name.localeCompare(a.dataset.name);
+      if (sort === 'most')  return parseInt(b.dataset.count) - parseInt(a.dataset.count);
+      if (sort === 'least') return parseInt(a.dataset.count) - parseInt(b.dataset.count);
+      return 0;
+    });
+
+    // 3. Re-order DOM to match sorted result
+    filtered.forEach(function (c) { grid.appendChild(c); });
+
+    // 4. Clamp page
+    var totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
     if (currentPage > totalPages) currentPage = 1;
 
+    // 5. Show/hide
     var start = (currentPage - 1) * perPage;
-    var end = start + perPage;
-
-    // Hide all first, then show only current page of filtered+sorted cards
-    allCards.forEach(function(card) { card.style.display = 'none'; });
-    cards.forEach(function(card, i) {
-      card.style.display = (i >= start && i < end) ? '' : 'none';
+    var end   = start + perPage;
+    allCards.forEach(function (c) { c.style.display = 'none'; });
+    filtered.forEach(function (c, i) {
+      c.style.display = (i >= start && i < end) ? '' : 'none';
     });
 
-    renderControls(totalPages);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 6. Pagination buttons
+    buildPagination(totalPages);
+
+    // 7. Letter highlight
+    setLetterStyles();
   }
 
-  function renderControls(totalPages) {
+  // ── Pagination UI ──────────────────────────────────────────────────────────
+  function buildPagination(totalPages) {
     controls.innerHTML = '';
     if (totalPages <= 1) return;
 
-    if (currentPage > 1) {
-      var prev = document.createElement('a');
-      prev.href = '#'; prev.innerHTML = '&laquo; Prev'; prev.style.cssText = btnStyle;
-      prev.addEventListener('click', function(e){ e.preventDefault(); currentPage--; render(); });
-      controls.appendChild(prev);
+    var base   = 'padding:6px 11px;border:1px solid #d1d1d1;border-radius:5px;background:#fff;cursor:pointer;font-size:0.88em;color:#333;text-decoration:none;display:inline-block;';
+    var active = 'padding:6px 11px;border:1px solid #333;border-radius:5px;background:#333;cursor:default;font-size:0.88em;color:#fff;display:inline-block;';
+
+    function btn(label, page) {
+      var a = document.createElement('a');
+      a.href = '#';
+      a.innerHTML = label;
+      a.style.cssText = (page === currentPage) ? active : base;
+      if (page !== currentPage) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          currentPage = page;
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+      return a;
     }
+
+    if (currentPage > 1) controls.appendChild(btn('&laquo; Prev', currentPage - 1));
 
     var pages = [];
     for (var i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
-        pages.push(i);
-      }
+      if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) pages.push(i);
     }
-
     var last = 0;
-    pages.forEach(function(p) {
+    pages.forEach(function (p) {
       if (last && p - last > 1) {
         var dots = document.createElement('span');
         dots.textContent = '…';
-        dots.style.cssText = 'padding:7px 6px; font-size:0.9em; color:#999;';
+        dots.style.cssText = 'padding:6px 5px;font-size:0.88em;color:#999;';
         controls.appendChild(dots);
       }
-      var btn = document.createElement('a');
-      btn.href = '#'; btn.textContent = p;
-      btn.style.cssText = (p === currentPage) ? activeStyle : btnStyle;
-      if (p !== currentPage) {
-        btn.addEventListener('click', (function(pg){ return function(e){ e.preventDefault(); currentPage = pg; render(); }; })(p));
-      }
-      controls.appendChild(btn);
+      controls.appendChild(btn(p, p));
       last = p;
     });
 
-    if (currentPage < totalPages) {
-      var next = document.createElement('a');
-      next.href = '#'; next.innerHTML = 'Next &raquo;'; next.style.cssText = btnStyle;
-      next.addEventListener('click', function(e){ e.preventDefault(); currentPage++; render(); });
-      controls.appendChild(next);
-    }
+    if (currentPage < totalPages) controls.appendChild(btn('Next &raquo;', currentPage + 1));
   }
 
-  // Letter index clicks
-  letterBtns.forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
+  // ── Event listeners ────────────────────────────────────────────────────────
+  sortSelect.addEventListener('change', function () {
+    currentPage = 1;
+    saveURL();
+    render();
+  });
+
+  ppSelect.addEventListener('change', function () {
+    currentPage = 1;
+    saveURL();
+    render();
+  });
+
+  letterBtns.forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
       e.preventDefault();
       activeLetter = btn.dataset.letter;
-      currentPage = 1;
+      currentPage  = 1;
       // Snap to A→Z when a specific letter is chosen
-      if (activeLetter !== 'all') {
+      if (activeLetter !== 'all' && sortSelect.value !== 'az' && sortSelect.value !== 'za') {
         sortSelect.value = 'az';
       }
-      var url = new URL(window.location.href);
-      url.searchParams.set('letter', activeLetter);
-      url.searchParams.set('sort', sortSelect.value);
-      window.history.replaceState({}, '', url.toString());
+      saveURL();
       render();
     });
   });
 
-  select.addEventListener('change', function () {
-    currentPage = 1;
-    var url = new URL(window.location.href);
-    url.searchParams.set('per_page', select.value);
-    window.history.replaceState({}, '', url.toString());
-    render();
-  });
-
-  sortSelect.addEventListener('change', function () {
-    currentPage = 1;
-    var url = new URL(window.location.href);
-    url.searchParams.set('sort', sortSelect.value);
-    window.history.replaceState({}, '', url.toString());
-    render();
-  });
-
-  // Apply saved letter highlight on load
-  updateLetterButtons();
+  // ── Init ───────────────────────────────────────────────────────────────────
   render();
+
 })();
 </script>
 
