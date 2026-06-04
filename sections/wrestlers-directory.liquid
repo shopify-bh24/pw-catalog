@@ -1,29 +1,11 @@
 <div class="page-width" style="padding: 20px 0;">
-  
-  <!-- Sorting Controls -->
-  <div class="sort-controls" style="margin-bottom: 20px;">
-    <label for="sort-selector" style="font-weight: bold;">Sort by: </label>
-    <select id="sort-selector" style="padding: 5px; border-radius: 4px;">
-      <option value="name">Name (A-Z)</option>
-      <option value="count">Most Items</option>
-      <option value="updated">Recently Updated</option>
-    </select>
-  </div>
-
-  <!-- Wrestler Grid with ID for JavaScript -->
-  <div class="wrestler-grid" id="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+  <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
     
     {% for entry in metaobjects.collection_mapping.values %}
       {%- assign collection_handle = entry.wrestler_collection -%}
       {%- assign target_collection = collections[collection_handle] -%}
       
-      <!-- Cards with data attributes for sorting -->
-      <div class="wrestler-card" 
-           data-name="{{ entry.wrestler_name | escape }}" 
-           data-count="{{ target_collection.all_products_count }}" 
-           data-updated="{{ target_collection.updated_at | date: '%s' }}"
-           style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px; text-align: center;">
-        
+      <div class="wrestler-card" style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px; text-align: center;">
         <a href="{{ target_collection.url }}">
           {% if target_collection.featured_image != blank %}
             <img src="{{ target_collection.featured_image | image_url: width: 400 }}" 
@@ -43,36 +25,9 @@
         </p>
       </div>
     {% endfor %}
+
   </div>
 </div>
-
-<!-- Sorting Script -->
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const selector = document.getElementById('sort-selector');
-    const grid = document.getElementById('wrestler-grid');
-    
-    selector.addEventListener('change', (e) => {
-      const sortBy = e.target.value;
-      const cards = Array.from(grid.querySelectorAll('.wrestler-card'));
-
-      cards.sort((a, b) => {
-        let valA = a.dataset[sortBy];
-        let valB = b.dataset[sortBy];
-
-        if (sortBy === 'name') {
-          return valA.localeCompare(valB);
-        } else {
-          // Sort numbers (count and date) in descending order
-          return parseInt(valB) - parseInt(valA);
-        }
-      });
-
-      // Re-append cards to grid in new order
-      cards.forEach(card => grid.appendChild(card));
-    });
-  });
-</script>
 
 {% schema %}
 {
