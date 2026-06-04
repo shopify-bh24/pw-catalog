@@ -1,95 +1,148 @@
 <div class="page-width" style="padding: 20px 0;">
 
-  {%- assign per_page_param = request.url | split: 'per_page=' | last | split: '&' | first | plus: 0 -%}
-  {%- if per_page_param == 25 -%}{%- assign per_page = 25 -%}
-  {%- elsif per_page_param == 100 -%}{%- assign per_page = 100 -%}
-  {%- elsif per_page_param == 250 -%}{%- assign per_page = 250 -%}
-  {%- else -%}{%- assign per_page = 50 -%}
-  {%- endif -%}
+  {% comment %} Render ALL entries — JS handles pagination {% endcomment %}
+  {% paginate shop.metaobjects.collection_mapping.values by 1000 %}
 
-  {% case per_page %}
+    {% comment %} Controls bar {% endcomment %}
+    <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:20px; gap:10px;">
+      <label for="per-page-select" style="font-size:0.9em; color:#555;">Items per page:</label>
+      <select id="per-page-select" style="padding:6px 28px 6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer; appearance:none; background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\"); background-repeat:no-repeat; background-position:right 8px center;">
+        <option value="25">25</option>
+        <option value="50" selected>50</option>
+        <option value="100">100</option>
+        <option value="250">250</option>
+      </select>
+    </div>
 
-    {% when 25 %}{% paginate shop.metaobjects.collection_mapping.values by 25 %}
-      {% assign active_per_page = 25 %}
-      {% assign paginate_obj = paginate %}
-      <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:20px;gap:10px;">
-        <label for="per-page-select" style="font-size:0.9em;color:#555;">Items per page:</label>
-        <select id="per-page-select" onchange="var u=new URL(window.location.href);u.searchParams.set('per_page',this.value);u.searchParams.delete('page');window.location.href=u.toString();" style="padding:6px 28px 6px 10px;border:1px solid #d1d1d1;border-radius:6px;font-size:0.9em;background:#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\") no-repeat right 8px center;cursor:pointer;appearance:none;">
-          <option value="25" selected>25</option><option value="50">50</option><option value="100">100</option><option value="250">250</option>
-        </select>
-      </div>
-      <div class="wrestler-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;">
-        {% for entry in shop.metaobjects.collection_mapping.values %}{%- assign ch = entry.wrestler_collection.value | strip -%}{%- assign tc = collections[ch] -%}
-          <div class="wrestler-card" style="border:1px solid #e1e1e1;padding:15px;border-radius:8px;text-align:center;">
-            <a href="{{ tc.url | default: '#' }}">{% if tc.featured_image != blank %}<img src="{{ tc.featured_image | image_url: width: 400 }}" alt="{{ tc.title | escape }}" loading="lazy" style="width:100%;height:250px;object-fit:cover;border-radius:4px;">{% else %}<div style="height:250px;background:#f4f4f4;display:flex;align-items:center;justify-content:center;border-radius:4px;">No Image</div>{% endif %}</a>
-            <h3 style="margin:15px 0 5px;font-size:1.2em;">{{ entry.wrestler_name }}</h3>
-            <p style="margin:0;font-size:0.9em;color:#666;"><a href="{{ tc.url | default: '#' }}" style="color:#666;text-decoration:none;">{{ tc.all_products_count | default: 0 }} Items</a></p>
-          </div>
-        {% endfor %}
-      </div>
-      {% if paginate.pages > 1 %}<div class="pagination" style="text-align:center;margin-top:30px;">{{ paginate | default_pagination }}</div>{% endif %}
-    {% endpaginate %}
+    {% comment %} Grid — all cards rendered, JS shows/hides {% endcomment %}
+    <div id="wrestler-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px;">
+      {% for entry in shop.metaobjects.collection_mapping.values %}
+        {%- assign collection_handle = entry.wrestler_collection.value | strip -%}
+        {%- assign target_collection = collections[collection_handle] -%}
+        <div class="wrestler-card" style="border:1px solid #e1e1e1; padding:15px; border-radius:8px; text-align:center;">
+          <a href="{{ target_collection.url | default: '#' }}">
+            {% if target_collection.featured_image != blank %}
+              <img src="{{ target_collection.featured_image | image_url: width: 400 }}"
+                   alt="{{ target_collection.title | escape }}"
+                   loading="lazy"
+                   style="width:100%; height:250px; object-fit:cover; border-radius:4px;">
+            {% else %}
+              <div style="height:250px; background:#f4f4f4; display:flex; align-items:center; justify-content:center; border-radius:4px;">No Image</div>
+            {% endif %}
+          </a>
+          <h3 style="margin:15px 0 5px; font-size:1.2em;">{{ entry.wrestler_name }}</h3>
+          <p style="margin:0; font-size:0.9em; color:#666;">
+            <a href="{{ target_collection.url | default: '#' }}" style="color:#666; text-decoration:none;">
+              {{ target_collection.all_products_count | default: 0 }} Items
+            </a>
+          </p>
+        </div>
+      {% endfor %}
+    </div>
 
-    {% when 100 %}{% paginate shop.metaobjects.collection_mapping.values by 100 %}
-      <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:20px;gap:10px;">
-        <label for="per-page-select" style="font-size:0.9em;color:#555;">Items per page:</label>
-        <select id="per-page-select" onchange="var u=new URL(window.location.href);u.searchParams.set('per_page',this.value);u.searchParams.delete('page');window.location.href=u.toString();" style="padding:6px 28px 6px 10px;border:1px solid #d1d1d1;border-radius:6px;font-size:0.9em;background:#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\") no-repeat right 8px center;cursor:pointer;appearance:none;">
-          <option value="25">25</option><option value="50">50</option><option value="100" selected>100</option><option value="250">250</option>
-        </select>
-      </div>
-      <div class="wrestler-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;">
-        {% for entry in shop.metaobjects.collection_mapping.values %}{%- assign ch = entry.wrestler_collection.value | strip -%}{%- assign tc = collections[ch] -%}
-          <div class="wrestler-card" style="border:1px solid #e1e1e1;padding:15px;border-radius:8px;text-align:center;">
-            <a href="{{ tc.url | default: '#' }}">{% if tc.featured_image != blank %}<img src="{{ tc.featured_image | image_url: width: 400 }}" alt="{{ tc.title | escape }}" loading="lazy" style="width:100%;height:250px;object-fit:cover;border-radius:4px;">{% else %}<div style="height:250px;background:#f4f4f4;display:flex;align-items:center;justify-content:center;border-radius:4px;">No Image</div>{% endif %}</a>
-            <h3 style="margin:15px 0 5px;font-size:1.2em;">{{ entry.wrestler_name }}</h3>
-            <p style="margin:0;font-size:0.9em;color:#666;"><a href="{{ tc.url | default: '#' }}" style="color:#666;text-decoration:none;">{{ tc.all_products_count | default: 0 }} Items</a></p>
-          </div>
-        {% endfor %}
-      </div>
-      {% if paginate.pages > 1 %}<div class="pagination" style="text-align:center;margin-top:30px;">{{ paginate | default_pagination }}</div>{% endif %}
-    {% endpaginate %}
+    {% comment %} JS-powered pagination controls {% endcomment %}
+    <div id="pagination-controls" style="text-align:center; margin-top:30px; display:flex; justify-content:center; gap:6px; flex-wrap:wrap;"></div>
 
-    {% when 250 %}{% paginate shop.metaobjects.collection_mapping.values by 250 %}
-      <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:20px;gap:10px;">
-        <label for="per-page-select" style="font-size:0.9em;color:#555;">Items per page:</label>
-        <select id="per-page-select" onchange="var u=new URL(window.location.href);u.searchParams.set('per_page',this.value);u.searchParams.delete('page');window.location.href=u.toString();" style="padding:6px 28px 6px 10px;border:1px solid #d1d1d1;border-radius:6px;font-size:0.9em;background:#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\") no-repeat right 8px center;cursor:pointer;appearance:none;">
-          <option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="250" selected>250</option>
-        </select>
-      </div>
-      <div class="wrestler-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;">
-        {% for entry in shop.metaobjects.collection_mapping.values %}{%- assign ch = entry.wrestler_collection.value | strip -%}{%- assign tc = collections[ch] -%}
-          <div class="wrestler-card" style="border:1px solid #e1e1e1;padding:15px;border-radius:8px;text-align:center;">
-            <a href="{{ tc.url | default: '#' }}">{% if tc.featured_image != blank %}<img src="{{ tc.featured_image | image_url: width: 400 }}" alt="{{ tc.title | escape }}" loading="lazy" style="width:100%;height:250px;object-fit:cover;border-radius:4px;">{% else %}<div style="height:250px;background:#f4f4f4;display:flex;align-items:center;justify-content:center;border-radius:4px;">No Image</div>{% endif %}</a>
-            <h3 style="margin:15px 0 5px;font-size:1.2em;">{{ entry.wrestler_name }}</h3>
-            <p style="margin:0;font-size:0.9em;color:#666;"><a href="{{ tc.url | default: '#' }}" style="color:#666;text-decoration:none;">{{ tc.all_products_count | default: 0 }} Items</a></p>
-          </div>
-        {% endfor %}
-      </div>
-      {% if paginate.pages > 1 %}<div class="pagination" style="text-align:center;margin-top:30px;">{{ paginate | default_pagination }}</div>{% endif %}
-    {% endpaginate %}
-
-    {% else %}{% paginate shop.metaobjects.collection_mapping.values by 50 %}
-      <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:20px;gap:10px;">
-        <label for="per-page-select" style="font-size:0.9em;color:#555;">Items per page:</label>
-        <select id="per-page-select" onchange="var u=new URL(window.location.href);u.searchParams.set('per_page',this.value);u.searchParams.delete('page');window.location.href=u.toString();" style="padding:6px 28px 6px 10px;border:1px solid #d1d1d1;border-radius:6px;font-size:0.9em;background:#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\") no-repeat right 8px center;cursor:pointer;appearance:none;">
-          <option value="25">25</option><option value="50" selected>50</option><option value="100">100</option><option value="250">250</option>
-        </select>
-      </div>
-      <div class="wrestler-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;">
-        {% for entry in shop.metaobjects.collection_mapping.values %}{%- assign ch = entry.wrestler_collection.value | strip -%}{%- assign tc = collections[ch] -%}
-          <div class="wrestler-card" style="border:1px solid #e1e1e1;padding:15px;border-radius:8px;text-align:center;">
-            <a href="{{ tc.url | default: '#' }}">{% if tc.featured_image != blank %}<img src="{{ tc.featured_image | image_url: width: 400 }}" alt="{{ tc.title | escape }}" loading="lazy" style="width:100%;height:250px;object-fit:cover;border-radius:4px;">{% else %}<div style="height:250px;background:#f4f4f4;display:flex;align-items:center;justify-content:center;border-radius:4px;">No Image</div>{% endif %}</a>
-            <h3 style="margin:15px 0 5px;font-size:1.2em;">{{ entry.wrestler_name }}</h3>
-            <p style="margin:0;font-size:0.9em;color:#666;"><a href="{{ tc.url | default: '#' }}" style="color:#666;text-decoration:none;">{{ tc.all_products_count | default: 0 }} Items</a></p>
-          </div>
-        {% endfor %}
-      </div>
-      {% if paginate.pages > 1 %}<div class="pagination" style="text-align:center;margin-top:30px;">{{ paginate | default_pagination }}</div>{% endif %}
-    {% endpaginate %}
-
-  {% endcase %}
-
+  {% endpaginate %}
 </div>
+
+<script>
+(function () {
+  var cards = Array.from(document.querySelectorAll('#wrestler-grid .wrestler-card'));
+  var select = document.getElementById('per-page-select');
+  var controls = document.getElementById('pagination-controls');
+  var currentPage = 1;
+
+  // Restore per_page from URL on load
+  var params = new URLSearchParams(window.location.search);
+  var savedPerPage = parseInt(params.get('per_page'));
+  if ([25, 50, 100, 250].indexOf(savedPerPage) !== -1) {
+    select.value = savedPerPage;
+  }
+
+  function getPerPage() {
+    return parseInt(select.value);
+  }
+
+  function render() {
+    var perPage = getPerPage();
+    var totalPages = Math.ceil(cards.length / perPage);
+    if (currentPage > totalPages) currentPage = 1;
+
+    var start = (currentPage - 1) * perPage;
+    var end = start + perPage;
+
+    cards.forEach(function (card, i) {
+      card.style.display = (i >= start && i < end) ? '' : 'none';
+    });
+
+    renderControls(totalPages);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function renderControls(totalPages) {
+    controls.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    var btnStyle = 'padding:7px 13px; border:1px solid #d1d1d1; border-radius:5px; background:#fff; cursor:pointer; font-size:0.9em; color:#333; text-decoration:none; display:inline-block;';
+    var activeStyle = 'padding:7px 13px; border:1px solid #333; border-radius:5px; background:#333; cursor:default; font-size:0.9em; color:#fff; display:inline-block;';
+
+    // Prev
+    if (currentPage > 1) {
+      var prev = document.createElement('a');
+      prev.href = '#'; prev.innerHTML = '&laquo; Prev'; prev.style.cssText = btnStyle;
+      prev.addEventListener('click', function(e){ e.preventDefault(); currentPage--; render(); });
+      controls.appendChild(prev);
+    }
+
+    // Page numbers with ellipsis
+    var pages = [];
+    for (var i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+        pages.push(i);
+      }
+    }
+
+    var last = 0;
+    pages.forEach(function(p) {
+      if (last && p - last > 1) {
+        var dots = document.createElement('span');
+        dots.textContent = '…';
+        dots.style.cssText = 'padding:7px 6px; font-size:0.9em; color:#999;';
+        controls.appendChild(dots);
+      }
+      var btn = document.createElement('a');
+      btn.href = '#'; btn.textContent = p;
+      btn.style.cssText = (p === currentPage) ? activeStyle : btnStyle;
+      if (p !== currentPage) {
+        btn.addEventListener('click', (function(pg){ return function(e){ e.preventDefault(); currentPage = pg; render(); }; })(p));
+      }
+      controls.appendChild(btn);
+      last = p;
+    });
+
+    // Next
+    if (currentPage < totalPages) {
+      var next = document.createElement('a');
+      next.href = '#'; next.innerHTML = 'Next &raquo;'; next.style.cssText = btnStyle;
+      next.addEventListener('click', function(e){ e.preventDefault(); currentPage++; render(); });
+      controls.appendChild(next);
+    }
+  }
+
+  // Per-page change: reset to page 1, update URL param
+  select.addEventListener('change', function () {
+    currentPage = 1;
+    var url = new URL(window.location.href);
+    url.searchParams.set('per_page', select.value);
+    window.history.replaceState({}, '', url.toString());
+    render();
+  });
+
+  // Initial render
+  render();
+})();
+</script>
 
 {% schema %}
 {
