@@ -1,46 +1,39 @@
-<div class="page-width" style="padding: 20px 0;">
-  <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-    
-    {% paginate metaobjects.collection_mapping.values by 1000 %}
-      {% for entry in metaobjects.collection_mapping.values %}
-        
-        {%- assign collection_handle = entry.wrestler_collection -%}
-        {%- assign target_collection = collections[collection_handle] -%}
-        
-        <div class="wrestler-card" style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px; text-align: center;">
-          
-          <a href="{{ target_collection.url }}">
-            {% if target_collection.featured_image != blank %}
-              <img src="{{ target_collection.featured_image | image_url: width: 400 }}" 
-                   alt="{{ target_collection.title | escape }}" 
-                   style="width: 100%; height: 250px; object-fit: cover; border-radius: 4px;">
-            {% else %}
-              <div style="height: 250px; background: #f4f4f4; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>
-            {% endif %}
-          </a>
-
-          <h3 style="margin: 15px 0 5px; font-size: 1.2em;">{{ entry.wrestler_name }}</h3>
-          
-          <p style="margin: 0; font-size: 0.9em; color: #666;">
-            <a href="{{ target_collection.url }}" style="color: #666; text-decoration: none;">
-              {{ target_collection.all_products_count }} Items
-            </a>
-          </p>
-        </div>
-      {% endfor %}
-    {% endpaginate %}
-
-  </div>
+{%- comment -%} Your HTML elements here {%- endcomment -%}
+<div id="wrestler-container"></div>
+<div id="wrestler-pagination">
+  <button id="prev-btn">Prev</button>
+  <span id="page-info"></span>
+  <button id="next-btn">Next</button>
 </div>
+<script type="application/json" id="wrestler-data">
+  {{ section.settings.your_data_field | json }}
+</script>
 
-{% schema %}
-{
-  "name": "Wrestler List",
-  "settings": [],
-  "presets": [
-    {
-      "name": "Wrestler List"
+{%- comment -%} 
+  This script is now local to this section. 
+  It will only be rendered when this section is actually on the page.
+{%- endcomment -%}
+<script>
+  (function() {
+    const container = document.getElementById('wrestler-container');
+    const dataElement = document.getElementById('wrestler-data');
+    
+    // Safety check just in case
+    if (!container || !dataElement) return;
+
+    const data = JSON.parse(dataElement.textContent);
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const pageInfo = document.getElementById('page-info');
+
+    let currentPage = 1;
+    const itemsPerPage = 50;
+
+    function render() {
+      // ... your render logic remains the same ...
     }
-  ]
-}
-{% endschema %}
+
+    // Event listeners...
+    render();
+  })();
+</script>
