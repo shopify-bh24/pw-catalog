@@ -1,12 +1,12 @@
 <section class="page-width random-collections-any">
-  {% comment %} Added dynamic count next to the heading {% endcomment %}
   <h2 class="title">
     {{ section.settings.heading }} 
     <span style="font-size: 0.8em; opacity: 0.7;">({{ shop.metaobjects.collection_mapping.values.size }})</span>
   </h2>
   
   <div class="any-random-grid" id="random-collections-container">
-    {% paginate shop.metaobjects.collection_mapping.values by 1000 %}
+    {% comment %} Dynamically setting the limit to the total number of entries {% endcomment %}
+    {% paginate shop.metaobjects.collection_mapping.values by shop.metaobjects.collection_mapping.values.size %}
       {% for entry in shop.metaobjects.collection_mapping.values %}
         {% assign col_handle = entry.wrestler_collection.value | strip %}
         {% assign target = collections[col_handle] %}
@@ -37,10 +37,8 @@
         [allData[i], allData[j]] = [allData[j], allData[i]];
     }
     
-    // Select 8 random items
     const selected = allData.slice(0, 8);
     
-    // Build HTML
     let html = '';
     selected.forEach(item => {
       html += `
@@ -56,19 +54,3 @@
     container.innerHTML = html;
   });
 </script>
-
-<style>
-  .random-collections-any .any-random-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 20px !important; margin-top: 20px !important; }
-  @media screen and (max-width: 749px) { .random-collections-any .any-random-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-  .random-collections-any .rc-item { text-align: center; }
-  .random-collections-any .rc-item img { width: 100% !important; aspect-ratio: 1 / 1 !important; object-fit: cover !important; border-radius: 8px !important; display: block !important; }
-  .random-collections-any .rc-item h3 { margin-top: 10px; font-size: 1.1rem; }
-</style>
-
-{% schema %}
-{
-  "name": "Mapped Collections Random",
-  "settings": [ { "type": "text", "id": "heading", "label": "Heading", "default": "Random Wrestlers" } ],
-  "presets": [{ "name": "Mapped Collections Random" }]
-}
-{% endschema %}
