@@ -22,6 +22,15 @@
 
     </div>
 
+    {% comment %} Letter index {% endcomment %}
+    <div id="letter-index" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:20px;">
+      <a href="#" data-letter="all" class="letter-btn" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:5px; font-size:0.85em; color:#333; text-decoration:none; background:#333; color:#fff;">All</a>
+      {% assign letters = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' %}
+      {% for letter in letters %}
+        <a href="#" data-letter="{{ letter | downcase }}" class="letter-btn" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:5px; font-size:0.85em; color:#333; text-decoration:none; background:#fff;">{{ letter }}</a>
+      {% endfor %}
+    </div>
+
     <div id="wrestler-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px;">
       {% for entry in shop.metaobjects.collection_mapping.values %}
         {%- assign collection_handle = entry.wrestler_collection.value | strip -%}
@@ -58,39 +67,67 @@
 <script>
 (function () {
   var grid = document.getElementById('wrestler-grid');
-  var cards = Array.from(grid.querySelectorAll('.wrestler-card'));
+  var allCards = Array.from(grid.querySelectorAll('.wrestler-card'));
+  var cards = allCards.slice();
   var select = document.getElementById('per-page-select');
   var sortSelect = document.getElementById('sort-select');
   var controls = document.getElementById('pagination-controls');
+  var letterBtns = Array.from(document.querySelectorAll('.letter-btn'));
   var currentPage = 1;
+  var activeLetter = 'all';
 
+  var btnStyle = 'padding:7px 13px; border:1px solid #d1d1d1; border-radius:5px; background:#fff; cursor:pointer; font-size:0.9em; color:#333; text-decoration:none; display:inline-block;';
+  var activeStyle = 'padding:7px 13px; border:1px solid #333; border-radius:5px; background:#333; cursor:default; font-size:0.9em; color:#fff; display:inline-block;';
+  var letterDefault = 'padding:6px 10px; border:1px solid #d1d1d1; border-radius:5px; font-size:0.85em; color:#333; text-decoration:none; background:#fff;';
+  var letterActive = 'padding:6px 10px; border:1px solid #333; border-radius:5px; font-size:0.85em; color:#fff; text-decoration:none; background:#333;';
+
+  // Restore from URL
   var params = new URLSearchParams(window.location.search);
   var savedPerPage = parseInt(params.get('per_page'));
-  if ([25, 50, 100, 250].indexOf(savedPerPage) !== -1) {
-    select.value = savedPerPage;
-  }
+  if ([25, 50, 100, 250].indexOf(savedPerPage) !== -1) select.value = savedPerPage;
   var savedSort = params.get('sort');
   if (savedSort) sortSelect.value = savedSort;
+  var savedLetter = params.get('letter');
+  if (savedLetter) activeLetter = savedLetter;
 
   function getPerPage() { return parseInt(select.value); }
   function getSort() { return sortSelect.value; }
 
-  function sortCards() {
-    var sorted = cards.slice().sort(function(a, b) {
+  function updateLetterButtons() {
+    letterBtns.forEach(function(btn) {
+      btn.style.cssText = (btn.dataset.letter === activeLetter) ? letterActive : letterDefault;
+    });
+  }
+
+  function filterAndSort() {
+    // Filter by letter
+    if (activeLetter === 'all') {
+      cards = allCards.slice();
+    } else {
+      cards = allCards.filter(function(card) {
+        return card.dataset.name.charAt(0) === activeLetter;
+      });
+    }
+
+    // Sort
+    cards.sort(function(a, b) {
       switch (getSort()) {
-        case 'az':   return a.dataset.name.localeCompare(b.dataset.name);
-        case 'za':   return b.dataset.name.localeCompare(a.dataset.name);
-        case 'most': return parseInt(b.dataset.count) - parseInt(a.dataset.count);
-        case 'least':return parseInt(a.dataset.count) - parseInt(b.dataset.count);
-        default:     return 0;
+        case 'az':    return a.dataset.name.localeCompare(b.dataset.name);
+        case 'za':    return b.dataset.name.localeCompare(a.dataset.name);
+        case 'most':  return parseInt(b.dataset.count) - parseInt(a.dataset.count);
+        case 'least': return parseInt(a.dataset.count) - parseInt(b.dataset.count);
+        default:      return 0;
       }
     });
-    sorted.forEach(function(card) { grid.appendChild(card); });
-    cards = sorted;
+
+    // Re-append all cards; filtered-out ones get hidden via display:none below
+    allCards.forEach(function(card) { grid.appendChild(card); });
   }
 
   function render() {
-    sortCards();
+    filterAndSort();
+    updateLetterButtons();
+
     var perPage = getPerPage();
     var totalPages = Math.ceil(cards.length / perPage);
     if (currentPage > totalPages) currentPage = 1;
@@ -98,7 +135,9 @@
     var start = (currentPage - 1) * perPage;
     var end = start + perPage;
 
-    cards.forEach(function (card, i) {
+    // Hide all first, then show only current page of filtered+sorted cards
+    allCards.forEach(function(card) { card.style.display = 'none'; });
+    cards.forEach(function(card, i) {
       card.style.display = (i >= start && i < end) ? '' : 'none';
     });
 
@@ -109,9 +148,6 @@
   function renderControls(totalPages) {
     controls.innerHTML = '';
     if (totalPages <= 1) return;
-
-    var btnStyle = 'padding:7px 13px; border:1px solid #d1d1d1; border-radius:5px; background:#fff; cursor:pointer; font-size:0.9em; color:#333; text-decoration:none; display:inline-block;';
-    var activeStyle = 'padding:7px 13px; border:1px solid #333; border-radius:5px; background:#333; cursor:default; font-size:0.9em; color:#fff; display:inline-block;';
 
     if (currentPage > 1) {
       var prev = document.createElement('a');
@@ -153,6 +189,24 @@
     }
   }
 
+  // Letter index clicks
+  letterBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      activeLetter = btn.dataset.letter;
+      currentPage = 1;
+      // Snap to A→Z when a specific letter is chosen
+      if (activeLetter !== 'all') {
+        sortSelect.value = 'az';
+      }
+      var url = new URL(window.location.href);
+      url.searchParams.set('letter', activeLetter);
+      url.searchParams.set('sort', sortSelect.value);
+      window.history.replaceState({}, '', url.toString());
+      render();
+    });
+  });
+
   select.addEventListener('change', function () {
     currentPage = 1;
     var url = new URL(window.location.href);
@@ -169,6 +223,8 @@
     render();
   });
 
+  // Apply saved letter highlight on load
+  updateLetterButtons();
   render();
 })();
 </script>
