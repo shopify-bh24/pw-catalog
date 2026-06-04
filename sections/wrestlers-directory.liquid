@@ -1,42 +1,73 @@
 <div class="page-width" style="padding: 20px 0;">
-  <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+  
+  <div class="sort-controls" style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
+    <select id="sort-selector" style="padding: 8px;">
+      <option value="name">Name</option>
+      <option value="count">Most Items</option>
+      <option value="updated">Recently Updated</option>
+    </select>
+    <button id="sort-direction" data-dir="desc" style="padding: 8px 15px; cursor: pointer;">Sort: High/Latest</button>
+  </div>
+
+  {% paginate metaobjects.collection_mapping.values by 50 %}
+  <div class="wrestler-grid" id="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
     
     {% for entry in metaobjects.collection_mapping.values %}
       {%- assign collection_handle = entry.wrestler_collection -%}
       {%- assign target_collection = collections[collection_handle] -%}
       
-      <div class="wrestler-card" style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px; text-align: center;">
+      <div class="wrestler-card" 
+           data-name="{{ entry.wrestler_name | escape }}" 
+           data-count="{{ target_collection.all_products_count | default: 0 }}" 
+           data-updated="{{ target_collection.updated_at | date: '%s' }}"
+           style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px; text-align: center;">
+        
         <a href="{{ target_collection.url }}">
           {% if target_collection.featured_image != blank %}
-            <img src="{{ target_collection.featured_image | image_url: width: 400 }}" 
-                 alt="{{ target_collection.title | escape }}" 
-                 style="width: 100%; height: 250px; object-fit: cover; border-radius: 4px;">
+            <img src="{{ target_collection.featured_image | image_url: width: 400 }}" alt="{{ target_collection.title | escape }}" style="width: 100%; height: 250px; object-fit: cover; border-radius: 4px;">
           {% else %}
             <div style="height: 250px; background: #f4f4f4; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>
           {% endif %}
         </a>
 
         <h3 style="margin: 15px 0 5px; font-size: 1.2em;">{{ entry.wrestler_name }}</h3>
-        
-        <p style="margin: 0; font-size: 0.9em; color: #666;">
-          <a href="{{ target_collection.url }}" style="color: #666; text-decoration: none;">
-            {{ target_collection.all_products_count }} Items
-          </a>
-        </p>
+        <p style="margin: 0; font-size: 0.9em; color: #666;">{{ target_collection.all_products_count }} Items</p>
       </div>
     {% endfor %}
-
   </div>
+
+  <div class="pagination" style="margin-top: 30px; text-align: center;">
+    {{ paginate | default_pagination }}
+  </div>
+  {% endpaginate %}
 </div>
 
-{% schema %}
-{
-  "name": "Wrestler List",
-  "settings": [],
-  "presets": [
-    {
-      "name": "Wrestler List"
-    }
-  ]
-}
-{% endschema %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const selector = document.getElementById('sort-selector');
+    const btnDir = document.getElementById('sort-direction');
+    const grid = document.getElementById('wrestler-grid');
+
+    const sortCards = () => {
+      const cards = Array.from(grid.querySelectorAll('.wrestler-card'));
+      const sortBy = selector.value;
+      const isDesc = btnDir.dataset.dir === 'desc';
+
+      cards.sort((a, b) => {
+        let valA = a.dataset[sortBy];
+        let valB = b.dataset[sortBy];
+        let res = (sortBy === 'name') ? valA.localeCompare(valB) : parseInt(valA) - parseInt(valB);
+        return isDesc ? res * -1 : res;
+      });
+
+      cards.forEach(card => grid.appendChild(card));
+    };
+
+    selector.addEventListener('change', sortCards);
+    btnDir.addEventListener('click', () => {
+      btnDir.dataset.dir = (btnDir.dataset.dir === 'desc') ? 'asc' : 'desc';
+      btnDir.innerText = (btnDir.dataset.dir === 'desc') ? 'Sort: High/Latest' : 'Sort: Low/Oldest';
+      sortCards();
+    });
+  });
+</script>
