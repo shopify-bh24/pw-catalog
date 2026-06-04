@@ -1,13 +1,44 @@
-{% layout none %}
-[
-  {% for entry in shop.metaobjects['collection_mapping'].values %}
+<div class="page-width" style="padding: 20px 0;">
+  <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+    
+    {% for entry in metaobjects.collection_mapping.values %}
+      {%- assign collection_handle = entry.wrestler_collection -%}
+      {%- assign target_collection = collections[collection_handle] -%}
+      
+      {% if target_collection != blank %}
+        <div class="wrestler-card" style="border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px; text-align: center;">
+          <a href="{{ target_collection.url }}">
+            {% if target_collection.featured_image != blank %}
+              <img src="{{ target_collection.featured_image | image_url: width: 400 }}" 
+                   alt="{{ target_collection.title | escape }}" 
+                   style="width: 100%; height: 250px; object-fit: cover; border-radius: 4px;">
+            {% else %}
+              <div style="height: 250px; background: #f4f4f4; display: flex; align-items: center; justify-content: center; border-radius: 4px;">No Image</div>
+            {% endif %}
+          </a>
+
+          <h3 style="margin: 15px 0 5px; font-size: 1.2em;">{{ entry.wrestler_name }}</h3>
+          
+          <p style="margin: 0; font-size: 0.9em; color: #666;">
+            <a href="{{ target_collection.url }}" style="color: #666; text-decoration: none;">
+              {{ target_collection.all_products_count }} Items
+            </a>
+          </p>
+        </div>
+      {% endif %}
+    {% endfor %}
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Wrestler List",
+  "settings": [],
+  "presets": [
     {
-      "name": "{{ entry.wrestler_collection.value | collection_handle }}",
-      "title": "{{ collections[entry.wrestler_collection.value].title | escape }}",
-      "url": "{{ collections[entry.wrestler_collection.value].url }}",
-      "image": "{{ collections[entry.wrestler_collection.value].featured_image | image_url: width: 400 }}",
-      "count": {{ collections[entry.wrestler_collection.value].products_count | default: 0 }}
-    }{% unless forloop.last %},{% endunless %}
-  {% endfor %}
-]
-{% schema %} {"name": "Data Feed"} {% endschema %}
+      "name": "Wrestler List"
+    }
+  ]
+}
+{% endschema %}
