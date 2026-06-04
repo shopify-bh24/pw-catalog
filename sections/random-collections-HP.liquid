@@ -1,5 +1,9 @@
 <section class="page-width random-collections-any">
-  <h2 class="title">{{ section.settings.heading }}</h2>
+  {% comment %} Added dynamic count next to the heading {% endcomment %}
+  <h2 class="title">
+    {{ section.settings.heading }} 
+    <span style="font-size: 0.8em; opacity: 0.7;">({{ shop.metaobjects.collection_mapping.values.size }})</span>
+  </h2>
   
   <div class="any-random-grid" id="random-collections-container">
     {% paginate shop.metaobjects.collection_mapping.values by 1000 %}
@@ -25,15 +29,18 @@
     const container = document.getElementById('random-collections-container');
     const allData = Array.from(document.querySelectorAll('.rc-item-data'));
     
+    if (allData.length === 0) return;
+
     // Fisher-Yates Shuffle
     for (let i = allData.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [allData[i], allData[j]] = [allData[j], allData[i]];
     }
     
+    // Select 8 random items
     const selected = allData.slice(0, 8);
     
-    // Build HTML with the format: Name (Number items)
+    // Build HTML
     let html = '';
     selected.forEach(item => {
       html += `
