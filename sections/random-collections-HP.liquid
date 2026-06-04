@@ -2,7 +2,7 @@
   <h2 class="title">{{ section.settings.heading }}</h2>
   
   <div class="any-random-grid" id="random-collections-container">
-    {% paginate shop.metaobjects.collection_mapping.values by 1500 %}
+    {% paginate shop.metaobjects.collection_mapping.values by 1000 %}
       {% for entry in shop.metaobjects.collection_mapping.values %}
         {% assign col_handle = entry.wrestler_collection.value | strip %}
         {% assign target = collections[col_handle] %}
