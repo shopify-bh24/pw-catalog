@@ -4,7 +4,7 @@
   {%- assign offset = page | minus: 1 | times: limit -%}
 
   <div class="controls-container" style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-    <select onchange="window.location.href = '?limit=' + this.value + '&page=1';" style="padding: 5px;">
+    <select onchange="window.location.href = '{{ request.path }}?limit=' + this.value + '&page=1';" style="padding: 5px;">
       <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
       <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
       <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
@@ -13,8 +13,6 @@
   </div>
 
   <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-    
-    {% comment %} We loop through all, but use 'limit' and 'offset' to show only the right ones {% endcomment %}
     {% for entry in shop.metaobjects.collection_mapping.values limit: limit offset: offset %}
       {%- assign collection_handle = entry.wrestler_collection.value | strip -%}
       {%- assign target_collection = collections[collection_handle] -%}
@@ -33,13 +31,14 @@
     {% endfor %}
   </div>
 
-  {% comment %} Manual Pagination Links {% endcomment %}
   <div class="pagination" style="text-align: center; margin-top: 30px;">
     {% assign total_items = shop.metaobjects.collection_mapping.values.size %}
-    {% assign total_pages = total_items | divided_by: limit | plus: 1 %}
+    {% assign total_pages = total_items | divided_by: limit %}
+    {% assign remainder = total_items | modulo: limit %}
+    {% if remainder > 0 %}{% assign total_pages = total_pages | plus: 1 %}{% endif %}
     
     {% for i in (1..total_pages) %}
-      <a href="?limit={{ limit }}&page={{ i }}" style="margin: 0 5px; {% if i == page %}font-weight:bold;{% endif %}">{{ i }}</a>
+      <a href="{{ request.path }}?limit={{ limit }}&page={{ i }}" style="margin: 0 8px; text-decoration: none; {% if i == page %}font-weight:bold; color:black;{% else %}color:blue;{% endif %}">{{ i }}</a>
     {% endfor %}
   </div>
 </div>
