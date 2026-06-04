@@ -4,34 +4,36 @@
 
     {% comment %} Sticky controls bar {% endcomment %}
     <div id="sticky-controls" style="position:sticky; top:0; z-index:100; background:#fff; padding:10px 0; border-bottom:1px solid #e1e1e1; margin-bottom:20px;">
-      
-      {% comment %} Dropdowns row {% endcomment %}
-      <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
-        <label for="sort-select" style="font-size:0.9em; color:#555;">Sort by:</label>
-        <select id="sort-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
-          <option value="az">A → Z</option>
-          <option value="za">Z → A</option>
-          <option value="most">Most Products</option>
-          <option value="least">Fewest Products</option>
-        </select>
-        <label for="per-page-select" style="font-size:0.9em; color:#555;">Items per page:</label>
-        <select id="per-page-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
-          <option value="25">25</option>
-          <option value="50" selected>50</option>
-          <option value="100">100</option>
-          <option value="250">250</option>
-        </select>
-      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+        
+        {% comment %} Left: Letter index {% endcomment %}
+        <div id="letter-index" style="display:flex; flex-wrap:wrap; gap:3px; font-size:0.8em;">
+          <a href="#" data-letter="all" class="letter-btn" style="padding:4px 8px; border:1px solid #333; border-radius:4px; color:#fff; background:#333; text-decoration:none; font-weight:bold;">All</a>
+          {% assign letters = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' %}
+          {% for letter in letters %}
+            <a href="#" data-letter="{{ letter | downcase }}" class="letter-btn" style="padding:4px 8px; border:1px solid #d1d1d1; border-radius:4px; color:#333; background:#fff; text-decoration:none;">{{ letter }}</a>
+          {% endfor %}
+        </div>
 
-      {% comment %} Letter index row {% endcomment %}
-      <div id="letter-index" style="display:flex; flex-wrap:wrap; gap:3px; font-size:0.8em;">
-        <a href="#" data-letter="all" class="letter-btn" style="padding:3px 7px; border:1px solid #333; border-radius:4px; color:#fff; background:#333; text-decoration:none;">All</a>
-        {% assign letters = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' %}
-        {% for letter in letters %}
-          <a href="#" data-letter="{{ letter | downcase }}" class="letter-btn" style="padding:3px 7px; border:1px solid #d1d1d1; border-radius:4px; color:#333; background:#fff; text-decoration:none;">{{ letter }}</a>
-        {% endfor %}
-      </div>
+        {% comment %} Right: Dropdowns {% endcomment %}
+        <div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
+          <label for="sort-select" style="font-size:0.9em; color:#555;">Sort by:</label>
+          <select id="sort-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
+            <option value="most">Most Products</option>
+            <option value="least">Fewest Products</option>
+          </select>
+          <label for="per-page-select" style="font-size:0.9em; color:#555;">Items per page:</label>
+          <select id="per-page-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+          </select>
+        </div>
 
+      </div>
     </div>
 
     {% comment %} Grid {% endcomment %}
@@ -90,6 +92,27 @@
   if ([25, 50, 100, 250].indexOf(pp) !== -1) ppSelect.value = pp;
   if (params.get('letter')) activeLetter = params.get('letter');
 
+  // Detect navbar height so sticky bar sits just below it
+  function getNavHeight() {
+    var selectors = ['header', '.header', '#header', '.site-header', '.navbar', '[role="banner"]'];
+    for (var i = 0; i < selectors.length; i++) {
+      var el = document.querySelector(selectors[i]);
+      if (el) {
+        var h = el.getBoundingClientRect().height;
+        if (h > 0) return Math.round(h);
+      }
+    }
+    return 0;
+  }
+
+  function applyNavOffset() {
+    var offset = getNavHeight();
+    document.getElementById('sticky-controls').style.top = offset + 'px';
+  }
+
+  applyNavOffset();
+  window.addEventListener('resize', applyNavOffset);
+
   function saveURL() {
     var u = new URL(window.location.href);
     u.searchParams.set('sort',     sortSelect.value);
@@ -104,6 +127,7 @@
       btn.style.background  = active ? '#333' : '#fff';
       btn.style.color       = active ? '#fff' : '#333';
       btn.style.borderColor = active ? '#333' : '#d1d1d1';
+      btn.style.fontWeight  = active ? 'bold' : 'normal';
     });
   }
 
