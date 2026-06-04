@@ -68,7 +68,6 @@
     },
     "1648731174892c9d62": {
       "type": "random-related-products",
-      "disabled": true,
       "settings": {
         "heading": "Random items from our 70K catalog!!",
         "products_to_show": 8,
