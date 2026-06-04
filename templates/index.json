@@ -82,9 +82,7 @@
     "random_collections_hp_iFDhPE": {
       "type": "random-collections-HP",
       "name": "Random Collections HP",
-      "settings": {
-        "heading": "Wrestlers"
-      }
+      "settings": {}
     }
   },
   "order": [
