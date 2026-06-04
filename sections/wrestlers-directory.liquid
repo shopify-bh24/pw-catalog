@@ -1,19 +1,12 @@
 <div class="page-width" style="padding: 20px 0;">
-  {%- assign limit = request.query_parameters.limit | default: 100 | plus: 0 -%}
-  
-  <div class="controls-container" style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-    <select onchange="window.location.href = '?limit=' + this.value;" style="padding: 5px;">
-      <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
-      <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
-      <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
-      <option value="250" {% if limit == 250 %}selected{% endif %}>250</option>
-    </select>
-  </div>
-
-  {% paginate shop.metaobjects.collection_mapping.values by limit %}
+  {% comment %} 
+    We paginate by 50 to ensure the page loads quickly. 
+    You can increase this to 100 if needed, but 50-100 is best for performance.
+  {% endcomment %}
+  {% paginate shop.metaobjects.collection_mapping.values by 100 %}
+    
     <div class="wrestler-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-      
-      {% for entry in paginate.collection %}
+      {% for entry in shop.metaobjects.collection_mapping.values %}
         {%- assign collection_handle = entry.wrestler_collection.value | strip -%}
         {%- assign target_collection = collections[collection_handle] -%}
         
@@ -29,6 +22,7 @@
             {% endif %}
           </a>
 
+          {% comment %} Using the wrestler_name field from your metaobject {% endcomment %}
           <h3 style="margin: 15px 0 5px; font-size: 1.2em;">{{ entry.wrestler_name }}</h3>
           
           <p style="margin: 0; font-size: 0.9em; color: #666;">
@@ -40,6 +34,7 @@
       {% endfor %}
     </div>
 
+    {% comment %} Add pagination links so users can see more than the first page {% endcomment %}
     {% if paginate.pages > 1 %}
       <div class="pagination" style="text-align: center; margin-top: 30px;">
         {{ paginate | default_pagination }}
@@ -52,6 +47,10 @@
 {
   "name": "Wrestler List",
   "settings": [],
-  "presets": [{ "name": "Wrestler List" }]
+  "presets": [
+    {
+      "name": "Wrestler List"
+    }
+  ]
 }
 {% endschema %}
