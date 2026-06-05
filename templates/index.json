@@ -52,6 +52,7 @@
     },
     "featured_products": {
       "type": "featured-collection",
+      "disabled": true,
       "settings": {
         "title": "Newest additions to PWCatalog:",
         "collection": "all",
@@ -70,19 +71,16 @@
       "type": "random-related-products",
       "settings": {
         "heading": "Random items from our 70K catalog!!",
-        "products_to_show": 8,
-        "image_ratio": "square",
-        "show_secondary_image": true,
-        "add_image_padding": false,
-        "show_image_outline": false,
-        "show_vendor": false,
-        "show_rating": false
+        "products_to_show": 8
       }
     },
     "random_collections_hp_iFDhPE": {
       "type": "random-collections-HP",
+      "disabled": true,
       "name": "Random Collections HP",
-      "settings": {}
+      "settings": {
+        "heading": "Random Wrestlers"
+      }
     }
   },
   "order": [
