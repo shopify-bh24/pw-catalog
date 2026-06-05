@@ -9,29 +9,14 @@
  */
 {
   "sections": {
-    "image_banner": {
-      "type": "image-banner",
-      "disabled": true,
-      "settings": {
-        "image": "shopify://shop_images/AEW-Action-Figures-Banner.jpg",
-        "image_height": "medium",
-        "adapt_height_first_image": false,
-        "desktop_text_box_position": "flex-end",
-        "show_text_box": true,
-        "image_overlay_opacity": 0,
-        "color_scheme": "background-1",
-        "stack_images_on_mobile": true,
-        "show_text_below": true
-      }
-    },
     "rich_text": {
       "type": "rich-text",
       "blocks": {
         "heading": {
           "type": "heading",
           "settings": {
-            "heading": "Welcome to PW Catalog, the world’s largest collection of professional wrestling merchandise and memorabilia.",
-            "heading_size": "h1"
+            "heading": "Welcome to PW Catalog, the world’s largest professional wrestling merchandise and memorabilia Database.",
+            "heading_size": "h2"
           }
         },
         "text": {
@@ -88,7 +73,6 @@
     }
   },
   "order": [
-    "image_banner",
     "rich_text",
     "featured_products",
     "1648731174892c9d62",
