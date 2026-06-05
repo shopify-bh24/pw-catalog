@@ -90,7 +90,7 @@
         "custom_liquid_49Gtb9": {
           "type": "custom_liquid",
           "settings": {
-            "custom_liquid": "{%- if product.collections.size > 0 -%}\n  <div class=\"product__collections\" style=\"margin-top: 1rem;\">\n    <p><strong>Wrestlers:</strong> \n      {%- for collection in product.collections -%}\n        <a href=\"{{ collection.url }}\">{{ collection.title }}</a>{%- unless forloop.last -%}, {%- endunless -%}\n      {%- endfor -%}\n    </p>\n  </div>\n{%- endif -%}"
+            "custom_liquid": "{%- comment %}\n  Debug: Lists all product collections and checks them against the metaobject\n{%- endcomment %}\n\n{%- assign wrestler_entries = shop.metaobjects.collection_mapping.values -%}\n\n<div class=\"product__collections\" style=\"margin-top: 1rem; border: 1px solid #ccc; padding: 10px;\">\n  <p><strong>Debug Collection Matches:</strong></p>\n  <ul>\n    {%- for collection in product.collections -%}\n      {%- assign is_found = false -%}\n      {%- assign col_handle = collection.handle | downcase | strip -%}\n      \n      {%- for entry in wrestler_entries -%}\n        {%- assign meta_handle = entry.wrestler_collection | downcase | strip -%}\n        {%- if col_handle == meta_handle -%}\n          {%- assign is_found = true -%}\n          {%- break -%}\n        {%- endif -%}\n      {%- endfor -%}\n\n      <li>\n        <strong>{{ collection.title }}</strong> (Handle: <code>{{ col_handle }}</code>) — \n        {%- if is_found -%}\n          <span style=\"color: green;\">[MATCH FOUND]</span>\n        {%- else -%}\n          <span style=\"color: red;\">[NO MATCH]</span>\n        {%- endif -%}\n      </li>\n    {%- endfor -%}\n  </ul>\n</div>"
           }
         },
         "6cbb7565-e804-46d2-8865-fc99c678574a": {
