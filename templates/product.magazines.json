@@ -90,7 +90,7 @@
         "custom_liquid_49Gtb9": {
           "type": "custom_liquid",
           "settings": {
-            "custom_liquid": "<div style=\"border: 1px solid #000; padding: 15px; margin: 10px 0; background: #fff;\">\n  <p><strong>Collection Debugger:</strong></p>\n  <ul>\n    {%- for collection in product.collections -%}\n      <li>\n        <strong>Title:</strong> {{ collection.title }}<br>\n        <strong>URL Handle:</strong> <code>{{ collection.handle }}</code>\n      </li>\n    {%- endfor -%}\n  </ul>\n</div>"
+            "custom_liquid": "wrestler-collection"
           }
         },
         "6cbb7565-e804-46d2-8865-fc99c678574a": {
