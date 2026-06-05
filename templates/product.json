@@ -130,6 +130,13 @@
         "enable_video_looping": false
       }
     },
+    "custom_liquid_etpATj": {
+      "type": "custom-liquid",
+      "name": "t:sections.custom-liquid.presets.name",
+      "settings": {
+        "custom_liquid": "{%- comment %}\n  Logic: \n  1. Iterate through the product's assigned collections.\n  2. Check if that collection exists in the 'collection_mapping' metaobject.\n  3. Output only those that match.\n{%- endcomment %}\n\n{%- assign wrestler_entries = shop.metaobjects.collection_mapping.values -%}\n{%- assign found_links = '' -%}\n\n{%- for collection in product.collections -%}\n  {%- for entry in wrestler_entries -%}\n    {%- if entry.wrestler_collection.value.handle == collection.handle -%}\n      {%- capture link -%}\n        <a href=\"{{ collection.url }}\">{{ entry.wrestler_name }}</a>\n      {%- endcapture -%}\n      {%- assign found_links = found_links | append: link | append: ', ' -%}\n    {%- endif -%}\n  {%- endfor -%}\n{%- endfor -%}\n\n{%- if found_links != blank -%}\n  <div class=\"product__text\" style=\"margin-bottom: 10px;\">\n    <span><strong>Wrestlers Included:</strong> {{ found_links | remove_last: ', ' }}</span>\n  </div>\n{%- endif -%}"
+      }
+    },
     "product-recommendations": {
       "type": "product-recommendations",
       "disabled": true,
@@ -211,13 +218,6 @@
         "secondary_background": false,
         "hide_variants": false,
         "enable_video_looping": false
-      }
-    },
-    "custom_liquid_etpATj": {
-      "type": "custom-liquid",
-      "name": "t:sections.custom-liquid.presets.name",
-      "settings": {
-        "custom_liquid": "{%- comment %}\n  Wrestlers Included: Logic\n  Ensures it only renders if a match is found to prevent empty labels.\n{%- endcomment %}\n\n{%- assign wrestler_entries = shop.metaobjects.collection_mapping.values -%}\n{%- assign found_links = '' -%}\n\n{%- for collection in product.collections -%}\n  {%- for entry in wrestler_entries -%}\n    {%- if entry.wrestler_collection.value.handle == collection.handle -%}\n      {%- capture link -%}\n        <a href=\"{{ collection.url }}\" style=\"text-decoration: underline;\">{{ entry.wrestler_name }}</a>\n      {%- endcapture -%}\n      {%- assign found_links = found_links | append: link | append: ', ' -%}\n    {%- endif -%}\n  {%- endfor -%}\n{%- endfor -%}\n\n{%- if found_links != blank -%}\n  <div class=\"product__text\" style=\"margin-top: 1rem;\">\n    <p><strong>Wrestlers Included:</strong> {{ found_links | remove_last: ', ' }}</p>\n  </div>\n{%- endif -%}"
       }
     }
   },
