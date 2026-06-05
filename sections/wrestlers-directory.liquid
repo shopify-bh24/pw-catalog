@@ -3,9 +3,9 @@
   {% paginate shop.metaobjects.collection_mapping.values by 1000 %}
 
     {% comment %} Sticky controls bar {% endcomment %}
-    <div id="sticky-controls" style="position:sticky; top:0; z-index:10; background:#fff; padding:10px 0; border-bottom:1px solid #e1e1e1; margin-bottom:20px;">
+    <div id="sticky-controls" style="position:sticky; top:0; z-index:1; isolation:auto; background:#fff; padding:10px 0; border-bottom:1px solid #e1e1e1; margin-bottom:20px;">
       <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-        
+
         {% comment %} Left: Letter index {% endcomment %}
         <div id="letter-index" style="display:flex; flex-wrap:wrap; gap:3px; font-size:0.8em;">
           <a href="#" data-letter="all" class="letter-btn" style="padding:4px 8px; border:1px solid #333; border-radius:4px; color:#fff; background:#333; text-decoration:none; font-weight:bold;">All</a>
@@ -92,7 +92,7 @@
   var activeLetter = 'all';
   var currentPage  = 1;
 
-  // ── Restore from URL ───────────────────────────────────────────────────────
+  // Restore from URL
   var params = new URLSearchParams(window.location.search);
   if (params.get('sort') && sortSelect.querySelector('[value="' + params.get('sort') + '"]')) {
     sortSelect.value = params.get('sort');
@@ -101,21 +101,19 @@
   if ([25, 50, 100, 250].indexOf(pp) !== -1) ppSelect.value = pp;
   if (params.get('letter')) activeLetter = params.get('letter');
 
-  // ── Nav height + sticky offset ─────────────────────────────────────────────
+  // Use the exact Shopify section header ID found in your page source
   function getNavHeight() {
-    var selectors = [
-      '#shopify-section-header',
-      '.header-wrapper',
-      '.site-header',
-      'header.header',
-      'header',
-      '[role="banner"]'
-    ];
+    var header = document.getElementById('shopify-section-header');
+    if (header) {
+      var h = header.getBoundingClientRect().height;
+      if (h > 0) return Math.round(h);
+    }
+    var selectors = ['.header-wrapper', 'header.header', 'header', '[role="banner"]'];
     for (var i = 0; i < selectors.length; i++) {
       var el = document.querySelector(selectors[i]);
       if (el) {
-        var h = el.getBoundingClientRect().height;
-        if (h > 0) return Math.round(h);
+        var h2 = el.getBoundingClientRect().height;
+        if (h2 > 0) return Math.round(h2);
       }
     }
     return 0;
@@ -126,57 +124,9 @@
   }
 
   applyNavOffset();
-  setTimeout(applyNavOffset, 300);
+  setTimeout(applyNavOffset, 500);
   window.addEventListener('resize', applyNavOffset);
 
-  // ── Mega menu detection ────────────────────────────────────────────────────
-  // When the Budha mega menu opens it adds a visible dropdown to the DOM.
-  // We disable sticky (position:relative) so it no longer creates a stacking
-  // context, letting the mega menu z-index win. We restore sticky on close.
-  function isMegaMenuOpen() {
-    // Budha mega menu uses these selectors — covers open state via class or visibility
-    var checks = [
-      '.buddha-mega-menu .sub-menu-open',
-      '.buddha-mega-menu [aria-expanded="true"]',
-      '.budha-mm-container.active',
-      '.budha-mm-container.open',
-      '.mm-wrapper.active',
-      '.mm-wrapper.open',
-      '[data-budha-menu].open',
-      '[data-budha-menu].active'
-    ];
-    for (var i = 0; i < checks.length; i++) {
-      if (document.querySelector(checks[i])) return true;
-    }
-    return false;
-  }
-
-  function updateStickyState() {
-    if (isMegaMenuOpen()) {
-      stickyBar.style.position = 'relative';
-      stickyBar.style.top      = '0';
-    } else {
-      stickyBar.style.position = 'sticky';
-      applyNavOffset();
-    }
-  }
-
-  // Watch the header for mega menu open/close via MutationObserver
-  var headerEl = document.querySelector('#shopify-section-header, header, [role="banner"]');
-  if (headerEl && window.MutationObserver) {
-    var observer = new MutationObserver(function () {
-      updateStickyState();
-    });
-    observer.observe(headerEl, { attributes: true, subtree: true, attributeFilter: ['class', 'aria-expanded', 'style'] });
-  }
-
-  // Also watch nav links for mouseenter/mouseleave as a fallback
-  document.querySelectorAll('header a, header li, header nav').forEach(function (el) {
-    el.addEventListener('mouseenter', function () { setTimeout(updateStickyState, 50); });
-    el.addEventListener('mouseleave', function () { setTimeout(updateStickyState, 300); });
-  });
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
   function saveURL() {
     var u = new URL(window.location.href);
     u.searchParams.set('sort',     sortSelect.value);
@@ -195,7 +145,6 @@
     });
   }
 
-  // ── Core render ────────────────────────────────────────────────────────────
   function render() {
     var sort    = sortSelect.value;
     var perPage = parseInt(ppSelect.value);
@@ -229,7 +178,6 @@
     setLetterStyles();
   }
 
-  // ── Pagination UI ──────────────────────────────────────────────────────────
   function buildPagination(totalPages) {
     controls.innerHTML = '';
     if (totalPages <= 1) return;
@@ -274,7 +222,6 @@
     if (currentPage < totalPages) controls.appendChild(makeBtn('Next &raquo;', currentPage + 1));
   }
 
-  // ── Event listeners ────────────────────────────────────────────────────────
   sortSelect.addEventListener('change', function () {
     currentPage = 1; saveURL(); render();
   });
@@ -296,7 +243,6 @@
     });
   });
 
-  // ── Init ───────────────────────────────────────────────────────────────────
   render();
 
 })();
