@@ -1,68 +1,38 @@
 <section class="page-width random-collections-any">
-  {% comment %} Added dynamic count next to the heading {% endcomment %}
-  <h2 class="title">
-    {{ section.settings.heading }} 
-      </h2>
-  
-  <div class="any-random-grid" id="random-collections-container">
-    {% paginate shop.metaobjects.collection_mapping.values by shop.metaobjects.collection_mapping.values.size %}
-      {% for entry in shop.metaobjects.collection_mapping.values %}
-        {% assign col_handle = entry.wrestler_collection.value | strip %}
-        {% assign target = collections[col_handle] %}
-        
-        {% if target != blank %}
-          <div class="rc-item-data" 
-               data-url="{{ target.url }}" 
-               data-img="{{ target.featured_image | image_url: width: 400 }}" 
-               data-title="{{ target.title | escape }}" 
-               data-count="{{ target.products_count }}"
-               style="display:none;"></div>
-        {% endif %}
-      {% endfor %}
-    {% endpaginate %}
+  <h2 class="title">{{ section.settings.heading }}</h2>
+  <div class="any-random-grid" id="random-collections-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+    {% for entry in shop.metaobjects.collection_mapping.values limit: 50 %}
+      {% assign target = collections[entry.wrestler_collection.value] %}
+      {% if target != blank %}
+        <div class="rc-item-data" 
+             data-url="{{ target.url }}" 
+             data-img="{{ target.featured_image | image_url: width: 400 }}" 
+             data-title="{{ target.title | escape }}" 
+             data-count="{{ target.products_count }}"></div>
+      {% endif %}
+    {% endfor %}
   </div>
 </section>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
+  (function() {
     const container = document.getElementById('random-collections-container');
     const allData = Array.from(document.querySelectorAll('.rc-item-data'));
-    
     if (allData.length === 0) return;
-
-    // Fisher-Yates Shuffle
-    for (let i = allData.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [allData[i], allData[j]] = [allData[j], allData[i]];
-    }
     
-    // Select 8 random items
-    const selected = allData.slice(0, 8);
+    // Shuffle and pick 8
+    const selected = allData.sort(() => 0.5 - Math.random()).slice(0, 8);
     
-    // Build HTML
-    let html = '';
-    selected.forEach(item => {
-      html += `
-        <div class="rc-item">
-          <a href="${item.dataset.url}">
-            <img src="${item.dataset.img}" alt="${item.dataset.title}" loading="lazy">
-            <h3>${item.dataset.title} (${item.dataset.count} items)</h3>
-          </a>
-        </div>
-      `;
-    });
-    
-    container.innerHTML = html;
-  });
+    container.innerHTML = selected.map(item => `
+      <div class="rc-item" style="text-align: center;">
+        <a href="${item.dataset.url}">
+          <img src="${item.dataset.img}" alt="${item.dataset.title}" loading="lazy" style="width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px;">
+          <h3 style="font-size: 1.1rem; margin-top: 10px;">${item.dataset.title} (${item.dataset.count} items)</h3>
+        </a>
+      </div>
+    `).join('');
+  })();
 </script>
-
-<style>
-  .random-collections-any .any-random-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 20px !important; margin-top: 20px !important; }
-  @media screen and (max-width: 749px) { .random-collections-any .any-random-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-  .random-collections-any .rc-item { text-align: center; }
-  .random-collections-any .rc-item img { width: 100% !important; aspect-ratio: 1 / 1 !important; object-fit: cover !important; border-radius: 8px !important; display: block !important; }
-  .random-collections-any .rc-item h3 { margin-top: 10px; font-size: 1.1rem; }
-</style>
 
 {% schema %}
 {
