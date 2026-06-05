@@ -120,8 +120,8 @@
         "6cbb7565-e804-46d2-8865-fc99c678574a"
       ],
       "custom_css": [
-        "@media screen and (min-width:990px){.product .product__media-wrapper{max-width:45%!important;width:calc(45% - 1.5rem)!important}.product .product__info-wrapper{max-width:55%!important;width:calc(55% - 1.5rem)!important}}",
-        "@media screen and (max-width:749px){.product__media-wrapper{max-width:75%!important;margin:0 auto 2rem auto!important}}"
+        "@media screen and (min-width: 990px) {.product .product__media-wrapper {max-width: 45% !important; width: calc(45% - 1.5rem) !important; } .product .product__info-wrapper {max-width: 55% !important; width: calc(55% - 1.5rem) !important; }}",
+        "@media screen and (max-width: 749px) {.product__media-wrapper {max-width: 75% !important; margin: 0 auto 2rem auto !important; }}"
       ],
       "settings": {
         "handle": "All",
@@ -212,12 +212,20 @@
         "hide_variants": false,
         "enable_video_looping": false
       }
+    },
+    "custom_liquid_M6X33R": {
+      "type": "custom-liquid",
+      "name": "t:sections.custom-liquid.presets.name",
+      "settings": {
+        "custom_liquid": "{%- comment %}\n  Wrestlers Included: Logic\n  Ensures it only renders if a match is found to prevent empty labels.\n{%- endcomment %}\n\n{%- assign wrestler_entries = shop.metaobjects.collection_mapping.values -%}\n{%- assign found_links = '' -%}\n\n{%- for collection in product.collections -%}\n  {%- for entry in wrestler_entries -%}\n    {%- if entry.wrestler_collection.value.handle == collection.handle -%}\n      {%- capture link -%}\n        <a href=\"{{ collection.url }}\" style=\"text-decoration: underline;\">{{ entry.wrestler_name }}</a>\n      {%- endcapture -%}\n      {%- assign found_links = found_links | append: link | append: ', ' -%}\n    {%- endif -%}\n  {%- endfor -%}\n{%- endfor -%}\n\n{%- if found_links != blank -%}\n  <div class=\"product__text\" style=\"margin-top: 1rem;\">\n    <p><strong>Wrestlers Included:</strong> {{ found_links | remove_last: ', ' }}</p>\n  </div>\n{%- endif -%}"
+      }
     }
   },
   "order": [
     "main",
     "product-recommendations",
     "similar-items-by-collection",
-    "1637575449e1f3e64a"
+    "1637575449e1f3e64a",
+    "custom_liquid_M6X33R"
   ]
 }
