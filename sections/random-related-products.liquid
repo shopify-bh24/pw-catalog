@@ -1,41 +1,28 @@
-<section class="random-products-section page-width" style="margin-top: 40px;">
-  <h2 class="title" style="margin-bottom: 20px; display: block; width: 100%;">{{ section.settings.heading | escape }}</h2>
+<section class="random-products-section page-width">
+  <h2 class="title">{{ section.settings.heading | escape }}</h2>
   
-  <div class="products-grid">
-    <ul id="random-products-list" class="grid grid--2-col grid--4-col-desktop" role="list" style="list-style: none; padding: 0; display: grid; gap: 20px;">
-      {% for product in collections['all'].products limit: 50 %}
-        <li class="grid__item random-item" style="display: none;">
-          {% render 'product-card',
-            product_card_product: product,
-            media_size: section.settings.image_ratio,
-            show_secondary_image: section.settings.show_secondary_image,
-            add_image_padding: section.settings.add_image_padding,
-            show_vendor: section.settings.show_vendor,
-            show_image_outline: section.settings.show_image_outline,
-            show_rating: section.settings.show_rating
-          %}
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
+  <ul id="random-products-list" class="grid grid--2-col product-grid grid--4-col-desktop" role="list">
+    {%- comment -%} 
+      1. Get products, shuffle them, and limit the total pool to 100 first.
+      2. Then loop through that sorted pool. 
+    {%- endcomment -%}
+    {% assign all_products = collections['all'].products | sort: 'random' | limit: 100 %}
+    
+    {% for product in all_products limit: section.settings.products_to_show %}
+      <li class="grid__item">
+        {% render 'product-card',
+          product_card_product: product,
+          media_size: section.settings.image_ratio,
+          show_secondary_image: section.settings.show_secondary_image,
+          add_image_padding: section.settings.add_image_padding,
+          show_vendor: section.settings.show_vendor,
+          show_image_outline: section.settings.show_image_outline,
+          show_rating: section.settings.show_rating
+        %}
+      </li>
+    {% endfor %}
+  </ul>
 </section>
-
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  const container = document.getElementById("random-products-list");
-  const items = Array.from(container.querySelectorAll('.random-item'));
-  const limit = {{ section.settings.products_to_show | default: 8 }};
-  
-  items.sort(() => 0.5 - Math.random())
-       .slice(0, limit)
-       .forEach(item => {
-         item.style.display = 'block';
-         item.classList.remove('random-item');
-       });
-       
-  container.querySelectorAll('.random-item').forEach(i => i.remove());
-});
-</script>
 
 {% schema %}
 {
