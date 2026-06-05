@@ -38,6 +38,12 @@
           "type": "description",
           "settings": {}
         },
+        "custom_liquid_FdiXkP": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- comment %} 1. Load ALL metaobjects into a hidden list (bypassing the 250 limit) {% endcomment %}\n<div id=\"wrestler-data-container\" style=\"display:none;\">\n  {% paginate shop.metaobjects.collection_mapping.values by 1000 %}\n    {% for entry in shop.metaobjects.collection_mapping.values %}\n      <div class=\"wrestler-mapping\" \n           data-handle=\"{{ entry.wrestler_collection | strip }}\" \n           data-name=\"{{ entry.wrestler_name | escape }}\"\n           data-url=\"{{ shop.url }}/collections/{{ entry.wrestler_collection | strip }}\">\n      </div>\n    {% endfor %}\n  {% endpaginate %}\n</div>\n\n{%- comment %} 2. Output Product Collections data for the script {% endcomment %}\n{% for collection in product.collections %}\n  <div class=\"product-collection-reference\" \n       data-collection-handle=\"{{ collection.handle | strip }}\"\n       data-collection-title=\"{{ collection.title | escape }}\"\n       data-collection-url=\"{{ collection.url }}\">\n  </div>\n{% endfor %}\n\n{%- comment %} 3. This area will only show the matched results {% endcomment %}\n<div id=\"wrestler-result-display\" style=\"margin-top: 1rem;\"></div>\n\n<script>\n  document.addEventListener(\"DOMContentLoaded\", function() {\n    const mappings = document.querySelectorAll('.wrestler-mapping');\n    const productCollections = document.querySelectorAll('.product-collection-reference');\n    const display = document.getElementById('wrestler-result-display');\n    \n    let matchedHTML = [];\n\n    // Compare each product collection handle against the full mapping list\n    productCollections.forEach(col => {\n      const colHandle = col.dataset.collectionHandle;\n      const match = Array.from(mappings).find(m => m.dataset.handle === colHandle);\n      \n      if (match) {\n        // Only push to array if a match is found\n        matchedHTML.push(`<a href=\"${col.dataset.collectionUrl}\" style=\"margin-right: 10px;\">${match.dataset.name}</a>`);\n      }\n    });\n\n    // If we have matches, display them\n    if (matchedHTML.length > 0) {\n      display.innerHTML = '<p><strong>Wrestlers Featured:</strong> ' + matchedHTML.join(',') + '</p>';\n    }\n  });\n</script>"
+          }
+        },
         "c41860fa-bce7-41d7-8622-cc0f9fd19a46": {
           "type": "text",
           "settings": {
@@ -109,6 +115,7 @@
         "vendor",
         "3426ccb2-2528-4bd1-a1c4-017c75488e10",
         "description",
+        "custom_liquid_FdiXkP",
         "c41860fa-bce7-41d7-8622-cc0f9fd19a46",
         "a6a0403f-0989-4011-bd71-e1116505e571",
         "6497c279-af25-4ef8-99f0-7a1f66cafdb3",
@@ -132,6 +139,7 @@
     },
     "custom_liquid_etpATj": {
       "type": "custom-liquid",
+      "disabled": true,
       "name": "t:sections.custom-liquid.presets.name",
       "settings": {
         "custom_liquid": "{%- comment %}\n  Logic: \n  1. Iterate through the product's assigned collections.\n  2. Check if that collection exists in the 'collection_mapping' metaobject.\n  3. Output only those that match.\n{%- endcomment %}\n\n{%- assign wrestler_entries = shop.metaobjects.collection_mapping.values -%}\n{%- assign found_links = '' -%}\n\n{%- for collection in product.collections -%}\n  {%- for entry in wrestler_entries -%}\n    {%- if entry.wrestler_collection.value.handle == collection.handle -%}\n      {%- capture link -%}\n        <a href=\"{{ collection.url }}\">{{ entry.wrestler_name }}</a>\n      {%- endcapture -%}\n      {%- assign found_links = found_links | append: link | append: ', ' -%}\n    {%- endif -%}\n  {%- endfor -%}\n{%- endfor -%}\n\n{%- if found_links != blank -%}\n  <div class=\"product__text\" style=\"margin-bottom: 10px;\">\n    <span><strong>Wrestlers Included:</strong> {{ found_links | remove_last: ', ' }}</span>\n  </div>\n{%- endif -%}"
