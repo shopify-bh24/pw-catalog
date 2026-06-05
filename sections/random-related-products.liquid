@@ -1,43 +1,20 @@
-<section class="random-products-section page-width">
-  <h2 class="title">{{ section.settings.heading | escape }}</h2>
-  
-  <ul id="random-products-list" class="grid grid--2-col product-grid grid--4-col-desktop" role="list">
-    {%- comment -%} 
-      1. Get products, shuffle them, and limit the total pool to 100 first.
-      2. Then loop through that sorted pool. 
-    {%- endcomment -%}
-    {% assign all_products = collections['all'].products | sort: 'random' | limit: 100 %}
-    
-    {% for product in all_products limit: section.settings.products_to_show %}
-      <li class="grid__item">
-        {% render 'product-card',
-          product_card_product: product,
-          media_size: section.settings.image_ratio,
-          show_secondary_image: section.settings.show_secondary_image,
-          add_image_padding: section.settings.add_image_padding,
-          show_vendor: section.settings.show_vendor,
-          show_image_outline: section.settings.show_image_outline,
-          show_rating: section.settings.show_rating
-        %}
-      </li>
-    {% endfor %}
-  </ul>
-</section>
+<div class="product-card">
+  <div class="product-card__image">
+    <a href="{{ product_card_product.url }}">
+      <img src="{{ product_card_product.featured_image | img_url: 'medium' }}" alt="{{ product_card_product.title }}">
+    </a>
+  </div>
 
-{% schema %}
-{
-  "name": "Random Products",
-  "tag": "section",
-  "settings": [
-    { "type": "text", "id": "heading", "default": "Random items from our 70K catalog!!", "label": "Heading" },
-    { "type": "range", "id": "products_to_show", "min": 4, "max": 12, "step": 1, "default": 8, "label": "Number to display" },
-    { "type": "select", "id": "image_ratio", "options": [ { "value": "adapt", "label": "Adapt" }, { "value": "portrait", "label": "Portrait" }, { "value": "square", "label": "Square" } ], "default": "square", "label": "Image ratio" },
-    { "type": "checkbox", "id": "show_secondary_image", "default": true, "label": "Show secondary image" },
-    { "type": "checkbox", "id": "add_image_padding", "default": false, "label": "Add image padding" },
-    { "type": "checkbox", "id": "show_image_outline", "default": false, "label": "Show image outline" },
-    { "type": "checkbox", "id": "show_vendor", "default": false, "label": "Show vendor" },
-    { "type": "checkbox", "id": "show_rating", "default": false, "label": "Show rating" }
-  ],
-  "presets": [{ "name": "Random Products" }]
-}
-{% endschema %}
+  <div class="product-card__info">
+    <h3>
+      <a href="{{ product_card_product.url }}">{{ product_card_product.title }}</a>
+    </h3>
+  </div>
+
+  <div class="product-card__actions">
+    {% form 'product', product_card_product %}
+      <button type="submit" class="button">Add to Collection</button>
+    {% endform %}
+    <button class="button button--secondary">Add to Wishlist</button>
+  </div>
+</div>
