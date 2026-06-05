@@ -8,6 +8,8 @@
 <noscript>{{ 'component-product-grid.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'section-product-recommendations.css' | asset_url | stylesheet_tag }}</noscript>
 
+{% assign collection_handles = "meng,bruiser-brody,randy-savage,ric-flair,major-wrestling-figure-podcast-action-toy-figures,harley-race,dusty-rhodes,matt-cardona,brian-myers,earl-hebner,hawk,animal,andre-the-giant,sgt-slaughter,100-lucha,100-lucha-micran-telefe-action-toy-figures,2-cold-scorpio,aaa-action-toy-figures,aaw-dvds,abdullah-the-butcher,abyss,accessories,accion-en-el-ring,action-figures-and-bobblehead-to-re-arrange,adam-bomb,adam-cole,adam-page,adam-pearce,adam-rose,adnan-al-kaissie,adrian-adonis,adrian-neville,adrian-street,aew-brawler-buddies,aew-music-albums,aew-ringside-chairs,afa,aggressive-women,agz-brochure,ahmed-johnson,aiden-english,aj-lee,aj-styles,ajpw-ats-toys-legend-figure-series,ajpw-boford-georgia-coffee-mini-figures,ajpw-character-product-charapro,ajpw-hao-collection,ajpw-music-albums,akebono,akeem,akira-taue,akira-tozawa,akito,akitoshi-saito,al-perez,al-snow,alberto-del-rio,aleister-black,alex-riley,alex-shelley,alex-wright,alexa-bliss,alexander-hammerstone,alexander-wolfe,alicia-fox,alundra-blayze,amazons-in-action" | split: "," %}
+
 <section class="random related-products page-width">
   <h2 class="product-recommendations__heading title">
     {{ section.settings.heading | escape }}
@@ -19,21 +21,27 @@
       role="list">
       
       <script>
+        window.collectionHandles = {{ collection_handles | json }};
         window.productsToShow = {{ section.settings.products_to_show | default: 8 }};
       </script>
 
       {% comment %} 
-        Pull up to 50 products from the 'all' collection.
-        JavaScript will handle the final shuffle and visibility.
+        PERFORMANCE FIX: Loop through collections, but only pull ONE product from each 
+        on the server side instead of loading thousands of hidden items.
       {% endcomment %}
-      {% assign all_products = collections['all'].products %}
-      {% for selected_product in all_products limit: 50 %}
-        {% if selected_product %}
-          <li class="grid__item hidden" data-product-id="{{ selected_product.id }}">
+      {% for handle in collection_handles %}
+        {% assign current_collection = collections[handle] %}
+        {% if current_collection and current_collection.products.size > 0 %}
+          
+          {% comment %} Pick a pseudo-random index based on theme rendering cycle context {% endcomment %}
+          {% assign random_index = forloop.index | modulo: current_collection.products.size %}
+          {% assign selected_product = current_collection.products[random_index] %}
+          
+          <li class="grid__item hidden" data-collection="{{ handle }}" data-product-id="{{ selected_product.id }}">
             {% render 'product-card',
               product_card_product: selected_product,
               media_size: section.settings.image_ratio,
-              show_secondary_image: section.settings.show_secondary_image,
+              show_secondary_image: true,
               add_image_padding: section.settings.add_image_padding,
               show_vendor: section.settings.show_vendor,
               show_image_outline: section.settings.show_image_outline,
@@ -51,15 +59,25 @@
     const productList = document.getElementById("random-products-list");
     if (!productList) return;
 
-    const allProducts = Array.from(productList.querySelectorAll('.grid__item'));
-    const displayCount = window.productsToShow || 8;
-
-    // Shuffle and pick the requested amount
-    const randomProducts = [...allProducts].sort(() => 0.5 - Math.random()).slice(0, displayCount);
-    
-    // Hide all first, then show only the selected ones
+    // Ensure all products start cleanly hidden
+    const allProducts = productList.querySelectorAll('.grid__item');
     allProducts.forEach(product => product.classList.add('hidden'));
-    randomProducts.forEach(product => product.classList.remove('hidden'));
+
+    function getRandomItems(array, count) {
+      const shuffled = [...array].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
+    }
+
+    // Determine how many items to showcase based on schema settings panel
+    const displayCount = window.productsToShow || 8;
+    const availableItems = Array.from(allProducts);
+    
+    // Pick unique random items from the pre-selected pool
+    const randomProducts = getRandomItems(availableItems, displayCount);
+    
+    randomProducts.forEach(product => {
+      product.classList.remove('hidden');
+    });
   });
 </script>
 
@@ -75,15 +93,76 @@
   "tag": "section",
   "class": "spaced-section",
   "settings": [
-    { "type": "text", "id": "heading", "default": "Random items from our catalog!!", "label": "Heading" },
-    { "type": "range", "id": "products_to_show", "min": 4, "max": 12, "step": 1, "default": 8, "label": "Number to display" },
-    { "type": "select", "id": "image_ratio", "options": [ { "value": "adapt", "label": "Adapt to image" }, { "value": "portrait", "label": "Portrait" }, { "value": "square", "label": "Square" } ], "default": "square", "label": "Image ratio" },
-    { "type": "checkbox", "id": "show_secondary_image", "default": true, "label": "Show secondary image on hover" },
-    { "type": "checkbox", "id": "add_image_padding", "default": false, "label": "Add image padding" },
-    { "type": "checkbox", "id": "show_image_outline", "default": false, "label": "Show image outline" },
-    { "type": "checkbox", "id": "show_vendor", "default": false, "label": "Show vendor" },
-    { "type": "checkbox", "id": "show_rating", "default": false, "label": "Show product rating" }
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Random items from our catalog!!",
+      "label": "Heading"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 4,
+      "max": 12,
+      "step": 1,
+      "default": 8,
+      "label": "Number of random products to display"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "portrait",
+          "label": "Portrait"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        }
+      ],
+      "default": "square",
+      "label": "Image ratio"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "default": true,
+      "label": "Show secondary image on hover"
+    },
+    {
+      "type": "checkbox",
+      "id": "add_image_padding",
+      "default": false,
+      "label": "Add image padding"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image_outline",
+      "default": false,
+      "label": "Show image outline"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "default": false,
+      "label": "Show vendor"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "default": false,
+      "label": "Show product rating"
+    }
   ],
-  "presets": [{ "name": "Random Products" }]
+  "presets": [
+    {
+      "name": "Random Products"
+    }
+  ]
 }
 {% endschema %}
