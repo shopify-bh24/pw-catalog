@@ -115,7 +115,6 @@
         },
         "6cbb7565-e804-46d2-8865-fc99c678574a": {
           "type": "text",
-          "disabled": true,
           "settings": {
             "text": "Language: {{ product.metafields.my_fields.language.value }}",
             "text_style": "body"
