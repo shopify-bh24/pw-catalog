@@ -1,20 +1,53 @@
-<div class="product-card">
-  <div class="product-card__image">
-    <a href="{{ product_card_product.url }}">
-      <img src="{{ product_card_product.featured_image | img_url: 'medium' }}" alt="{{ product_card_product.title }}">
-    </a>
-  </div>
+<section class="random-products-section page-width">
+  <h2 class="title">{{ section.settings.heading | escape }}</h2>
+  <ul id="random-products-list" class="grid grid--2-col grid--4-col-desktop" role="list">
+    </ul>
+</section>
 
-  <div class="product-card__info">
-    <h3>
-      <a href="{{ product_card_product.url }}">{{ product_card_product.title }}</a>
-    </h3>
-  </div>
+<script>
+document.addEventListener("DOMContentLoaded", async function() {
+  const container = document.getElementById("random-products-list");
+  const limit = {{ section.settings.products_to_show | default: 8 }};
+  
+  try {
+    // Generate 8 unique random page numbers
+    const pageNumbers = [];
+    while(pageNumbers.length < limit){
+      const r = Math.floor(Math.random() * 500) + 1; // Assuming 500+ pages of 50 products each
+      if(pageNumbers.indexOf(r) === -1) pageNumbers.push(r);
+    }
 
-  <div class="product-card__actions">
-    {% form 'product', product_card_product %}
-      <button type="submit" class="button">Add to Collection</button>
-    {% endform %}
-    <button class="button button--secondary">Add to Wishlist</button>
-  </div>
-</div>
+    // Fetch one product from each of the 8 random pages
+    const products = await Promise.all(pageNumbers.map(async (page) => {
+      const res = await fetch(`/collections/all/products.json?limit=1&page=${page}`);
+      const data = await res.json();
+      return data.products[0];
+    }));
+
+    // For each product, fetch the theme's pre-styled HTML snippet
+    const cardsHTML = await Promise.all(products.filter(p => p).map(async (product) => {
+      const res = await fetch(`/products/${product.handle}?view=card`);
+      return await res.text();
+    }));
+
+    container.innerHTML = cardsHTML.map(html => `<li class="grid__item">${html}</li>`).join('');
+    
+    // Trigger any necessary theme events for sliders/animations
+    document.dispatchEvent(new CustomEvent('section:loaded', { bubbles: true }));
+  } catch (err) {
+    console.error("Error loading products:", err);
+  }
+});
+</script>
+
+{% schema %}
+{
+  "name": "Random Products",
+  "tag": "section",
+  "settings": [
+    { "type": "text", "id": "heading", "default": "Random items from our 70K catalog!!", "label": "Heading" },
+    { "type": "range", "id": "products_to_show", "min": 4, "max": 12, "step": 1, "default": 8, "label": "Number to display" }
+  ],
+  "presets": [{ "name": "Random Products" }]
+}
+{% endschema %}
