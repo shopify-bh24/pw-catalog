@@ -4,30 +4,22 @@
 {{ 'section-product-recommendations.css' | asset_url | stylesheet_tag }}
 
 {% comment %}
-  random-related-products.liquid
-  ─────────────────────────────────────────────────────
-  STRATEGY: Use /collections/all/products.json with a
-  random page offset to get truly random products from
-  across all 70K products in the store.
-  - Page loads instantly with skeletons
-  - JS fetches after idle — zero page load impact
-  - Different products every single refresh
+  STRATEGY:
+  1. Liquid outputs ALL collection handles as a JSON array (lightweight — just strings, no cards)
+  2. JS picks 8 truly random handles from the full list
+  3. JS fetches 1 random product from each chosen collection
+  4. JS builds native-style cards and renders them
+  This gives TRUE randomness across all 1200 collections with zero server render cost.
 {% endcomment %}
-
-{% assign total_products = 70000 %}
-{% assign products_per_page = 20 %}
-{% assign total_pages = total_products | divided_by: products_per_page %}
 
 <section class="random related-products page-width spaced-section">
   <h2 class="product-recommendations__heading title">
     {{ section.settings.heading | escape }}
   </h2>
-
   <ul
     id="rp-list"
     class="grid grid--2-col product-grid grid--3-col-tablet grid--one-third-max grid--4-col-desktop grid--quarter-max"
     role="list">
-    {% comment %} Skeleton placeholders — replaced by JS {% endcomment %}
     {% for i in (1..8) %}
       <li class="grid__item rp-skel-item">
         <div class="card-wrapper">
@@ -46,117 +38,129 @@
   </ul>
 </section>
 
+{% comment %} Output ALL collection handles as JSON — just strings, very lightweight {% endcomment %}
+<script id="rp-handles" type="application/json">
+[{% for c in collections %}{% if c.products_count > 0 %}{% unless forloop.first %},{% endunless %}"{{ c.handle }}"{% endif %}{% endfor %}]
+</script>
+
 <script>
 (function () {
-  var STORE        = 'https://pwcatalog.com';
-  var NEED         = {{ section.settings.products_to_show | default: 8 }};
-  var TOTAL_PAGES  = {{ total_pages }};
-  var list         = document.getElementById('rp-list');
-  if (!list) return;
+  var STORE = 'https://pwcatalog.com';
+  var NEED  = {{ section.settings.products_to_show | default: 8 }};
+  var list  = document.getElementById('rp-list');
+  var hdlEl = document.getElementById('rp-handles');
+  if (!list || !hdlEl) return;
 
-  // ── Helpers ───────────────────────────────────────────
+  var allHandles;
+  try {
+    allHandles = JSON.parse(hdlEl.textContent);
+  } catch(e) { return; }
+
+  if (!allHandles.length) return;
+
+  // ── True Fisher-Yates shuffle ──────────────────────────
   function shuffle(arr) {
-    for (var i = arr.length - 1; i > 0; i--) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
-      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      var t = a[i]; a[i] = a[j]; a[j] = t;
     }
-    return arr;
+    return a;
   }
 
+  // ── Build card HTML matching your theme exactly ────────
   function buildCard(p) {
     var img = p.images && p.images.length
       ? p.images[0].src.replace(/(\.[^.?]+)(\?.*)?$/, '_400x$1')
       : '';
     var url = '/products/' + p.handle;
     var id  = p.id;
-
-    return '<li class="grid__item p-card-hide">' +
-      '<div class="card-wrapper">' +
-        '<a href="' + url + '" class="card card--product card--outline">' +
-          (img ? '<img src="' + img + '" alt="' +
-            p.title.replace(/"/g, '&quot;') +
-            '" loading="lazy" width="400" height="533" style="width:100%;aspect-ratio:3/4;object-fit:cover;">' : '') +
-        '</a>' +
-        '<div class="card-information">' +
-          '<div class="card-information__wrapper">' +
-            '<h3 class="card-information__text h5">' + p.title + '</h3>' +
-            '<span class="caption-large light"></span>' +
-            '<div class="product-btn">' +
-              '<a href="/account/login"' +
-                ' class="collection-btn"' +
-                ' data-customer-id=""' +
-                ' data-product-id="' + id + '"' +
-                ' data-product-price="0"' +
-                ' data-action="add_to_collection"' +
-                ' data-collection-id="">' +
-                'Add to Collection &#10084;' +
-              '</a>' +
-              '<a href="/account/login"' +
-                ' class="wishlist-btn"' +
-                ' data-customer-id=""' +
-                ' data-product-id="' + id + '"' +
-                ' data-product-price="0"' +
-                ' data-action="add_to_wishlist"' +
-                ' data-collection-id="">' +
-                'Add to Wishlist &#10084;' +
-              '</a>' +
+    return (
+      '<li class="grid__item p-card-hide">' +
+        '<div class="card-wrapper">' +
+          '<a href="' + url + '" class="card card--product card--outline">' +
+            (img
+              ? '<img src="' + img + '" alt="' + p.title.replace(/"/g,'&quot;') + '" loading="lazy" width="400" height="533" style="width:100%;aspect-ratio:3/4;object-fit:cover;">'
+              : '') +
+          '</a>' +
+          '<div class="card-information">' +
+            '<div class="card-information__wrapper">' +
+              '<h3 class="card-information__text h5">' + p.title + '</h3>' +
+              '<span class="caption-large light"></span>' +
+              '<div class="product-btn">' +
+                '<a href="/account/login" class="collection-btn"' +
+                  ' data-customer-id="" data-product-id="' + id + '"' +
+                  ' data-product-price="0" data-action="add_to_collection"' +
+                  ' data-collection-id="">Add to Collection &#10084;</a>' +
+                '<a href="/account/login" class="wishlist-btn"' +
+                  ' data-customer-id="" data-product-id="' + id + '"' +
+                  ' data-product-price="0" data-action="add_to_wishlist"' +
+                  ' data-collection-id="">Add to Wishlist &#10084;</a>' +
+              '</div>' +
             '</div>' +
           '</div>' +
         '</div>' +
-      '</div>' +
-    '</li>';
+      '</li>'
+    );
   }
 
-  function fetchPage(page) {
-    return fetch(STORE + '/collections/all/products.json?limit=20&page=' + page)
+  // ── Fetch 1 random product from a collection ───────────
+  function fetchOne(handle) {
+    // Random page 1-5 so we don't always get the first product
+    var page = Math.floor(Math.random() * 5) + 1;
+    return fetch(STORE + '/collections/' + handle + '/products.json?limit=10&page=' + page)
       .then(function(r) { return r.json(); })
-      .then(function(d) { return d.products || []; })
-      .catch(function() { return []; });
+      .then(function(d) {
+        var prods = d.products || [];
+        // Fallback to page 1 if random page was empty
+        if (!prods.length) {
+          return fetch(STORE + '/collections/' + handle + '/products.json?limit=10&page=1')
+            .then(function(r2) { return r2.json(); })
+            .then(function(d2) { return d2.products || []; });
+        }
+        return prods;
+      })
+      .then(function(prods) {
+        if (!prods.length) return null;
+        // Pick a random product from the results
+        return prods[Math.floor(Math.random() * prods.length)];
+      })
+      .catch(function() { return null; });
   }
 
   function run() {
-    // Pick 2 completely random pages spread across all 70K products
-    var page1 = Math.floor(Math.random() * TOTAL_PAGES) + 1;
-    var page2 = Math.floor(Math.random() * TOTAL_PAGES) + 1;
-    // Make sure they're different
-    while (page2 === page1) {
-      page2 = Math.floor(Math.random() * TOTAL_PAGES) + 1;
-    }
+    // Shuffle ALL handles and pick NEED random ones
+    var picked = shuffle(allHandles).slice(0, NEED);
 
-    Promise.all([fetchPage(page1), fetchPage(page2)])
-      .then(function(results) {
-        var products = shuffle(results[0].concat(results[1]));
+    // Fetch one product from each in parallel
+    Promise.all(picked.map(fetchOne))
+      .then(function(products) {
+        // Filter nulls
+        products = products.filter(Boolean);
 
-        // If we didn't get enough, fetch one more random page
+        // If some collections were empty, try extras
         if (products.length < NEED) {
-          var page3 = Math.floor(Math.random() * TOTAL_PAGES) + 1;
-          return fetchPage(page3).then(function(extra) {
-            return shuffle(products.concat(extra));
+          var extras = shuffle(allHandles)
+            .filter(function(h) { return picked.indexOf(h) === -1; })
+            .slice(0, NEED - products.length);
+
+          return Promise.all(extras.map(fetchOne)).then(function(more) {
+            return products.concat(more.filter(Boolean));
           });
         }
         return products;
       })
       .then(function(products) {
-        if (!products.length) {
-          list.innerHTML = '';
-          return;
-        }
+        if (!products.length) { list.innerHTML = ''; return; }
         var html = '';
-        products.slice(0, NEED).forEach(function(p) {
-          html += buildCard(p);
-        });
+        products.slice(0, NEED).forEach(function(p) { html += buildCard(p); });
         list.innerHTML = html;
-
-        // Re-trigger the collection/wishlist app buttons
+        // Re-trigger app buttons
         document.dispatchEvent(new CustomEvent('rp:loaded'));
       })
-      .catch(function(err) {
-        console.warn('[random-products]', err);
-        list.innerHTML = '';
-      });
+      .catch(function() { list.innerHTML = ''; });
   }
 
-  // Run only after page is fully idle — zero load impact
   if ('requestIdleCallback' in window) {
     requestIdleCallback(run, { timeout: 2000 });
   } else {
@@ -166,38 +170,29 @@
 </script>
 
 <style>
-  /* ── Skeleton ── */
   .rp-skel-img {
-    width: 100%;
-    aspect-ratio: 3 / 4;
+    width: 100%; aspect-ratio: 3/4;
     background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%);
     background-size: 200% 100%;
     animation: rp-sh 1.4s infinite;
     border-radius: 4px;
   }
   .rp-skel-line {
-    height: 13px;
-    border-radius: 3px;
+    height: 13px; border-radius: 3px;
     background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%);
     background-size: 200% 100%;
     animation: rp-sh 1.4s infinite;
   }
-  .rp-skel-btns {
-    display: flex;
-    gap: 4px;
-    margin-top: 8px;
-  }
+  .rp-skel-btns { display:flex; gap:4px; margin-top:8px; }
   .rp-skel-btn {
-    flex: 1;
-    height: 28px;
-    border-radius: 3px;
+    flex:1; height:28px; border-radius:3px;
     background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%);
     background-size: 200% 100%;
     animation: rp-sh 1.4s infinite;
   }
   @keyframes rp-sh {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0%   { background-position:200% 0; }
+    100% { background-position:-200% 0; }
   }
 </style>
 
