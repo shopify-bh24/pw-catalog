@@ -3,19 +3,8 @@
 {{ 'component-product-grid.css' | asset_url | stylesheet_tag }}
 {{ 'section-product-recommendations.css' | asset_url | stylesheet_tag }}
 
-{% comment %}
-  Strategy: sample products from 5 different offset points spread across
-  all your collections, giving us a pool of ~40 cards from varied parts
-  of the catalog. JS then picks 8 random ones and removes the rest.
-  This gives genuine variety across all 1200 collections while keeping
-  native card design with correct buttons.
-{% endcomment %}
-
 {% assign rp_total   = collections.size %}
 {% assign rp_step    = rp_total | divided_by: 5 %}
-{% assign rp_pool    = 0 %}
-{% assign rp_target  = 40 %}
-{% assign rp_per_seg = 8 %}
 
 <section class="random related-products page-width spaced-section">
   <h2 class="product-recommendations__heading title">
@@ -30,14 +19,14 @@
     {% comment %} Segment 1 — start of catalog {% endcomment %}
     {% assign rp_count = 0 %}
     {% for collection in collections limit: 50 offset: 0 %}
-      {% if rp_count >= rp_per_seg %}{% break %}{% endif %}
+      {% if rp_count >= 8 %}{% break %}{% endif %}
       {% if collection.products_count > 0 %}
         {% assign rp_idx = forloop.index | modulo: collection.products_count %}
         {% assign rp_p = collection.products[rp_idx] %}
         <li class="grid__item rp-hidden">
           {% render 'product-card',
             product_card_product: rp_p,
-            media_size: section.settings.image_ratio,
+            media_size: 'portrait',
             show_secondary_image: section.settings.show_secondary_image,
             add_image_padding: section.settings.add_image_padding,
             show_vendor: section.settings.show_vendor,
@@ -53,14 +42,14 @@
     {% assign rp_off2 = rp_step %}
     {% assign rp_count = 0 %}
     {% for collection in collections limit: 50 offset: rp_off2 %}
-      {% if rp_count >= rp_per_seg %}{% break %}{% endif %}
+      {% if rp_count >= 8 %}{% break %}{% endif %}
       {% if collection.products_count > 0 %}
         {% assign rp_idx = forloop.index | plus: 3 | modulo: collection.products_count %}
         {% assign rp_p = collection.products[rp_idx] %}
         <li class="grid__item rp-hidden">
           {% render 'product-card',
             product_card_product: rp_p,
-            media_size: section.settings.image_ratio,
+            media_size: 'portrait',
             show_secondary_image: section.settings.show_secondary_image,
             add_image_padding: section.settings.add_image_padding,
             show_vendor: section.settings.show_vendor,
@@ -76,14 +65,14 @@
     {% assign rp_off3 = rp_step | times: 2 %}
     {% assign rp_count = 0 %}
     {% for collection in collections limit: 50 offset: rp_off3 %}
-      {% if rp_count >= rp_per_seg %}{% break %}{% endif %}
+      {% if rp_count >= 8 %}{% break %}{% endif %}
       {% if collection.products_count > 0 %}
         {% assign rp_idx = forloop.index | plus: 7 | modulo: collection.products_count %}
         {% assign rp_p = collection.products[rp_idx] %}
         <li class="grid__item rp-hidden">
           {% render 'product-card',
             product_card_product: rp_p,
-            media_size: section.settings.image_ratio,
+            media_size: 'portrait',
             show_secondary_image: section.settings.show_secondary_image,
             add_image_padding: section.settings.add_image_padding,
             show_vendor: section.settings.show_vendor,
@@ -99,14 +88,14 @@
     {% assign rp_off4 = rp_step | times: 3 %}
     {% assign rp_count = 0 %}
     {% for collection in collections limit: 50 offset: rp_off4 %}
-      {% if rp_count >= rp_per_seg %}{% break %}{% endif %}
+      {% if rp_count >= 8 %}{% break %}{% endif %}
       {% if collection.products_count > 0 %}
         {% assign rp_idx = forloop.index | plus: 11 | modulo: collection.products_count %}
         {% assign rp_p = collection.products[rp_idx] %}
         <li class="grid__item rp-hidden">
           {% render 'product-card',
             product_card_product: rp_p,
-            media_size: section.settings.image_ratio,
+            media_size: 'portrait',
             show_secondary_image: section.settings.show_secondary_image,
             add_image_padding: section.settings.add_image_padding,
             show_vendor: section.settings.show_vendor,
@@ -122,14 +111,14 @@
     {% assign rp_off5 = rp_step | times: 4 %}
     {% assign rp_count = 0 %}
     {% for collection in collections limit: 50 offset: rp_off5 %}
-      {% if rp_count >= rp_per_seg %}{% break %}{% endif %}
+      {% if rp_count >= 8 %}{% break %}{% endif %}
       {% if collection.products_count > 0 %}
         {% assign rp_idx = forloop.index | plus: 17 | modulo: collection.products_count %}
         {% assign rp_p = collection.products[rp_idx] %}
         <li class="grid__item rp-hidden">
           {% render 'product-card',
             product_card_product: rp_p,
-            media_size: section.settings.image_ratio,
+            media_size: 'portrait',
             show_secondary_image: section.settings.show_secondary_image,
             add_image_padding: section.settings.add_image_padding,
             show_vendor: section.settings.show_vendor,
@@ -194,17 +183,6 @@
       "step": 1,
       "default": 8,
       "label": "Number of products to display"
-    },
-    {
-      "type": "select",
-      "id": "image_ratio",
-      "options": [
-        { "value": "adapt",    "label": "Adapt to image" },
-        { "value": "portrait", "label": "Portrait"       },
-        { "value": "square",   "label": "Square"         }
-      ],
-      "default": "adapt",
-      "label": "Image ratio"
     },
     {
       "type": "checkbox",
