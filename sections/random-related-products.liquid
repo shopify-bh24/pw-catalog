@@ -1,90 +1,177 @@
-<link rel="stylesheet" href="{{ 'component-card.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'component-price.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'component-product-grid.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'section-product-recommendations.css' | asset_url }}" media="print" onload="this.media='all'">
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'component-product-grid.css' | asset_url | stylesheet_tag }}
+{{ 'section-product-recommendations.css' | asset_url | stylesheet_tag }}
 
-<noscript>{{ 'component-card.css' | asset_url | stylesheet_tag }}</noscript>
-<noscript>{{ 'component-price.css' | asset_url | stylesheet_tag }}</noscript>
-<noscript>{{ 'component-product-grid.css' | asset_url | stylesheet_tag }}</noscript>
-<noscript>{{ 'section-product-recommendations.css' | asset_url | stylesheet_tag }}</noscript>
+{% comment %}
+  Strategy: sample products from 5 different offset points spread across
+  all your collections, giving us a pool of ~40 cards from varied parts
+  of the catalog. JS then picks 8 random ones and removes the rest.
+  This gives genuine variety across all 1200 collections while keeping
+  native card design with correct buttons.
+{% endcomment %}
 
-{% assign collection_handles = "meng,bruiser-brody,randy-savage,ric-flair,major-wrestling-figure-podcast-action-toy-figures,harley-race,dusty-rhodes,matt-cardona,brian-myers,earl-hebner,hawk,animal,andre-the-giant,sgt-slaughter,100-lucha,100-lucha-micran-telefe-action-toy-figures,2-cold-scorpio,aaa-action-toy-figures,aaw-dvds,abdullah-the-butcher,abyss,accessories,accion-en-el-ring,action-figures-and-bobblehead-to-re-arrange,adam-bomb,adam-cole,adam-page,adam-pearce,adam-rose,adnan-al-kaissie,adrian-adonis,adrian-neville,adrian-street,aew-brawler-buddies,aew-music-albums,aew-ringside-chairs,afa,aggressive-women,agz-brochure,ahmed-johnson,aiden-english,aj-lee,aj-styles,ajpw-ats-toys-legend-figure-series,ajpw-boford-georgia-coffee-mini-figures,ajpw-character-product-charapro,ajpw-hao-collection,ajpw-music-albums,akebono,akeem,akira-taue,akira-tozawa,akito,akitoshi-saito,al-perez,al-snow,alberto-del-rio,aleister-black,alex-riley,alex-shelley,alex-wright,alexa-bliss,alexander-hammerstone,alexander-wolfe,alicia-fox,alundra-blayze,amazons-in-action" | split: "," %}
+{% assign rp_total   = collections.size %}
+{% assign rp_step    = rp_total | divided_by: 5 %}
+{% assign rp_pool    = 0 %}
+{% assign rp_target  = 40 %}
+{% assign rp_per_seg = 8 %}
 
-<section class="random related-products page-width">
+<section class="random related-products page-width spaced-section">
   <h2 class="product-recommendations__heading title">
     {{ section.settings.heading | escape }}
   </h2>
-  <div class="products-grid row owl-carousel">
-    <ul
-      id="random-products-list"
-      class="grid grid--2-col product-grid grid--4-col-desktop grid--quarter-max"
-      role="list">
-      
-      <script>
-        window.collectionHandles = {{ collection_handles | json }};
-        window.productsToShow = {{ section.settings.products_to_show | default: 8 }};
-      </script>
 
-      {% comment %} 
-        PERFORMANCE FIX: Loop through collections, but only pull ONE product from each 
-        on the server side instead of loading thousands of hidden items.
-      {% endcomment %}
-      {% for handle in collection_handles %}
-        {% assign current_collection = collections[handle] %}
-        {% if current_collection and current_collection.products.size > 0 %}
-          
-          {% comment %} Pick a pseudo-random index based on theme rendering cycle context {% endcomment %}
-          {% assign random_index = forloop.index | modulo: current_collection.products.size %}
-          {% assign selected_product = current_collection.products[random_index] %}
-          
-          <li class="grid__item hidden" data-collection="{{ handle }}" data-product-id="{{ selected_product.id }}">
-            {% render 'product-card',
-              product_card_product: selected_product,
-              media_size: section.settings.image_ratio,
-              show_secondary_image: true,
-              add_image_padding: section.settings.add_image_padding,
-              show_vendor: section.settings.show_vendor,
-              show_image_outline: section.settings.show_image_outline,
-              show_rating: section.settings.show_rating
-            %}
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ul>
-  </div>
+  <ul
+    id="rp-list"
+    class="grid grid--2-col product-grid grid--4-col-desktop grid--quarter-max"
+    role="list">
+
+    {% comment %} Segment 1 — start of catalog {% endcomment %}
+    {% assign rp_count = 0 %}
+    {% for collection in collections limit: 50 offset: 0 %}
+      {% if rp_count >= rp_per_seg %}{% break %}{% endif %}
+      {% if collection.products_count > 0 %}
+        {% assign rp_idx = forloop.index | modulo: collection.products_count %}
+        {% assign rp_p = collection.products[rp_idx] %}
+        <li class="grid__item rp-hidden">
+          {% render 'product-card',
+            product_card_product: rp_p,
+            media_size: section.settings.image_ratio,
+            show_secondary_image: section.settings.show_secondary_image,
+            add_image_padding: section.settings.add_image_padding,
+            show_vendor: section.settings.show_vendor,
+            show_image_outline: section.settings.show_image_outline,
+            show_rating: section.settings.show_rating
+          %}
+        </li>
+        {% assign rp_count = rp_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+
+    {% comment %} Segment 2 — ~20% into catalog {% endcomment %}
+    {% assign rp_off2 = rp_step %}
+    {% assign rp_count = 0 %}
+    {% for collection in collections limit: 50 offset: rp_off2 %}
+      {% if rp_count >= rp_per_seg %}{% break %}{% endif %}
+      {% if collection.products_count > 0 %}
+        {% assign rp_idx = forloop.index | plus: 3 | modulo: collection.products_count %}
+        {% assign rp_p = collection.products[rp_idx] %}
+        <li class="grid__item rp-hidden">
+          {% render 'product-card',
+            product_card_product: rp_p,
+            media_size: section.settings.image_ratio,
+            show_secondary_image: section.settings.show_secondary_image,
+            add_image_padding: section.settings.add_image_padding,
+            show_vendor: section.settings.show_vendor,
+            show_image_outline: section.settings.show_image_outline,
+            show_rating: section.settings.show_rating
+          %}
+        </li>
+        {% assign rp_count = rp_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+
+    {% comment %} Segment 3 — ~40% into catalog {% endcomment %}
+    {% assign rp_off3 = rp_step | times: 2 %}
+    {% assign rp_count = 0 %}
+    {% for collection in collections limit: 50 offset: rp_off3 %}
+      {% if rp_count >= rp_per_seg %}{% break %}{% endif %}
+      {% if collection.products_count > 0 %}
+        {% assign rp_idx = forloop.index | plus: 7 | modulo: collection.products_count %}
+        {% assign rp_p = collection.products[rp_idx] %}
+        <li class="grid__item rp-hidden">
+          {% render 'product-card',
+            product_card_product: rp_p,
+            media_size: section.settings.image_ratio,
+            show_secondary_image: section.settings.show_secondary_image,
+            add_image_padding: section.settings.add_image_padding,
+            show_vendor: section.settings.show_vendor,
+            show_image_outline: section.settings.show_image_outline,
+            show_rating: section.settings.show_rating
+          %}
+        </li>
+        {% assign rp_count = rp_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+
+    {% comment %} Segment 4 — ~60% into catalog {% endcomment %}
+    {% assign rp_off4 = rp_step | times: 3 %}
+    {% assign rp_count = 0 %}
+    {% for collection in collections limit: 50 offset: rp_off4 %}
+      {% if rp_count >= rp_per_seg %}{% break %}{% endif %}
+      {% if collection.products_count > 0 %}
+        {% assign rp_idx = forloop.index | plus: 11 | modulo: collection.products_count %}
+        {% assign rp_p = collection.products[rp_idx] %}
+        <li class="grid__item rp-hidden">
+          {% render 'product-card',
+            product_card_product: rp_p,
+            media_size: section.settings.image_ratio,
+            show_secondary_image: section.settings.show_secondary_image,
+            add_image_padding: section.settings.add_image_padding,
+            show_vendor: section.settings.show_vendor,
+            show_image_outline: section.settings.show_image_outline,
+            show_rating: section.settings.show_rating
+          %}
+        </li>
+        {% assign rp_count = rp_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+
+    {% comment %} Segment 5 — ~80% into catalog {% endcomment %}
+    {% assign rp_off5 = rp_step | times: 4 %}
+    {% assign rp_count = 0 %}
+    {% for collection in collections limit: 50 offset: rp_off5 %}
+      {% if rp_count >= rp_per_seg %}{% break %}{% endif %}
+      {% if collection.products_count > 0 %}
+        {% assign rp_idx = forloop.index | plus: 17 | modulo: collection.products_count %}
+        {% assign rp_p = collection.products[rp_idx] %}
+        <li class="grid__item rp-hidden">
+          {% render 'product-card',
+            product_card_product: rp_p,
+            media_size: section.settings.image_ratio,
+            show_secondary_image: section.settings.show_secondary_image,
+            add_image_padding: section.settings.add_image_padding,
+            show_vendor: section.settings.show_vendor,
+            show_image_outline: section.settings.show_image_outline,
+            show_rating: section.settings.show_rating
+          %}
+        </li>
+        {% assign rp_count = rp_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+
+  </ul>
 </section>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const productList = document.getElementById("random-products-list");
-    if (!productList) return;
+(function () {
+  var list = document.getElementById('rp-list');
+  if (!list) return;
 
-    // Ensure all products start cleanly hidden
-    const allProducts = productList.querySelectorAll('.grid__item');
-    allProducts.forEach(product => product.classList.add('hidden'));
+  var items = Array.from(list.querySelectorAll('.rp-hidden'));
+  if (!items.length) return;
 
-    function getRandomItems(array, count) {
-      const shuffled = [...array].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, count);
+  // Fisher-Yates shuffle
+  for (var i = items.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = items[i]; items[i] = items[j]; items[j] = tmp;
+  }
+
+  var toShow = {{ section.settings.products_to_show | default: 8 }};
+
+  items.forEach(function(item, idx) {
+    if (idx < toShow) {
+      item.classList.remove('rp-hidden');
+    } else {
+      item.parentNode.removeChild(item);
     }
-
-    // Determine how many items to showcase based on schema settings panel
-    const displayCount = window.productsToShow || 8;
-    const availableItems = Array.from(allProducts);
-    
-    // Pick unique random items from the pre-selected pool
-    const randomProducts = getRandomItems(availableItems, displayCount);
-    
-    randomProducts.forEach(product => {
-      product.classList.remove('hidden');
-    });
   });
+})();
 </script>
 
 <style>
-  .hidden {
-    display: none !important;
-  }
+  .rp-hidden { display: none !important; }
 </style>
 
 {% schema %}
@@ -106,26 +193,17 @@
       "max": 12,
       "step": 1,
       "default": 8,
-      "label": "Number of random products to display"
+      "label": "Number of products to display"
     },
     {
       "type": "select",
       "id": "image_ratio",
       "options": [
-        {
-          "value": "adapt",
-          "label": "Adapt to image"
-        },
-        {
-          "value": "portrait",
-          "label": "Portrait"
-        },
-        {
-          "value": "square",
-          "label": "Square"
-        }
+        { "value": "adapt",    "label": "Adapt to image" },
+        { "value": "portrait", "label": "Portrait"       },
+        { "value": "square",   "label": "Square"         }
       ],
-      "default": "square",
+      "default": "adapt",
       "label": "Image ratio"
     },
     {
@@ -159,10 +237,6 @@
       "label": "Show product rating"
     }
   ],
-  "presets": [
-    {
-      "name": "Random Products"
-    }
-  ]
+  "presets": [{ "name": "Random Products" }]
 }
 {% endschema %}
