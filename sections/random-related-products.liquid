@@ -3,15 +3,6 @@
 {{ 'component-product-grid.css' | asset_url | stylesheet_tag }}
 {{ 'section-product-recommendations.css' | asset_url | stylesheet_tag }}
 
-{% comment %}
-  STRATEGY:
-  1. Liquid outputs ALL collection handles as a JSON array (lightweight — just strings, no cards)
-  2. JS picks 8 truly random handles from the full list
-  3. JS fetches 1 random product from each chosen collection
-  4. JS builds native-style cards and renders them
-  This gives TRUE randomness across all 1200 collections with zero server render cost.
-{% endcomment %}
-
 <section class="random related-products page-width spaced-section">
   <h2 class="product-recommendations__heading title">
     {{ section.settings.heading | escape }}
@@ -38,7 +29,6 @@
   </ul>
 </section>
 
-{% comment %} Output ALL collection handles as JSON — just strings, very lightweight {% endcomment %}
 <script id="rp-handles" type="application/json">
 [{% for c in collections %}{% if c.products_count > 0 %}{% unless forloop.first %},{% endunless %}"{{ c.handle }}"{% endif %}{% endfor %}]
 </script>
@@ -52,13 +42,9 @@
   if (!list || !hdlEl) return;
 
   var allHandles;
-  try {
-    allHandles = JSON.parse(hdlEl.textContent);
-  } catch(e) { return; }
-
+  try { allHandles = JSON.parse(hdlEl.textContent); } catch(e) { return; }
   if (!allHandles.length) return;
 
-  // ── True Fisher-Yates shuffle ──────────────────────────
   function shuffle(arr) {
     var a = arr.slice();
     for (var i = a.length - 1; i > 0; i--) {
@@ -68,34 +54,27 @@
     return a;
   }
 
-  // ── Build card HTML matching your theme exactly ────────
   function buildCard(p) {
-    var img = p.images && p.images.length
-      ? p.images[0].src.replace(/(\.[^.?]+)(\?.*)?$/, '_400x$1')
-      : '';
+    var img1 = p.images && p.images.length > 0 ? p.images[0].src.replace(/(\.[^.?]+)(\?.*)?$/, '_400x$1') : '';
+    var img2 = p.images && p.images.length > 1 ? p.images[1].src.replace(/(\.[^.?]+)(\?.*)?$/, '_400x$1') : img1;
     var url = '/products/' + p.handle;
     var id  = p.id;
+    
     return (
       '<li class="grid__item p-card-hide">' +
         '<div class="card-wrapper">' +
           '<a href="' + url + '" class="card card--product card--outline">' +
-            (img
-              ? '<img src="' + img + '" alt="' + p.title.replace(/"/g,'&quot;') + '" loading="lazy" width="400" height="533" style="width:100%;aspect-ratio:3/4;object-fit:cover;">'
-              : '') +
+            '<div class="card__media">' +
+              '<img src="' + img1 + '" alt="' + p.title.replace(/"/g,'&quot;') + '" class="main-img" loading="lazy" width="400" height="533">' +
+              '<img src="' + img2 + '" alt="' + p.title.replace(/"/g,'&quot;') + '" class="secondary-img" loading="lazy" width="400" height="533">' +
+            '</div>' +
           '</a>' +
           '<div class="card-information">' +
             '<div class="card-information__wrapper">' +
               '<h3 class="card-information__text h5">' + p.title + '</h3>' +
-              '<span class="caption-large light"></span>' +
               '<div class="product-btn">' +
-                '<a href="/account/login" class="collection-btn"' +
-                  ' data-customer-id="" data-product-id="' + id + '"' +
-                  ' data-product-price="0" data-action="add_to_collection"' +
-                  ' data-collection-id="">Add to Collection &#10084;</a>' +
-                '<a href="/account/login" class="wishlist-btn"' +
-                  ' data-customer-id="" data-product-id="' + id + '"' +
-                  ' data-product-price="0" data-action="add_to_wishlist"' +
-                  ' data-collection-id="">Add to Wishlist &#10084;</a>' +
+                '<a href="/account/login" class="collection-btn" data-product-id="' + id + '">Add to Collection &#10084;</a>' +
+                '<a href="/account/login" class="wishlist-btn" data-product-id="' + id + '">Add to Wishlist &#10084;</a>' +
               '</div>' +
             '</div>' +
           '</div>' +
@@ -104,96 +83,55 @@
     );
   }
 
-  // ── Fetch 1 random product from a collection ───────────
   function fetchOne(handle) {
-    // Random page 1-5 so we don't always get the first product
     var page = Math.floor(Math.random() * 5) + 1;
     return fetch(STORE + '/collections/' + handle + '/products.json?limit=10&page=' + page)
       .then(function(r) { return r.json(); })
       .then(function(d) {
         var prods = d.products || [];
-        // Fallback to page 1 if random page was empty
-        if (!prods.length) {
-          return fetch(STORE + '/collections/' + handle + '/products.json?limit=10&page=1')
-            .then(function(r2) { return r2.json(); })
-            .then(function(d2) { return d2.products || []; });
-        }
+        if (!prods.length) return fetch(STORE + '/collections/' + handle + '/products.json?limit=10&page=1').then(function(r2) { return r2.json(); }).then(function(d2) { return d2.products || []; });
         return prods;
       })
-      .then(function(prods) {
-        if (!prods.length) return null;
-        // Pick a random product from the results
-        return prods[Math.floor(Math.random() * prods.length)];
-      })
+      .then(function(prods) { return prods.length ? prods[Math.floor(Math.random() * prods.length)] : null; })
       .catch(function() { return null; });
   }
 
   function run() {
-    // Shuffle ALL handles and pick NEED random ones
     var picked = shuffle(allHandles).slice(0, NEED);
-
-    // Fetch one product from each in parallel
-    Promise.all(picked.map(fetchOne))
-      .then(function(products) {
-        // Filter nulls
-        products = products.filter(Boolean);
-
-        // If some collections were empty, try extras
-        if (products.length < NEED) {
-          var extras = shuffle(allHandles)
-            .filter(function(h) { return picked.indexOf(h) === -1; })
-            .slice(0, NEED - products.length);
-
-          return Promise.all(extras.map(fetchOne)).then(function(more) {
-            return products.concat(more.filter(Boolean));
-          });
-        }
-        return products;
-      })
-      .then(function(products) {
-        if (!products.length) { list.innerHTML = ''; return; }
-        var html = '';
-        products.slice(0, NEED).forEach(function(p) { html += buildCard(p); });
-        list.innerHTML = html;
-        // Re-trigger app buttons
-        document.dispatchEvent(new CustomEvent('rp:loaded'));
-      })
-      .catch(function() { list.innerHTML = ''; });
+    Promise.all(picked.map(fetchOne)).then(function(products) {
+      products = products.filter(Boolean);
+      if (products.length < NEED) {
+        var extras = shuffle(allHandles).filter(function(h) { return picked.indexOf(h) === -1; }).slice(0, NEED - products.length);
+        return Promise.all(extras.map(fetchOne)).then(function(more) { return products.concat(more.filter(Boolean)); });
+      }
+      return products;
+    }).then(function(products) {
+      if (!products.length) return;
+      list.innerHTML = products.slice(0, NEED).map(buildCard).join('');
+      document.dispatchEvent(new CustomEvent('rp:loaded'));
+    });
   }
 
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(run, { timeout: 2000 });
-  } else {
-    setTimeout(run, 300);
-  }
+  if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 2000 }); else setTimeout(run, 300);
 })();
 </script>
 
 <style>
-  .rp-skel-img {
-    width: 100%; aspect-ratio: 3/4;
-    background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: rp-sh 1.4s infinite;
-    border-radius: 4px;
-  }
-  .rp-skel-line {
-    height: 13px; border-radius: 3px;
-    background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: rp-sh 1.4s infinite;
-  }
+  /* Skeleton Loading Styles */
+  .rp-skel-img { width: 100%; aspect-ratio: 3/4; background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%); background-size: 200% 100%; animation: rp-sh 1.4s infinite; border-radius: 4px; }
+  .rp-skel-line { height: 13px; border-radius: 3px; background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%); background-size: 200% 100%; animation: rp-sh 1.4s infinite; }
   .rp-skel-btns { display:flex; gap:4px; margin-top:8px; }
-  .rp-skel-btn {
-    flex:1; height:28px; border-radius:3px;
-    background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: rp-sh 1.4s infinite;
-  }
-  @keyframes rp-sh {
-    0%   { background-position:200% 0; }
-    100% { background-position:-200% 0; }
-  }
+  .rp-skel-btn { flex:1; height:28px; border-radius:3px; background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%); background-size: 200% 100%; animation: rp-sh 1.4s infinite; }
+  @keyframes rp-sh { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
+
+  /* Image Hover and Swap Styles */
+  .card__media { position: relative; overflow: hidden; aspect-ratio: 3/4; }
+  .card__media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease, opacity 0.3s ease; position: absolute; top: 0; left: 0; }
+  .main-img { opacity: 1; z-index: 1; }
+  .secondary-img { opacity: 0; z-index: 0; }
+  .card-wrapper:hover .main-img { opacity: 0; }
+  .card-wrapper:hover .secondary-img { opacity: 1; transform: scale(1.05); }
+  .card-wrapper:hover .main-img { transform: scale(1.05); }
 </style>
 
 {% schema %}
@@ -202,21 +140,8 @@
   "tag": "section",
   "class": "spaced-section",
   "settings": [
-    {
-      "type": "text",
-      "id": "heading",
-      "default": "Random items from our catalog!!",
-      "label": "Heading"
-    },
-    {
-      "type": "range",
-      "id": "products_to_show",
-      "min": 4,
-      "max": 12,
-      "step": 1,
-      "default": 8,
-      "label": "Number of products to display"
-    }
+    { "type": "text", "id": "heading", "default": "Random items from our catalog!!", "label": "Heading" },
+    { "type": "range", "id": "products_to_show", "min": 4, "max": 12, "step": 1, "default": 8, "label": "Number of products to display" }
   ],
   "presets": [{ "name": "Random Products" }]
 }
