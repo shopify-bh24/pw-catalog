@@ -46,10 +46,9 @@
         },
         "c41860fa-bce7-41d7-8622-cc0f9fd19a46": {
           "type": "text",
-          "disabled": true,
           "settings": {
             "text": "Promotion: {{ product.metafields.my_fields.promotion.value }}",
-            "text_style": "body"
+            "text_style": "uppercase"
           }
         },
         "a6a0403f-0989-4011-bd71-e1116505e571": {
