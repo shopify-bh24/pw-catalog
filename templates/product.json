@@ -27,7 +27,7 @@
           "type": "text",
           "settings": {
             "text": "{{ product.metafields.my_fields.promotion.value }}",
-            "text_style": "uppercase"
+            "text_style": "body"
           }
         },
         "3426ccb2-2528-4bd1-a1c4-017c75488e10": {
