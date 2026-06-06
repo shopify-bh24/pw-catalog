@@ -11,113 +11,115 @@
   <ul id="rp-list" class="grid grid--2-col product-grid grid--4-col-desktop" role="list"></ul>
 </section>
 
-{% comment %} Skeleton shown while JS loads {% endcomment %}
 <style>
-  #rp-list:empty::after {
-    content: '';
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-  }
+  /* Skeleton shimmer */
   .rp-skel {
     background: linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);
     background-size: 200% 100%;
     animation: rp-sh 1.4s infinite;
     border-radius: 4px;
+    display: block;
   }
-  @keyframes rp-sh { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  @keyframes rp-sh {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
 
-  /* ── Card styles matching your theme ── */
-  #rp-list .rp-card-item { list-style: none; }
-  #rp-list .rp-card {
+  /* Match exact card structure from your theme */
+  #rp-list .card-wrapper {
+    position: relative;
+  }
+  #rp-list .card--product {
     display: block;
     text-decoration: none;
     color: inherit;
-    background: #fff;
-    border: 1px solid #e8e8e8;
-    border-radius: 4px;
-    overflow: hidden;
-    transition: box-shadow 0.2s;
   }
-  #rp-list .rp-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
-  #rp-list .rp-card-img-wrap {
+  #rp-list .card--product img {
     width: 100%;
-    aspect-ratio: 3/4;
-    overflow: hidden;
-    background: #f5f5f5;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    display: block;
   }
-  #rp-list .rp-card-img-wrap img {
-    width: 100%; height: 100%;
-    object-fit: cover; display: block;
+  #rp-list .rp-img-skel {
+    width: 100%;
+    aspect-ratio: 3 / 4;
   }
-  #rp-list .rp-card-img-wrap .rp-skel {
-    width: 100%; height: 100%;
+  #rp-list .card-information {
+    padding: 8px 0;
   }
-  #rp-list .rp-card-body {
-    padding: 10px;
-    font-size: 0.8rem;
-    line-height: 1.3;
+  #rp-list .card-information__wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
-  #rp-list .rp-card-title {
-    margin: 0 0 10px;
+  #rp-list .card-information__text {
     font-size: 0.8rem;
     font-weight: 400;
-    color: #333;
-    /* clamp to 2 lines */
+    margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    line-height: 1.3;
   }
-  #rp-list .rp-card-btns {
-    display: flex; gap: 4px; flex-wrap: wrap;
+  #rp-list .product-btn {
+    display: flex;
+    gap: 4px;
   }
-  #rp-list .rp-btn {
+  #rp-list .collection-btn,
+  #rp-list .wishlist-btn {
     flex: 1;
-    min-width: 0;
-    padding: 5px 4px;
     font-size: 0.7rem;
     font-weight: 500;
     text-align: center;
-    border-radius: 3px;
+    padding: 5px 4px;
     border: 1px solid #333;
+    border-radius: 3px;
     background: #fff;
     color: #333;
     cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-decoration: none;
-    display: inline-block;
-    transition: background 0.15s, color 0.15s;
   }
-  #rp-list .rp-btn:hover { background: #333; color: #fff; }
+  #rp-list .collection-btn:hover,
+  #rp-list .wishlist-btn:hover {
+    background: #333;
+    color: #fff;
+  }
   @media (max-width: 749px) {
-    #rp-list .rp-card-btns { flex-direction: column; }
+    #rp-list .product-btn { flex-direction: column; }
   }
 </style>
 
 <script>
 (function () {
-  var STORE         = 'https://pwcatalog.com';
-  var NEED          = {{ section.settings.products_to_show | default: 8 }};
-  var list          = document.getElementById('rp-list');
+  var STORE = 'https://pwcatalog.com';
+  var NEED  = {{ section.settings.products_to_show | default: 8 }};
+  var list  = document.getElementById('rp-list');
   if (!list) return;
 
-  // Show skeleton while loading
+  // ── Skeleton ──────────────────────────────────────────────────
   var skelHtml = '';
   for (var s = 0; s < NEED; s++) {
-    skelHtml += '<li class="grid__item rp-card-item">' +
-      '<div class="rp-card">' +
-        '<div class="rp-card-img-wrap"><div class="rp-skel"></div></div>' +
-        '<div class="rp-card-body">' +
-          '<div class="rp-skel" style="height:14px;margin-bottom:6px;border-radius:3px"></div>' +
-          '<div class="rp-skel" style="height:14px;width:70%;border-radius:3px"></div>' +
+    skelHtml +=
+      '<li class="grid__item p-card-hide">' +
+        '<div class="card-wrapper">' +
+          '<span class="rp-skel rp-img-skel"></span>' +
+          '<div class="card-information">' +
+            '<div class="card-information__wrapper">' +
+              '<span class="rp-skel" style="height:13px;margin-bottom:4px"></span>' +
+              '<span class="rp-skel" style="height:13px;width:65%"></span>' +
+            '</div>' +
+          '</div>' +
         '</div>' +
-      '</div></li>';
+      '</li>';
   }
   list.innerHTML = skelHtml;
 
+  // ── Helpers ───────────────────────────────────────────────────
   function shuffle(arr) {
     for (var i = arr.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
@@ -128,33 +130,50 @@
 
   function buildCard(p) {
     var img = p.images && p.images.length
-      ? p.images[0].src.replace(/(\.[^.]+)$/, '_400x$1')
+      ? p.images[0].src.replace(/(\.[^.?]+)(\?.*)?$/, '_400x$1')
       : '';
     var url = '/products/' + p.handle;
+    var id  = p.id;
 
-    return '<li class="grid__item rp-card-item">' +
-      '<div class="rp-card">' +
-        '<a href="' + url + '" class="rp-card-img-wrap">' +
+    return '<li class="grid__item p-card-hide">' +
+      '<div class="card-wrapper">' +
+        '<a href="' + url + '" class="card card--product card--outline">' +
           (img
             ? '<img src="' + img + '" alt="' + p.title.replace(/"/g,'&quot;') + '" loading="lazy" width="400" height="533">'
-            : '<div class="rp-skel" style="width:100%;height:100%"></div>') +
+            : '<span class="rp-skel rp-img-skel"></span>') +
         '</a>' +
-        '<div class="rp-card-body">' +
-          '<p class="rp-card-title">' + p.title + '</p>' +
-          '<div class="rp-card-btns">' +
-            '<a href="' + url + '" class="rp-btn">Add to Collection</a>' +
-            '<a href="' + url + '" class="rp-btn">Add to Wishlist</a>' +
+        '<div class="card-information">' +
+          '<div class="card-information__wrapper">' +
+            '<h3 class="card-information__text h5">' + p.title + '</h3>' +
+            '<span class="caption-large light"></span>' +
+            '<div class="product-btn">' +
+              '<a href="/account/login"' +
+                ' class="collection-btn"' +
+                ' data-product-id="' + id + '"' +
+                ' data-product-price="0"' +
+                ' data-action="add_to_collection"' +
+                ' data-collection-id="">' +
+                'Add to Collection' +
+              '</a>' +
+              '<a href="/account/login"' +
+                ' class="wishlist-btn"' +
+                ' data-product-id="' + id + '"' +
+                ' data-product-price="0"' +
+                ' data-action="add_to_wishlist"' +
+                ' data-collection-id="">' +
+                'Add to Wishlist' +
+              '</a>' +
+            '</div>' +
           '</div>' +
         '</div>' +
       '</div>' +
     '</li>';
   }
 
-  // Fetch all collection handles from multiple random pages
-  // then keep trying until we have NEED products
+  // ── Data fetching ─────────────────────────────────────────────
   var collectionPool = [];
-  var usedHandles   = {};
-  var results       = [];
+  var usedHandles    = {};
+  var results        = [];
 
   function fetchCollectionPage(page) {
     return fetch(STORE + '/collections.json?limit=250&page=' + page)
@@ -164,14 +183,12 @@
   }
 
   function fetchProductFromCollection(handle) {
-    // Random page 1-3, random product from result
     var page = Math.floor(Math.random() * 3) + 1;
     return fetch(STORE + '/collections/' + handle + '/products.json?limit=20&page=' + page)
       .then(function(r) { return r.json(); })
       .then(function(d) {
         var prods = d.products || [];
         if (!prods.length && page > 1) {
-          // fallback to page 1 if random page was empty
           return fetch(STORE + '/collections/' + handle + '/products.json?limit=20&page=1')
             .then(function(r2) { return r2.json(); })
             .then(function(d2) { return d2.products || []; });
@@ -185,67 +202,46 @@
       .catch(function() { return null; });
   }
 
-  function tryFillProducts() {
-    if (results.length >= NEED) {
+  function tryFill() {
+    if (results.length >= NEED || !collectionPool.length) {
       render();
       return;
     }
-
-    if (!collectionPool.length) {
-      // Pool exhausted — render what we have
-      render();
-      return;
-    }
-
-    // Pick a random unused collection from pool
     var idx = Math.floor(Math.random() * collectionPool.length);
     var col = collectionPool.splice(idx, 1)[0];
-
-    if (usedHandles[col.handle]) {
-      tryFillProducts();
-      return;
-    }
+    if (usedHandles[col.handle]) { tryFill(); return; }
     usedHandles[col.handle] = true;
 
-    fetchProductFromCollection(col.handle).then(function(product) {
-      if (product) {
-        results.push(product);
-      }
-      tryFillProducts();
+    fetchProductFromCollection(col.handle).then(function(p) {
+      if (p) results.push(p);
+      tryFill();
     });
   }
 
   function render() {
-    if (!results.length) {
-      list.innerHTML = '';
-      return;
-    }
-    results = shuffle(results);
+    if (!results.length) { list.innerHTML = ''; return; }
+    shuffle(results);
     var html = '';
     results.slice(0, NEED).forEach(function(p) { html += buildCard(p); });
     list.innerHTML = html;
+
+    // Re-trigger any app scripts watching for new product cards
+    document.dispatchEvent(new CustomEvent('rp:loaded', { detail: { products: results } }));
   }
 
   function run() {
-    // Fetch 2 random pages of collections (each page = 250 collections)
-    // to build a large diverse pool
     var p1 = Math.floor(Math.random() * 4) + 1;
-    var p2 = p1 === 1 ? 2 : 1; // always include page 1 as fallback
-
-    Promise.all([
-      fetchCollectionPage(p1),
-      fetchCollectionPage(p2)
-    ]).then(function(pages) {
-      var all = pages[0].concat(pages[1]);
-      // Filter system collections and empty ones
-      all = all.filter(function(c) {
-        return c.handle !== 'all'
-          && c.handle !== 'frontpage'
-          && c.products_count > 0;
+    var p2 = p1 === 1 ? 2 : 1;
+    Promise.all([fetchCollectionPage(p1), fetchCollectionPage(p2)])
+      .then(function(pages) {
+        var all = pages[0].concat(pages[1]).filter(function(c) {
+          return c.handle !== 'all'
+            && c.handle !== 'frontpage'
+            && c.products_count > 0;
+        });
+        collectionPool = shuffle(all);
+        tryFill();
       });
-      collectionPool = shuffle(all);
-      tryFillProducts();
-    });
   }
 
   if ('requestIdleCallback' in window) {
