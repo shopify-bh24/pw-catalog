@@ -1,59 +1,83 @@
 <section class="page-width random-collections-any">
-  {% comment %} Added dynamic count next to the heading {% endcomment %}
   <h2 class="title">
     {{ section.settings.heading }} 
-      </h2>
+  </h2>
   
   <div class="any-random-grid" id="random-collections-container">
-    {% paginate shop.metaobjects.collection_mapping.values by shop.metaobjects.collection_mapping.values.size %}
-      {% for entry in shop.metaobjects.collection_mapping.values %}
-        {% assign col_handle = entry.wrestler_collection.value | strip %}
-        {% assign target = collections[col_handle] %}
-        
-        {% if target != blank %}
-          <div class="rc-item-data" 
-               data-url="{{ target.url }}" 
-               data-img="{{ target.featured_image | image_url: width: 400 }}" 
-               data-title="{{ target.title | escape }}" 
-               data-count="{{ target.products_count }}"
-               style="display:none;"></div>
-        {% endif %}
-      {% endfor %}
-    {% endpaginate %}
+    {% comment %} Sleek Skeleton placeholders while JavaScript initializes {% endcomment %}
+    {% for i in (1..8) %}
+      <div class="rc-item rc-skeleton">
+        <div class="rc-skel-img"></div>
+        <div class="rc-skel-text"></div>
+      </div>
+    {% endfor %}
   </div>
 </section>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const container = document.getElementById('random-collections-container');
-    const allData = Array.from(document.querySelectorAll('.rc-item-data'));
-    
-    if (allData.length === 0) return;
+{% comment %} Output clean metadata into a fast JSON block (Max platform limit of 250 entries) {% endcomment %}
+<script id="rc-collections-data" type="application/json">
+[
+  {% paginate shop.metaobjects.collection_mapping.values by 250 %}
+    {% assign first_item = true %}
+    {% for entry in shop.metaobjects.collection_mapping.values %}
+      {% assign col_handle = entry.wrestler_collection.value | strip %}
+      {% assign target = collections[col_handle] %}
+      {% if target != blank %}
+        {% unless first_item %},{% endunless %}
+        {
+          "url": {{ target.url | json }},
+          "img": {{ target.featured_image | image_url: width: 400 | json }},
+          "title": {{ target.title | json }},
+          "count": {{ target.products_count | json }}
+        }
+        {% assign first_item = false %}
+      {% endif %}
+    {% endfor %}
+  {% endpaginate %}
+]
+</script>
 
-    // Fisher-Yates Shuffle
-    for (let i = allData.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [allData[i], allData[j]] = [allData[j], allData[i]];
-    }
-    
-    // Select 8 random items
-    const selected = allData.slice(0, 8);
-    
-    // Build HTML
-    let html = '';
-    selected.forEach(item => {
-      html += `
-        <div class="rc-item">
-          <a href="${item.dataset.url}">
-            <img src="${item.dataset.img}" alt="${item.dataset.title}" loading="lazy">
-            <h3>${item.dataset.title} (${item.dataset.count} items)</h3>
-          </a>
-        </div>
-      `;
-    });
-    
-    container.innerHTML = html;
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  var container = document.getElementById('random-collections-container');
+  var dataEl = document.getElementById('rc-collections-data');
+  if (!container || !dataEl) return;
+
+  var allCollections = [];
+  try {
+    allCollections = JSON.parse(dataEl.textContent);
+  } catch(e) { return; }
+
+  if (!allCollections.length) {
+    container.innerHTML = '';
+    return;
+  }
+
+  // ── True Fisher-Yates Shuffle ──
+  for (var i = allCollections.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = allCollections[i];
+    allCollections[i] = allCollections[j];
+    allCollections[j] = temp;
+  }
+
+  // Slice exactly what we need
+  var selected = allCollections.slice(0, 8);
+  
+  // Build clean HTML string directly
+  var html = '';
+  selected.forEach(function(item) {
+    html += 
+      '<div class="rc-item">' +
+        '<a href="' + item.url + '">' +
+          '<img src="' + item.img + '" alt="' + item.title.replace(/"/g,'&quot;') + '" loading="lazy">' +
+          '<h3>' + item.title + ' (' + item.count + ' items)</h3>' +
+        '</a>' +
+      '</div>';
   });
+  
+  container.innerHTML = html;
+});
 </script>
 
 <style>
@@ -62,6 +86,11 @@
   .random-collections-any .rc-item { text-align: center; }
   .random-collections-any .rc-item img { width: 100% !important; aspect-ratio: 1 / 1 !important; object-fit: cover !important; border-radius: 8px !important; display: block !important; }
   .random-collections-any .rc-item h3 { margin-top: 10px; font-size: 1.1rem; }
+
+  /* Shimmer Skeletons Style */
+  .rc-skel-img { width: 100%; aspect-ratio: 1 / 1; background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%); background-size: 200% 100%; animation: rc-sh 1.4s infinite; border-radius: 8px; }
+  .rc-skel-text { height: 16px; width: 75%; margin: 12px auto 0 auto; border-radius: 3px; background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%); background-size: 200% 100%; animation: rc-sh 1.4s infinite; }
+  @keyframes rc-sh { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
 </style>
 
 {% schema %}
@@ -70,4 +99,4 @@
   "settings": [ { "type": "text", "id": "heading", "label": "Heading", "default": "Random Wrestlers" } ],
   "presets": [{ "name": "Mapped Collections Random" }]
 }
-{% endschema %}>
+{% endschema %}
