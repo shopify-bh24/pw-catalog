@@ -1,87 +1,180 @@
+{% comment %} random-related-products.liquid {% endcomment %}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 {{ 'component-product-grid.css' | asset_url | stylesheet_tag }}
 {{ 'section-product-recommendations.css' | asset_url | stylesheet_tag }}
-
-{% comment %}
-  random-home-products.liquid
-  ─────────────────────────────────────────────────────────────────
-  WHAT CHANGED vs the old version:
-  1. No hardcoded collection list — iterates ALL store collections automatically.
-  2. Server renders only 16 product-card snippets (not 65+).
-     JS then reveals 8 random ones, keeping your native card style.
-  3. Removed the extra wrapper divs that were conflicting with the grid CSS.
-{% endcomment %}
 
 <section class="random related-products page-width spaced-section">
   <h2 class="product-recommendations__heading title">
     {{ section.settings.heading | escape }}
   </h2>
 
-  <ul
-    id="random-products-list"
-    class="grid grid--2-col product-grid grid--4-col-desktop"
-    role="list">
-
-    {% assign rp_count = 0 %}
-    {% assign rp_limit = 16 %}
-
-    {% for collection in collections %}
-      {% if rp_count >= rp_limit %}{% break %}{% endif %}
-      {% if collection.products_count > 0 %}
-
-        {% comment %} Pseudo-random product pick per collection {% endcomment %}
-        {% assign rp_index = forloop.index | modulo: collection.products_count %}
-        {% assign rp_product = collection.products[rp_index] %}
-
-        <li class="grid__item rp-hidden" data-sort="{{ forloop.index | times: 2654435761 | modulo: 65537 }}">
-          {% render 'product-card',
-            product_card_product: rp_product,
-            media_size: section.settings.image_ratio,
-            show_secondary_image: section.settings.show_secondary_image,
-            add_image_padding: section.settings.add_image_padding,
-            show_vendor: section.settings.show_vendor,
-            show_image_outline: section.settings.show_image_outline,
-            show_rating: section.settings.show_rating
-          %}
-        </li>
-
-        {% assign rp_count = rp_count | plus: 1 %}
-      {% endif %}
-    {% endfor %}
-
+  <ul id="rp-list" class="grid grid--2-col product-grid grid--4-col-desktop" role="list">
+    <li class="grid__item rp-skeleton"><div class="rp-skeleton-box"></div></li>
+    <li class="grid__item rp-skeleton"><div class="rp-skeleton-box"></div></li>
+    <li class="grid__item rp-skeleton"><div class="rp-skeleton-box"></div></li>
+    <li class="grid__item rp-skeleton"><div class="rp-skeleton-box"></div></li>
+    <li class="grid__item rp-skeleton rp-hide-mobile"><div class="rp-skeleton-box"></div></li>
+    <li class="grid__item rp-skeleton rp-hide-mobile"><div class="rp-skeleton-box"></div></li>
+    <li class="grid__item rp-skeleton rp-hide-mobile"><div class="rp-skeleton-box"></div></li>
+    <li class="grid__item rp-skeleton rp-hide-mobile"><div class="rp-skeleton-box"></div></li>
   </ul>
 </section>
 
 <script>
 (function () {
-  var list  = document.getElementById('random-products-list');
+
+  var PRODUCTS_TO_SHOW = {{ section.settings.products_to_show | default: 8 }};
+  var STORE            = 'https://pwcatalog.com';
+  var list             = document.getElementById('rp-list');
   if (!list) return;
 
-  var items = Array.from(list.querySelectorAll('.rp-hidden'));
-  if (!items.length) return;
-
-  // Fisher-Yates shuffle for true client-side randomness every page load
-  for (var i = items.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = items[i]; items[i] = items[j]; items[j] = tmp;
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
   }
 
-  var toShow = {{ section.settings.products_to_show | default: 8 }};
+  function formatMoney(cents) {
+    return '$' + (cents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
 
-  items.forEach(function (item, idx) {
-    if (idx < toShow) {
-      item.classList.remove('rp-hidden');
-    } else {
-      // Remove from DOM entirely — no hidden nodes wasting memory
-      item.parentNode.removeChild(item);
-    }
-  });
+  function buildCard(p) {
+    var img     = p.images && p.images[0] ? p.images[0].src : '';
+    var url     = '/products/' + p.handle;
+    var price   = formatMoney(parseInt(p.variants[0].price * 100));
+    var compare = p.variants[0].compare_at_price
+                    ? parseInt(p.variants[0].compare_at_price * 100)
+                    : 0;
+    var saleHtml    = compare > parseInt(p.variants[0].price * 100)
+                        ? '<span class="rp-badge">Sale</span>' : '';
+    var compareHtml = compare > parseInt(p.variants[0].price * 100)
+                        ? '<s class="rp-compare">' + formatMoney(compare) + '</s> ' : '';
+
+    return '<li class="grid__item">' +
+      '<div class="card-wrapper">' +
+        '<a href="' + url + '" class="card card--media">' +
+          '<div class="card__media">' +
+            (img ? '<img src="' + img + '" alt="' + p.title.replace(/"/g,'&quot;') + '" loading="lazy" width="400" height="400">' : '') +
+            saleHtml +
+          '</div>' +
+          '<div class="card__content"><div class="card__information">' +
+            '<h3 class="card__heading">' + p.title + '</h3>' +
+            '<div class="price">' + compareHtml +
+              '<span class="price-item price-item--regular">' + price + '</span>' +
+            '</div>' +
+          '</div></div>' +
+        '</a>' +
+      '</div>' +
+    '</li>';
+  }
+
+  function fetchProductsFromCollection(handle) {
+    // Pick a random page (1-5) so we don't always get the same products
+    var page = Math.floor(Math.random() * 5) + 1;
+    return fetch(STORE + '/collections/' + handle + '/products.json?limit=20&page=' + page)
+      .then(function(r) { return r.json(); })
+      .then(function(data) { return data.products || []; })
+      .catch(function() { return []; });
+  }
+
+  function run() {
+    // Step 1: fetch a page of collections randomly
+    var page = Math.floor(Math.random() * 10) + 1;
+    fetch(STORE + '/collections.json?limit=20&page=' + page)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var collections = data.collections || [];
+
+        // Filter out empty/system collections
+        collections = collections.filter(function(c) {
+          return c.handle !== 'all' && c.products_count > 0;
+        });
+
+        if (!collections.length) {
+          // Fallback to page 1 if random page returned nothing
+          return fetch(STORE + '/collections.json?limit=20&page=1')
+            .then(function(r) { return r.json(); })
+            .then(function(d) { return d.collections || []; });
+        }
+        return collections;
+      })
+      .then(function(collections) {
+        // Shuffle collections, pick PRODUCTS_TO_SHOW of them
+        collections = shuffle(collections);
+        var picked = collections.slice(0, PRODUCTS_TO_SHOW);
+
+        // Step 2: fetch 1 product from each picked collection in parallel
+        var promises = picked.map(function(col) {
+          return fetchProductsFromCollection(col.handle)
+            .then(function(products) {
+              if (!products.length) return null;
+              // Pick a random product from the result
+              return products[Math.floor(Math.random() * products.length)];
+            });
+        });
+
+        return Promise.all(promises);
+      })
+      .then(function(products) {
+        // Filter nulls, shuffle final list
+        products = shuffle(products.filter(Boolean));
+
+        if (!products.length) {
+          list.innerHTML = '';
+          return;
+        }
+
+        var html = '';
+        products.slice(0, PRODUCTS_TO_SHOW).forEach(function(p) {
+          html += buildCard(p);
+        });
+        list.innerHTML = html;
+      })
+      .catch(function(err) {
+        console.warn('[random-products]', err);
+        list.innerHTML = '';
+      });
+  }
+
+  // Run after page is idle so it never blocks page render
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(run);
+  } else {
+    setTimeout(run, 200);
+  }
+
 })();
 </script>
 
 <style>
-  .rp-hidden { display: none !important; }
+  .rp-skeleton-box {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: rp-shimmer 1.4s infinite;
+  }
+  @keyframes rp-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  @media screen and (max-width: 749px) {
+    .rp-hide-mobile { display: none !important; }
+  }
+  #rp-list .card__media { position: relative; overflow: hidden; }
+  #rp-list .card__media img {
+    width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block;
+  }
+  #rp-list .rp-badge {
+    position: absolute; top: 8px; left: 8px;
+    background: #e00; color: #fff;
+    font-size: 0.75rem; padding: 2px 8px; border-radius: 2px;
+  }
+  #rp-list .rp-compare { color: #999; font-size: 0.85em; margin-right: 4px; }
 </style>
 
 {% schema %}
@@ -104,51 +197,8 @@
       "step": 1,
       "default": 8,
       "label": "Number of products to display"
-    },
-    {
-      "type": "select",
-      "id": "image_ratio",
-      "options": [
-        { "value": "adapt",    "label": "Adapt to image" },
-        { "value": "portrait", "label": "Portrait"       },
-        { "value": "square",   "label": "Square"         }
-      ],
-      "default": "square",
-      "label": "Image ratio"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_secondary_image",
-      "default": true,
-      "label": "Show secondary image on hover"
-    },
-    {
-      "type": "checkbox",
-      "id": "add_image_padding",
-      "default": false,
-      "label": "Add image padding"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_image_outline",
-      "default": false,
-      "label": "Show image outline"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_vendor",
-      "default": false,
-      "label": "Show vendor"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_rating",
-      "default": false,
-      "label": "Show product rating"
     }
   ],
-  "presets": [
-    { "name": "Random Products" }
-  ]
+  "presets": [{ "name": "Random Products" }]
 }
 {% endschema %}
