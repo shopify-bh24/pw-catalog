@@ -1,103 +1,98 @@
 <div class="page-width" style="padding: 20px 0;">
 
-  {% comment %} Sticky controls bar {% endcomment %}
-  <div id="sticky-controls" style="position:sticky; top:0; z-index:1; isolation:auto; background:#fff; padding:10px 0; border-bottom:1px solid #e1e1e1; margin-bottom:20px;">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+  {% paginate shop.metaobjects.collection_mapping.values by 1000 %}
 
-      {% comment %} Left: Letter index {% endcomment %}
-      <div id="letter-index" style="display:flex; flex-wrap:wrap; gap:3px; font-size:0.8em;">
-        <a href="#" data-letter="all" class="letter-btn" style="padding:4px 8px; border:1px solid #333; border-radius:4px; color:#fff; background:#333; text-decoration:none; font-weight:bold;">All</a>
-        {% assign letters = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' %}
-        {% for letter in letters %}
-          <a href="#" data-letter="{{ letter | downcase }}" class="letter-btn" style="padding:4px 8px; border:1px solid #d1d1d1; border-radius:4px; color:#333; background:#fff; text-decoration:none;">{{ letter }}</a>
-        {% endfor %}
+    {% comment %} Sticky controls bar {% endcomment %}
+    <div id="sticky-controls" style="position:sticky; top:0; z-index:1; isolation:auto; background:#fff; padding:10px 0; border-bottom:1px solid #e1e1e1; margin-bottom:20px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+
+        {% comment %} Left: Letter index {% endcomment %}
+        <div id="letter-index" style="display:flex; flex-wrap:wrap; gap:3px; font-size:0.8em;">
+          <a href="#" data-letter="all" class="letter-btn" style="padding:4px 8px; border:1px solid #333; border-radius:4px; color:#fff; background:#333; text-decoration:none; font-weight:bold;">All</a>
+          {% assign letters = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' %}
+          {% for letter in letters %}
+            <a href="#" data-letter="{{ letter | downcase }}" class="letter-btn" style="padding:4px 8px; border:1px solid #d1d1d1; border-radius:4px; color:#333; background:#fff; text-decoration:none;">{{ letter }}</a>
+          {% endfor %}
+        </div>
+
+        {% comment %} Right: Dropdowns {% endcomment %}
+        <div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
+          <label for="sort-select" style="font-size:0.9em; color:#555;">Sort by:</label>
+          <select id="sort-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
+            <option value="most">Most Products</option>
+            <option value="least">Fewest Products</option>
+          </select>
+          <label for="per-page-select" style="font-size:0.9em; color:#555;">Items per page:</label>
+          <select id="per-page-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+          </select>
+        </div>
+
       </div>
-
-      {% comment %} Right: Dropdowns {% endcomment %}
-      <div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
-        <label for="sort-select" style="font-size:0.9em; color:#555;">Sort by:</label>
-        <select id="sort-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
-          <option value="az">A → Z</option>
-          <option value="za">Z → A</option>
-          <option value="most">Most Products</option>
-          <option value="least">Fewest Products</option>
-        </select>
-        <label for="per-page-select" style="font-size:0.9em; color:#555;">Items per page:</label>
-        <select id="per-page-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
-          <option value="25">25</option>
-          <option value="50" selected>50</option>
-          <option value="100">100</option>
-          <option value="250">250</option>
-        </select>
-      </div>
-
     </div>
-  </div>
 
-  {% comment %} Grid Placeholder Container (Shows CSS skeletons while parsing data) {% endcomment %}
-  <div id="wrestler-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px;">
-    {% for i in (1..8) %}
-      <div class="wrestler-skeleton" style="border:1px solid #e1e1e1; padding:15px; border-radius:8px;">
-        <div class="skel-media" style="height:250px; background:linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%); background-size:200% 100%; animation:w-sh 1.4s infinite; border-radius:4px;"></div>
-        <div class="skel-line" style="height:16px; width:60%; margin:15px auto 5px; background:linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%); background-size:200% 100%; animation:w-sh 1.4s infinite; border-radius:3px;"></div>
-        <div class="skel-line" style="height:12px; width:40%; margin:5px auto 0; background:linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%); background-size:200% 100%; animation:w-sh 1.4s infinite; border-radius:3px;"></div>
-      </div>
-    {% endfor %}
-  </div>
+    {% comment %} Grid {% endcomment %}
+    <div id="wrestler-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px;">
+      {% for entry in shop.metaobjects.collection_mapping.values %}
+        {%- assign collection_handle = entry.wrestler_collection.value | strip -%}
+        {%- assign target_collection = collections[collection_handle] -%}
+        <div class="wrestler-card"
+             data-name="{{ entry.wrestler_name | downcase | escape }}"
+             data-count="{{ target_collection.all_products_count | default: 0 }}"
+             style="border:1px solid #e1e1e1; padding:15px; border-radius:8px; text-align:center;">
+          <a href="{{ target_collection.url | default: '#' }}">
+            {% if target_collection.featured_image != blank %}
+              <img src="{{ target_collection.featured_image | image_url: width: 400 }}"
+                   alt="{{ target_collection.title | escape }}"
+                   loading="lazy"
+                   style="width:100%; height:250px; object-fit:cover; border-radius:4px;">
+            {% else %}
+              <div style="height:250px; background:#f4f4f4; display:flex; align-items:center; justify-content:center; border-radius:4px;">No Image</div>
+            {% endif %}
+          </a>
+          <h3 style="margin:15px 0 5px; font-size:1.2em;">{{ entry.wrestler_name }}</h3>
+          <p style="margin:0; font-size:0.9em; color:#666;">
+            <a href="{{ target_collection.url | default: '#' }}" style="color:#666; text-decoration:none;">
+              {{ target_collection.all_products_count | default: 0 }} Items
+            </a>
+          </p>
+        </div>
+      {% endfor %}
+    </div>
 
-  <div id="pagination-controls" style="margin-top:30px; display:flex; justify-content:center; gap:6px; flex-wrap:wrap;"></div>
+    <div id="pagination-controls" style="margin-top:30px; display:flex; justify-content:center; gap:6px; flex-wrap:wrap;"></div>
 
-  <div style="text-align:center; margin-top:24px; padding:16px; border-top:1px solid #e1e1e1; font-size:0.9em; color:#666;">
-    Can't find the wrestler you're looking for? Try the
-    <a href="/search" style="color:#333; font-weight:bold; text-decoration:underline;">search</a>
-    at the top of the page, or
-    <a href="/pages/contact" style="color:#333; font-weight:bold; text-decoration:underline;">contact us</a>
-    and we'll create a dedicated page for them.
-  </div>
+    <div style="text-align:center; margin-top:24px; padding:16px; border-top:1px solid #e1e1e1; font-size:0.9em; color:#666;">
+      Can't find the wrestler you're looking for? Try the
+      <a href="/search" style="color:#333; font-weight:bold; text-decoration:underline;">search</a>
+      at the top of the page, or
+      <a href="/pages/contact" style="color:#333; font-weight:bold; text-decoration:underline;">contact us</a>
+      and we'll create a dedicated page for them.
+    </div>
 
+  {% endpaginate %}
 </div>
-
-{% comment %} Optimized database output safely packaged as clean JSON (Max Platform Limit: 250) {% endcomment %}
-{% paginate shop.metaobjects.collection_mapping.values by 250 %}
-<script id="wrestler-raw-json" type="application/json">
-[
-  {% assign first_item = true %}
-  {% for entry in shop.metaobjects.collection_mapping.values %}
-    {%- assign collection_handle = entry.wrestler_collection.value | strip -%}
-    {%- assign target_collection = collections[collection_handle] -%}
-    {%- unless first_item -%},{%- endunless -%}
-    {
-      "name": {{ entry.wrestler_name | default: "" | json }},
-      "url": {{ target_collection.url | default: "#" | json }},
-      "img": {% if target_collection.featured_image != blank %}{{ target_collection.featured_image | image_url: width: 400 | json }}{% else %}null{% endif %},
-      "title": {{ target_collection.title | default: "" | json }},
-      "count": {{ target_collection.all_products_count | default: 0 }}
-    }
-    {% assign first_item = false %}
-  {% endfor %}
-]
-</script>
-{% endpaginate %}
 
 <script>
 (function () {
-  var dataEl = document.getElementById('wrestler-raw-json');
-  var grid = document.getElementById('wrestler-grid');
-  var controls = document.getElementById('pagination-controls');
+
+  var allCards   = Array.from(document.querySelectorAll('#wrestler-grid .wrestler-card'));
+  var grid       = document.getElementById('wrestler-grid');
+  var controls   = document.getElementById('pagination-controls');
   var sortSelect = document.getElementById('sort-select');
-  var ppSelect = document.getElementById('per-page-select');
+  var ppSelect   = document.getElementById('per-page-select');
   var letterBtns = Array.from(document.querySelectorAll('.letter-btn'));
-  var stickyBar = document.getElementById('sticky-controls');
-
-  if (!dataEl || !grid) return;
-
-  var wrestlersData = [];
-  try { wrestlersData = JSON.parse(dataEl.textContent); } catch (e) { return; }
+  var stickyBar  = document.getElementById('sticky-controls');
 
   var activeLetter = 'all';
-  var currentPage = 1;
+  var currentPage  = 1;
 
-  // Restore state parameters from URL
+  // Restore from URL
   var params = new URLSearchParams(window.location.search);
   if (params.get('sort') && sortSelect.querySelector('[value="' + params.get('sort') + '"]')) {
     sortSelect.value = params.get('sort');
@@ -106,17 +101,26 @@
   if ([25, 50, 100, 250].indexOf(pp) !== -1) ppSelect.value = pp;
   if (params.get('letter')) activeLetter = params.get('letter');
 
+  // Use the exact Shopify section header ID found in your page source
   function getNavHeight() {
     var header = document.getElementById('shopify-section-header');
     if (header) {
       var h = header.getBoundingClientRect().height;
       if (h > 0) return Math.round(h);
     }
+    var selectors = ['.header-wrapper', 'header.header', 'header', '[role="banner"]'];
+    for (var i = 0; i < selectors.length; i++) {
+      var el = document.querySelector(selectors[i]);
+      if (el) {
+        var h2 = el.getBoundingClientRect().height;
+        if (h2 > 0) return Math.round(h2);
+      }
+    }
     return 0;
   }
 
   function applyNavOffset() {
-    if (stickyBar) stickyBar.style.top = getNavHeight() + 'px';
+    stickyBar.style.top = getNavHeight() + 'px';
   }
 
   applyNavOffset();
@@ -125,73 +129,51 @@
 
   function saveURL() {
     var u = new URL(window.location.href);
-    u.searchParams.set('sort', sortSelect.value);
+    u.searchParams.set('sort',     sortSelect.value);
     u.searchParams.set('per_page', ppSelect.value);
-    u.searchParams.set('letter', activeLetter);
+    u.searchParams.set('letter',   activeLetter);
     window.history.replaceState({}, '', u.toString());
   }
 
   function setLetterStyles() {
     letterBtns.forEach(function (btn) {
       var active = btn.dataset.letter === activeLetter;
-      btn.style.background = active ? '#333' : '#fff';
-      btn.style.color = active ? '#fff' : '#333';
+      btn.style.background  = active ? '#333' : '#fff';
+      btn.style.color       = active ? '#fff' : '#333';
       btn.style.borderColor = active ? '#333' : '#d1d1d1';
-      btn.style.fontWeight = active ? 'bold' : 'normal';
+      btn.style.fontWeight  = active ? 'bold' : 'normal';
     });
   }
 
   function render() {
-    var sort = sortSelect.value;
+    var sort    = sortSelect.value;
     var perPage = parseInt(ppSelect.value);
-    var letter = activeLetter;
+    var letter  = activeLetter;
 
-    // Filter array data in memory
-    var filtered = wrestlersData.filter(function (w) {
-      var nameStr = (w.name || '').trim().toLowerCase();
-      return letter === 'all' || nameStr.charAt(0) === letter;
+    var filtered = allCards.filter(function (c) {
+      return letter === 'all' || c.dataset.name.charAt(0) === letter;
     });
 
-    // Sort clean objects array
     filtered.sort(function (a, b) {
-      var nameA = (a.name || '').toLowerCase();
-      var nameB = (b.name || '').toLowerCase();
-      if (sort === 'az') return nameA.localeCompare(nameB);
-      if (sort === 'za') return nameB.localeCompare(nameA);
-      if (sort === 'most') return b.count - a.count;
-      if (sort === 'least') return a.count - b.count;
+      if (sort === 'az')    return a.dataset.name.localeCompare(b.dataset.name);
+      if (sort === 'za')    return b.dataset.name.localeCompare(a.dataset.name);
+      if (sort === 'most')  return parseInt(b.dataset.count) - parseInt(a.dataset.count);
+      if (sort === 'least') return parseInt(a.dataset.count) - parseInt(b.dataset.count);
       return 0;
     });
+
+    filtered.forEach(function (c) { grid.appendChild(c); });
 
     var totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
     if (currentPage > totalPages) currentPage = 1;
 
     var start = (currentPage - 1) * perPage;
-    var end = start + perPage;
-    var pageItems = filtered.slice(start, end);
+    var end   = start + perPage;
+    allCards.forEach(function (c) { c.style.display = 'none'; });
+    filtered.forEach(function (c, i) {
+      c.style.display = (i >= start && i < end) ? '' : 'none';
+    });
 
-    // Build optimized HTML on the fly
-    var html = '';
-    if (pageItems.length === 0) {
-      html = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#666;">No wrestlers found.</div>';
-    } else {
-      pageItems.forEach(function (w) {
-        var imageContent = w.img 
-          ? '<img src="' + w.img + '" alt="' + w.title.replace(/"/g,'&quot;') + '" loading="lazy" style="width:100%; height:250px; object-fit:cover; border-radius:4px;">'
-          : '<div style="height:250px; background:#f4f4f4; display:flex; align-items:center; justify-content:center; border-radius:4px;">No Image</div>';
-
-        html += 
-          '<div class="wrestler-card" style="border:1px solid #e1e1e1; padding:15px; border-radius:8px; text-align:center;">' +
-            '<a href="' + w.url + '">' + imageContent + '</a>' +
-            '<h3 style="margin:15px 0 5px; font-size:1.2em;">' + w.name + '</h3>' +
-            '<p style="margin:0; font-size:0.9em; color:#666;">' +
-              '<a href="' + w.url + '" style="color:#666; text-decoration:none;">' + w.count + ' Items</a>' +
-            '</p>' +
-          '</div>';
-      });
-    }
-
-    grid.innerHTML = html;
     buildPagination(totalPages);
     setLetterStyles();
   }
@@ -200,7 +182,7 @@
     controls.innerHTML = '';
     if (totalPages <= 1) return;
 
-    var base = 'padding:6px 11px;border:1px solid #d1d1d1;border-radius:5px;background:#fff;cursor:pointer;font-size:0.88em;color:#333;text-decoration:none;display:inline-block;';
+    var base   = 'padding:6px 11px;border:1px solid #d1d1d1;border-radius:5px;background:#fff;cursor:pointer;font-size:0.88em;color:#333;text-decoration:none;display:inline-block;';
     var active = 'padding:6px 11px;border:1px solid #333;border-radius:5px;background:#333;cursor:default;font-size:0.88em;color:#fff;display:inline-block;';
 
     function makeBtn(label, page) {
@@ -252,7 +234,7 @@
     btn.addEventListener('click', function (e) {
       e.preventDefault();
       activeLetter = btn.dataset.letter;
-      currentPage = 1;
+      currentPage  = 1;
       if (activeLetter !== 'all' && sortSelect.value !== 'az' && sortSelect.value !== 'za') {
         sortSelect.value = 'az';
       }
@@ -262,12 +244,9 @@
   });
 
   render();
+
 })();
 </script>
-
-<style>
-  @keyframes w-sh { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-</style>
 
 {% schema %}
 {
