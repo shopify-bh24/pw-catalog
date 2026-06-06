@@ -8,26 +8,115 @@
   <h2 class="product-recommendations__heading title">
     {{ section.settings.heading | escape }}
   </h2>
-
-  <ul id="rp-list" class="grid grid--2-col product-grid grid--4-col-desktop" role="list">
-    <li class="grid__item rp-skeleton"><div class="rp-skeleton-box"></div></li>
-    <li class="grid__item rp-skeleton"><div class="rp-skeleton-box"></div></li>
-    <li class="grid__item rp-skeleton"><div class="rp-skeleton-box"></div></li>
-    <li class="grid__item rp-skeleton"><div class="rp-skeleton-box"></div></li>
-    <li class="grid__item rp-skeleton rp-hide-mobile"><div class="rp-skeleton-box"></div></li>
-    <li class="grid__item rp-skeleton rp-hide-mobile"><div class="rp-skeleton-box"></div></li>
-    <li class="grid__item rp-skeleton rp-hide-mobile"><div class="rp-skeleton-box"></div></li>
-    <li class="grid__item rp-skeleton rp-hide-mobile"><div class="rp-skeleton-box"></div></li>
-  </ul>
+  <ul id="rp-list" class="grid grid--2-col product-grid grid--4-col-desktop" role="list"></ul>
 </section>
+
+{% comment %} Skeleton shown while JS loads {% endcomment %}
+<style>
+  #rp-list:empty::after {
+    content: '';
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .rp-skel {
+    background: linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: rp-sh 1.4s infinite;
+    border-radius: 4px;
+  }
+  @keyframes rp-sh { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  /* ── Card styles matching your theme ── */
+  #rp-list .rp-card-item { list-style: none; }
+  #rp-list .rp-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  #rp-list .rp-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+  #rp-list .rp-card-img-wrap {
+    width: 100%;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    background: #f5f5f5;
+  }
+  #rp-list .rp-card-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+  }
+  #rp-list .rp-card-img-wrap .rp-skel {
+    width: 100%; height: 100%;
+  }
+  #rp-list .rp-card-body {
+    padding: 10px;
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+  #rp-list .rp-card-title {
+    margin: 0 0 10px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #333;
+    /* clamp to 2 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  #rp-list .rp-card-btns {
+    display: flex; gap: 4px; flex-wrap: wrap;
+  }
+  #rp-list .rp-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 5px 4px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-align: center;
+    border-radius: 3px;
+    border: 1px solid #333;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.15s, color 0.15s;
+  }
+  #rp-list .rp-btn:hover { background: #333; color: #fff; }
+  @media (max-width: 749px) {
+    #rp-list .rp-card-btns { flex-direction: column; }
+  }
+</style>
 
 <script>
 (function () {
-
-  var PRODUCTS_TO_SHOW = {{ section.settings.products_to_show | default: 8 }};
-  var STORE            = 'https://pwcatalog.com';
-  var list             = document.getElementById('rp-list');
+  var STORE         = 'https://pwcatalog.com';
+  var NEED          = {{ section.settings.products_to_show | default: 8 }};
+  var list          = document.getElementById('rp-list');
   if (!list) return;
+
+  // Show skeleton while loading
+  var skelHtml = '';
+  for (var s = 0; s < NEED; s++) {
+    skelHtml += '<li class="grid__item rp-card-item">' +
+      '<div class="rp-card">' +
+        '<div class="rp-card-img-wrap"><div class="rp-skel"></div></div>' +
+        '<div class="rp-card-body">' +
+          '<div class="rp-skel" style="height:14px;margin-bottom:6px;border-radius:3px"></div>' +
+          '<div class="rp-skel" style="height:14px;width:70%;border-radius:3px"></div>' +
+        '</div>' +
+      '</div></li>';
+  }
+  list.innerHTML = skelHtml;
 
   function shuffle(arr) {
     for (var i = arr.length - 1; i > 0; i--) {
@@ -37,145 +126,135 @@
     return arr;
   }
 
-  function formatMoney(cents) {
-    return '$' + (cents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  }
-
   function buildCard(p) {
-    var img     = p.images && p.images[0] ? p.images[0].src : '';
-    var url     = '/products/' + p.handle;
-    var price   = formatMoney(parseInt(p.variants[0].price * 100));
-    var compare = p.variants[0].compare_at_price
-                    ? parseInt(p.variants[0].compare_at_price * 100)
-                    : 0;
-    var saleHtml    = compare > parseInt(p.variants[0].price * 100)
-                        ? '<span class="rp-badge">Sale</span>' : '';
-    var compareHtml = compare > parseInt(p.variants[0].price * 100)
-                        ? '<s class="rp-compare">' + formatMoney(compare) + '</s> ' : '';
+    var img = p.images && p.images.length
+      ? p.images[0].src.replace(/(\.[^.]+)$/, '_400x$1')
+      : '';
+    var url = '/products/' + p.handle;
 
-    return '<li class="grid__item">' +
-      '<div class="card-wrapper">' +
-        '<a href="' + url + '" class="card card--media">' +
-          '<div class="card__media">' +
-            (img ? '<img src="' + img + '" alt="' + p.title.replace(/"/g,'&quot;') + '" loading="lazy" width="400" height="400">' : '') +
-            saleHtml +
-          '</div>' +
-          '<div class="card__content"><div class="card__information">' +
-            '<h3 class="card__heading">' + p.title + '</h3>' +
-            '<div class="price">' + compareHtml +
-              '<span class="price-item price-item--regular">' + price + '</span>' +
-            '</div>' +
-          '</div></div>' +
+    return '<li class="grid__item rp-card-item">' +
+      '<div class="rp-card">' +
+        '<a href="' + url + '" class="rp-card-img-wrap">' +
+          (img
+            ? '<img src="' + img + '" alt="' + p.title.replace(/"/g,'&quot;') + '" loading="lazy" width="400" height="533">'
+            : '<div class="rp-skel" style="width:100%;height:100%"></div>') +
         '</a>' +
+        '<div class="rp-card-body">' +
+          '<p class="rp-card-title">' + p.title + '</p>' +
+          '<div class="rp-card-btns">' +
+            '<a href="' + url + '" class="rp-btn">Add to Collection</a>' +
+            '<a href="' + url + '" class="rp-btn">Add to Wishlist</a>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
     '</li>';
   }
 
-  function fetchProductsFromCollection(handle) {
-    // Pick a random page (1-5) so we don't always get the same products
-    var page = Math.floor(Math.random() * 5) + 1;
-    return fetch(STORE + '/collections/' + handle + '/products.json?limit=20&page=' + page)
+  // Fetch all collection handles from multiple random pages
+  // then keep trying until we have NEED products
+  var collectionPool = [];
+  var usedHandles   = {};
+  var results       = [];
+
+  function fetchCollectionPage(page) {
+    return fetch(STORE + '/collections.json?limit=250&page=' + page)
       .then(function(r) { return r.json(); })
-      .then(function(data) { return data.products || []; })
+      .then(function(d) { return d.collections || []; })
       .catch(function() { return []; });
   }
 
-  function run() {
-    // Step 1: fetch a page of collections randomly
-    var page = Math.floor(Math.random() * 10) + 1;
-    fetch(STORE + '/collections.json?limit=20&page=' + page)
+  function fetchProductFromCollection(handle) {
+    // Random page 1-3, random product from result
+    var page = Math.floor(Math.random() * 3) + 1;
+    return fetch(STORE + '/collections/' + handle + '/products.json?limit=20&page=' + page)
       .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var collections = data.collections || [];
-
-        // Filter out empty/system collections
-        collections = collections.filter(function(c) {
-          return c.handle !== 'all' && c.products_count > 0;
-        });
-
-        if (!collections.length) {
-          // Fallback to page 1 if random page returned nothing
-          return fetch(STORE + '/collections.json?limit=20&page=1')
-            .then(function(r) { return r.json(); })
-            .then(function(d) { return d.collections || []; });
+      .then(function(d) {
+        var prods = d.products || [];
+        if (!prods.length && page > 1) {
+          // fallback to page 1 if random page was empty
+          return fetch(STORE + '/collections/' + handle + '/products.json?limit=20&page=1')
+            .then(function(r2) { return r2.json(); })
+            .then(function(d2) { return d2.products || []; });
         }
-        return collections;
+        return prods;
       })
-      .then(function(collections) {
-        // Shuffle collections, pick PRODUCTS_TO_SHOW of them
-        collections = shuffle(collections);
-        var picked = collections.slice(0, PRODUCTS_TO_SHOW);
-
-        // Step 2: fetch 1 product from each picked collection in parallel
-        var promises = picked.map(function(col) {
-          return fetchProductsFromCollection(col.handle)
-            .then(function(products) {
-              if (!products.length) return null;
-              // Pick a random product from the result
-              return products[Math.floor(Math.random() * products.length)];
-            });
-        });
-
-        return Promise.all(promises);
+      .then(function(prods) {
+        if (!prods.length) return null;
+        return prods[Math.floor(Math.random() * prods.length)];
       })
-      .then(function(products) {
-        // Filter nulls, shuffle final list
-        products = shuffle(products.filter(Boolean));
-
-        if (!products.length) {
-          list.innerHTML = '';
-          return;
-        }
-
-        var html = '';
-        products.slice(0, PRODUCTS_TO_SHOW).forEach(function(p) {
-          html += buildCard(p);
-        });
-        list.innerHTML = html;
-      })
-      .catch(function(err) {
-        console.warn('[random-products]', err);
-        list.innerHTML = '';
-      });
+      .catch(function() { return null; });
   }
 
-  // Run after page is idle so it never blocks page render
+  function tryFillProducts() {
+    if (results.length >= NEED) {
+      render();
+      return;
+    }
+
+    if (!collectionPool.length) {
+      // Pool exhausted — render what we have
+      render();
+      return;
+    }
+
+    // Pick a random unused collection from pool
+    var idx = Math.floor(Math.random() * collectionPool.length);
+    var col = collectionPool.splice(idx, 1)[0];
+
+    if (usedHandles[col.handle]) {
+      tryFillProducts();
+      return;
+    }
+    usedHandles[col.handle] = true;
+
+    fetchProductFromCollection(col.handle).then(function(product) {
+      if (product) {
+        results.push(product);
+      }
+      tryFillProducts();
+    });
+  }
+
+  function render() {
+    if (!results.length) {
+      list.innerHTML = '';
+      return;
+    }
+    results = shuffle(results);
+    var html = '';
+    results.slice(0, NEED).forEach(function(p) { html += buildCard(p); });
+    list.innerHTML = html;
+  }
+
+  function run() {
+    // Fetch 2 random pages of collections (each page = 250 collections)
+    // to build a large diverse pool
+    var p1 = Math.floor(Math.random() * 4) + 1;
+    var p2 = p1 === 1 ? 2 : 1; // always include page 1 as fallback
+
+    Promise.all([
+      fetchCollectionPage(p1),
+      fetchCollectionPage(p2)
+    ]).then(function(pages) {
+      var all = pages[0].concat(pages[1]);
+      // Filter system collections and empty ones
+      all = all.filter(function(c) {
+        return c.handle !== 'all'
+          && c.handle !== 'frontpage'
+          && c.products_count > 0;
+      });
+      collectionPool = shuffle(all);
+      tryFillProducts();
+    });
+  }
+
   if ('requestIdleCallback' in window) {
     requestIdleCallback(run);
   } else {
-    setTimeout(run, 200);
+    setTimeout(run, 100);
   }
-
 })();
 </script>
-
-<style>
-  .rp-skeleton-box {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 8px;
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: rp-shimmer 1.4s infinite;
-  }
-  @keyframes rp-shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-  @media screen and (max-width: 749px) {
-    .rp-hide-mobile { display: none !important; }
-  }
-  #rp-list .card__media { position: relative; overflow: hidden; }
-  #rp-list .card__media img {
-    width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block;
-  }
-  #rp-list .rp-badge {
-    position: absolute; top: 8px; left: 8px;
-    background: #e00; color: #fff;
-    font-size: 0.75rem; padding: 2px 8px; border-radius: 2px;
-  }
-  #rp-list .rp-compare { color: #999; font-size: 0.85em; margin-right: 4px; }
-</style>
 
 {% schema %}
 {
