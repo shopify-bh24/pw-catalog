@@ -1,136 +1,73 @@
-{% comment %}
-  PERFORMANCE FIX — random-wrestlers-metaobject-fixed.liquid
-  -----------------------------------------------------------
-  OLD problems:
-  1. Built a long comma-separated string in a loop then split it — wasteful string ops.
-  2. Rendered full product-card snippets for every collection, hidden by CSS.
-  3. Iterated all metaobjects without pagination — capped at 50 by Shopify.
-
-  FIXES:
-  1. Wrap metaobject loop in {% paginate ... by 250 %} (safe max per Shopify docs).
-  2. Render only lightweight JSON data server-side, build cards in JS.
-  3. Use collections.first product only (avoids inner product loops).
-{% endcomment %}
-
-<section class="random related-products page-width">
-  <h2 class="product-recommendations__heading title">Random Wrestlers</h2>
-  <ul
-    id="rw-products-list"
-    class="grid grid--2-col product-grid grid--4-col-desktop grid--quarter-max"
-    role="list"
-    aria-live="polite">
-  </ul>
+<section class="page-width random-collections-any">
+  {% comment %} Added dynamic count next to the heading {% endcomment %}
+  <h2 class="title">
+    {{ section.settings.heading }} 
+      </h2>
+  
+  <div class="any-random-grid" id="random-collections-container">
+    {% paginate shop.metaobjects.collection_mapping.values by shop.metaobjects.collection_mapping.values.size %}
+      {% for entry in shop.metaobjects.collection_mapping.values %}
+        {% assign col_handle = entry.wrestler_collection.value | strip %}
+        {% assign target = collections[col_handle] %}
+        
+        {% if target != blank %}
+          <div class="rc-item-data" 
+               data-url="{{ target.url }}" 
+               data-img="{{ target.featured_image | image_url: width: 400 }}" 
+               data-title="{{ target.title | escape }}" 
+               data-count="{{ target.products_count }}"
+               style="display:none;"></div>
+        {% endif %}
+      {% endfor %}
+    {% endpaginate %}
+  </div>
 </section>
 
-<script id="rw-data" type="application/json">
-[
-  {% assign rw_first = true %}
-  {% paginate shop.metaobjects.collection_mapping.values by 250 %}
-    {% for entry in shop.metaobjects.collection_mapping.values %}
-      {% if entry.collection.value %}
-        {% assign col = entry.collection.value %}
-        {% if col.products_count > 0 %}
-          {% assign rw_product = col.products.first %}
-          {% unless rw_first %},{% endunless %}
-          {% assign rw_first = false %}
-          {
-            "url":     {{ rw_product.url | json }},
-            "img":     {{ rw_product.featured_image | image_url: width: 400 | json }},
-            "title":   {{ rw_product.title | json }},
-            "price":   {{ rw_product.price | money | json }},
-            "compare": {% if rw_product.compare_at_price > rw_product.price %}{{ rw_product.compare_at_price | money | json }}{% else %}null{% endif %}
-          }
-        {% endif %}
-      {% endif %}
-    {% endfor %}
-  {% endpaginate %}
-]
-</script>
-
 <script>
-(function () {
-  'use strict';
+  document.addEventListener("DOMContentLoaded", function() {
+    const container = document.getElementById('random-collections-container');
+    const allData = Array.from(document.querySelectorAll('.rc-item-data'));
+    
+    if (allData.length === 0) return;
 
-  function buildWrestlers() {
-    const list   = document.getElementById('rw-products-list');
-    const dataEl = document.getElementById('rw-data');
-    if (!list || !dataEl) return;
-
-    let pool;
-    try {
-      pool = JSON.parse(dataEl.textContent);
-    } catch (e) {
-      console.warn('[random-wrestlers] JSON parse error', e);
-      return;
+    // Fisher-Yates Shuffle
+    for (let i = allData.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allData[i], allData[j]] = [allData[j], allData[i]];
     }
-
-    if (!pool.length) return;
-
-    // Fisher-Yates shuffle
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-
-    const fragment = document.createDocumentFragment();
-    pool.slice(0, 4).forEach(function (item) {
-      const li = document.createElement('li');
-      li.className = 'grid__item';
-
-      const compareHtml = item.compare
-        ? `<s class="rw-compare">${item.compare}</s> `
-        : '';
-
-      li.innerHTML = `
-        <div class="card-wrapper">
-          <a href="${item.url}" class="card card--media">
-            <div class="card__media">
-              ${item.img
-                ? `<img
-                    src="${item.img}"
-                    alt="${item.title.replace(/"/g, '&quot;')}"
-                    loading="lazy"
-                    width="400"
-                    height="400"
-                    class="motion-reduce">`
-                : ''}
-            </div>
-            <div class="card__content">
-              <div class="card__information">
-                <h3 class="card__heading">${item.title}</h3>
-                <div class="price">
-                  ${compareHtml}<span class="price-item price-item--regular">${item.price}</span>
-                </div>
-              </div>
-            </div>
+    
+    // Select 8 random items
+    const selected = allData.slice(0, 8);
+    
+    // Build HTML
+    let html = '';
+    selected.forEach(item => {
+      html += `
+        <div class="rc-item">
+          <a href="${item.dataset.url}">
+            <img src="${item.dataset.img}" alt="${item.dataset.title}" loading="lazy">
+            <h3>${item.dataset.title} (${item.dataset.count} items)</h3>
           </a>
-        </div>`;
-
-      fragment.appendChild(li);
+        </div>
+      `;
     });
-
-    list.appendChild(fragment);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', buildWrestlers);
-  } else {
-    buildWrestlers();
-  }
-})();
+    
+    container.innerHTML = html;
+  });
 </script>
 
 <style>
-  #rw-products-list .card__media img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    display: block;
-  }
-  #rw-products-list .rw-compare {
-    color: var(--color-foreground-subdued, #999);
-    font-size: 0.85em;
-    margin-right: 4px;
-  }
-  .hidden { display: none !important; }
+  .random-collections-any .any-random-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 20px !important; margin-top: 20px !important; }
+  @media screen and (max-width: 749px) { .random-collections-any .any-random-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+  .random-collections-any .rc-item { text-align: center; }
+  .random-collections-any .rc-item img { width: 100% !important; aspect-ratio: 1 / 1 !important; object-fit: cover !important; border-radius: 8px !important; display: block !important; }
+  .random-collections-any .rc-item h3 { margin-top: 10px; font-size: 1.1rem; }
 </style>
+
+{% schema %}
+{
+  "name": "Mapped Collections Random",
+  "settings": [ { "type": "text", "id": "heading", "label": "Heading", "default": "Random Wrestlers" } ],
+  "presets": [{ "name": "Mapped Collections Random" }]
+}
+{% endschema %}>
