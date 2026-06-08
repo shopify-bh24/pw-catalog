@@ -532,11 +532,6 @@
         {%- when 'text' -%}
         {%if getcounter == 0%}
         {%assign getcounter = 1%}
-        {% if product.metafields.my_fields.promotion.value != blank %}
-  <p class="product__text caption-with-letter-spacing" {{ block.shopify_attributes }}>
-    {{ product.metafields.my_fields.promotion.value }}
-  </p>
-{% endif %}
         {%if product.metafields.my_fields.subcategory != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
           subcategory:&nbsp;{{- product.metafields.my_fields.subcategory -}}
@@ -552,14 +547,12 @@
           Series:&nbsp;{{- product.metafields.my_fields.series -}}
         </p>
         {%endif%}
-        {%if product.metafields.my_fields.characters != blank%}
-        <p class="product__text" {{ block.shopify_attributes }}>
-          Wrestlers Included:&nbsp;
-          <a href="https://pwcatalog.com/collections/{{ product.metafields.my_fields.characters | downcase | replace: ' ', '-' }}">
-            {{- product.metafields.my_fields.characters -}}
-          </a>
-        </p>
-        {%endif%}
+        {% if product.metafields.my_fields.promotion.value != blank %}
+              <p class="product__text caption-with-letter-spacing" {{ block.shopify_attributes }}>
+              {{ product.metafields.my_fields.promotion.value }}
+              </p>
+        {% endif %}
+        
         {%if product.metafields.my_fields.publication_date2 != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
           Release Date:&nbsp;{{- product.metafields.my_fields.publication_date2 -}}
