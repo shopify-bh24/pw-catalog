@@ -548,9 +548,9 @@
         </p>
         {%endif%}
         {% if product.metafields.my_fields.promotion.value != blank %}
-  <h2 class="h2" style="margin-top: 15px; margin-bottom: 15px;" {{ block.shopify_attributes }}>
-     Promotion:&nbsp;{{ product.metafields.my_fields.promotion.value }}
-  </h2>
+  <P class="product__text" style="margin-top: 15px; margin-bottom: 15px;" {{ block.shopify_attributes }}>
+     <strong>Promotion:</strong>&nbsp;{{ product.metafields.my_fields.promotion.value }}
+  </P>
 {% endif %}
         
         {%if product.metafields.my_fields.publication_date2 != blank%}
