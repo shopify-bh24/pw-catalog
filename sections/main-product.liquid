@@ -534,17 +534,17 @@
         {%assign getcounter = 1%}
         {%if product.metafields.my_fields.subcategory != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          subcategory:&nbsp;{{- product.metafields.my_fields.subcategory -}}
+         <strong> subcategory:</strong>&nbsp;{{- product.metafields.my_fields.subcategory -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.line != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Line:&nbsp;{{- product.metafields.my_fields.line -}}
+         <strong> Line:</strong>&nbsp;{{- product.metafields.my_fields.line -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.series != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Series:&nbsp;{{- product.metafields.my_fields.series -}}
+        <strong>  Series:</strong>&nbsp;{{- product.metafields.my_fields.series -}}
         </p>
         {%endif%}
         {% if product.metafields.my_fields.promotion.value != blank %}
@@ -560,112 +560,112 @@
         {%endif%}
         {%if product.metafields.my_fields.exclusivity != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Exclusive To:&nbsp;{{- product.metafields.my_fields.exclusivity -}}
+        <strong>  Exclusive To:</strong>&nbsp;{{- product.metafields.my_fields.exclusivity -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.country != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Released In:&nbsp;{{- product.metafields.my_fields.country -}}
+        <strong>  Released In:</strong>&nbsp;{{- product.metafields.my_fields.country -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.language != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Publication Language:&nbsp;{{- product.metafields.my_fields.language -}}
+        <strong>  Publication Language:</strong>&nbsp;{{- product.metafields.my_fields.language -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.country_of_origin != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Made In:&nbsp;{{- product.metafields.my_fields.country_of_origin -}}
+        <strong>  Made In:</strong>&nbsp;{{- product.metafields.my_fields.country_of_origin -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.format != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Format:&nbsp;{{- product.metafields.my_fields.format -}}
+        <strong>  Format:</strong>&nbsp;{{- product.metafields.my_fields.format -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.volume != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Volume:&nbsp;{{- product.metafields.my_fields.volume -}}
+         <strong> Volume:</strong>&nbsp;{{- product.metafields.my_fields.volume -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.publisher != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Publisher:&nbsp;{{- product.metafields.my_fields.publisher -}}
+        <strong>  Publisher:</strong>&nbsp;{{- product.metafields.my_fields.publisher -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.manufacture != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Manufacturer:&nbsp;{{- product.metafields.my_fields.manufacture -}}
+        <strong>  Manufacturer:</strong>&nbsp;{{- product.metafields.my_fields.manufacture -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.producer != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          producer:&nbsp;{{- product.metafields.my_fields.producer -}}
+        <strong>  producer:</strong>&nbsp;{{- product.metafields.my_fields.producer -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.label != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Label:&nbsp;{{- product.metafields.my_fields.label -}}
+         <strong> Label:</strong>&nbsp;{{- product.metafields.my_fields.label -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.isbn != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          ISBN:&nbsp;{{- product.metafields.my_fields.isbn -}}
+        <strong>  ISBN:</strong>&nbsp;{{- product.metafields.my_fields.isbn -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.author != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Author:&nbsp;{{- product.metafields.my_fields.author -}}
+        <strong>  Author:</strong>&nbsp;{{- product.metafields.my_fields.author -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.video_games_platforms != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Video Games Platforms:&nbsp;{{- product.metafields.my_fields.video_games_platforms -}}
+        <strong>  Video Games Platforms:</strong>&nbsp;{{- product.metafields.my_fields.video_games_platforms -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.video_games_modes != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Video Games Modes:&nbsp;{{- product.metafields.my_fields.video_games_modes -}}
+        <strong>  Video Games Modes:</strong>&nbsp;{{- product.metafields.my_fields.video_games_modes -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.video_game_rating != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Video game Rating:&nbsp;{{- product.metafields.my_fields.video_game_rating -}}
+        <strong>  Video game Rating:</strong>&nbsp;{{- product.metafields.my_fields.video_game_rating -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.video_game_developer != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Video Game Developer:&nbsp;{{- product.metafields.my_fields.video_game_developer -}}
+        <strong>  Video Game Developer:</strong>&nbsp;{{- product.metafields.my_fields.video_game_developer -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.discs != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Discs:&nbsp;{{- product.metafields.my_fields.discs -}}
+        <strong>  Discs:</strong>&nbsp;{{- product.metafields.my_fields.discs -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.event != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Event:&nbsp;{{- product.metafields.my_fields.event -}}
+        <strong>  Event:</strong>&nbsp;{{- product.metafields.my_fields.event -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.limited_edtion != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Limited Edition:&nbsp;{{- product.metafields.my_fields.limited_edtion -}}
+        <strong>  Limited Edition:</strong>&nbsp;{{- product.metafields.my_fields.limited_edtion -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields['first'] != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          FIRST:&nbsp;{{- product.metafields.my_fields['first'] -}}
+        <strong>  FIRST:</strong>&nbsp;{{- product.metafields.my_fields['first'] -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.season != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Season:&nbsp;{{- product.metafields.my_fields.season -}}
+        <strong>  Season:</strong>&nbsp;{{- product.metafields.my_fields.season -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.pages != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Pages:&nbsp;{{- product.metafields.my_fields.pages -}}
+         <strong> Pages:</strong>&nbsp;{{- product.metafields.my_fields.pages -}}
         </p>
         {%endif%}
          {%endif%}
