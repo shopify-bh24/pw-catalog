@@ -87,23 +87,28 @@
     }
 
     /* --- Main image --- */
-    .product-gallery__main {
+   .product-gallery__main {
       position: relative;
       width: 100%;
-      max-height: 500px;
+      /* Remove max-height or set to auto to allow full image height */
+      max-height: none; 
       overflow: hidden;
       border-radius: 4px;
-      background: #f4f4f4;
+      /* Change background to transparent or white to hide the grey */
+      background: transparent; 
       cursor: zoom-in;
       display: flex;
       align-items: center;
       justify-content: center;
     }
+    
     .product-gallery__main img {
       width: 100%;
       height: auto;
-      max-height: 500px;
-      object-fit: contain;
+      /* Remove max-height constraint */
+      max-height: none; 
+      /* Use cover or initial to let the image fill the space */
+      object-fit: initial; 
       display: block;
       transition: opacity 0.25s ease;
     }
