@@ -1049,3 +1049,25 @@
   ]
 }
 {% endschema %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // We target the thumbnail list container. 
+    // Most Dawn-based themes use 'ul.thumbnail-list'
+    const thumbnailList = document.querySelector('ul.thumbnail-list');
+
+    if (thumbnailList) {
+      thumbnailList.addEventListener('mouseover', function(event) {
+        // Find the specific button/link being hovered
+        const thumbnail = event.target.closest('li');
+        
+        if (thumbnail) {
+          // Find the internal button to trigger the click
+          const button = thumbnail.querySelector('button');
+          if (button) {
+            button.click();
+          }
+        }
+      });
+    }
+  });
+</script>
