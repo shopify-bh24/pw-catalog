@@ -46,42 +46,35 @@
   <div class="grid__item product__media-wrapper">
 
     <style>
-    /* =============================================
-       LAYOUT FIX — restore side-by-side grid
-       ============================================= */
-    .product.grid {
-      display: grid !important;
-      grid-template-columns: 1fr !important;
-      width: 100%;
-    }
-    @media screen and (min-width: 750px) {
-  .product.grid.grid--2-col-tablet {
-    /* Change the ratio here. 0.8fr 1.2fr gives more space to the right column */
-    grid-template-columns: 0.8fr 1.2fr !important; 
-    gap: 2rem;
-    align-items: start;
-  }
+    /* Force the container to use full width */
+.page-width {
+  max-width: 100% !important;
 }
-    /* Make the image fill its column — no grey padding */
-    .product__media-wrapper {
-      width: 100% !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-    .product-gallery {
-      width: 100% !important;
-    }
-    /* Make sure info column uses full available width */
-    .product__info-wrapper {
-      min-width: 0 !important;
-      width: 100% !important;
-      box-sizing: border-box;
-    }
-    .product__info-container {
-      width: 100% !important;
-      max-width: 100% !important;
-      padding-left: 10px; /* Optional: adds a small buffer so text doesn't touch the image */
-    }
+
+/* Force the grid to stretch and divide into two equal columns */
+.product.grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important; 
+  gap: 40px !important;
+  width: 100% !important;
+}
+
+/* Ensure the image column uses the full space */
+.product__media-wrapper {
+  width: 100% !important;
+}
+
+/* Ensure the text info wrapper expands to fill the right side */
+.product__info-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-left: 0 !important;
+}
+
+.product__info-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
 
     /* =============================================
        PRODUCT GALLERY — main image + thumbnails
