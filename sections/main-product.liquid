@@ -37,7 +37,7 @@
     {%- endfor -%}
   </nav>
 </section>
-
+<section class="page-width">
 <div class="product grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
 
   <!-- ============================================================
@@ -46,6 +46,26 @@
   <div class="grid__item product__media-wrapper">
 
     <style>
+    /* =============================================
+       LAYOUT FIX — restore side-by-side grid
+       ============================================= */
+    .product.grid {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+    }
+    @media screen and (min-width: 750px) {
+      .product.grid.grid--2-col-tablet {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 3rem;
+      }
+    }
+    @media screen and (min-width: 990px) {
+      .product.grid.grid--2-col-tablet {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 4rem;
+      }
+    }
+
     /* =============================================
        PRODUCT GALLERY — main image + thumbnails
        ============================================= */
@@ -958,6 +978,7 @@
     </div>
   </div>
 </div>
+</section>
 
 <product-modal id="ProductModal-{{ section.id }}" class="product-media-modal media-modal">
   <div class="product-media-modal__dialog" role="dialog" aria-label="{{ 'products.modal.label' | t }}" aria-modal="true" tabindex="-1">
