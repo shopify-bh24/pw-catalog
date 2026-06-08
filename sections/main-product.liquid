@@ -55,12 +55,13 @@
       width: 100%;
     }
     @media screen and (min-width: 750px) {
-      .product.grid.grid--2-col-tablet {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 2rem;
-        align-items: start;
-      }
-    }
+  .product.grid.grid--2-col-tablet {
+    /* Change the ratio here. 0.8fr 1.2fr gives more space to the right column */
+    grid-template-columns: 0.8fr 1.2fr !important; 
+    gap: 2rem;
+    align-items: start;
+  }
+}
     /* Make the image fill its column — no grey padding */
     .product__media-wrapper {
       width: 100% !important;
@@ -79,6 +80,7 @@
     .product__info-container {
       width: 100% !important;
       max-width: 100% !important;
+      padding-left: 10px; /* Optional: adds a small buffer so text doesn't touch the image */
     }
 
     /* =============================================
