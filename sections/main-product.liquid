@@ -555,7 +555,7 @@
         
         {%if product.metafields.my_fields.publication_date2 != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
-          Release Date:&nbsp;{{- product.metafields.my_fields.publication_date2 -}}
+         <strong> Release Date:</strong>&nbsp;{{- product.metafields.my_fields.publication_date2 -}}
         </p>
         {%endif%}
         {%if product.metafields.my_fields.exclusivity != blank%}
