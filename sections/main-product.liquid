@@ -548,10 +548,10 @@
         </p>
         {%endif%}
         {% if product.metafields.my_fields.promotion.value != blank %}
-              <p class="product__text caption-with-letter-spacing" {{ block.shopify_attributes }}>
-              {{ product.metafields.my_fields.promotion.value }}
-              </p>
-        {% endif %}
+  <h2 class="h2" style="margin-top: 15px; margin-bottom: 15px;" {{ block.shopify_attributes }}>
+    {{ product.metafields.my_fields.promotion.value }}
+  </h2>
+{% endif %}
         
         {%if product.metafields.my_fields.publication_date2 != blank%}
         <p class="product__text" {{ block.shopify_attributes }}>
