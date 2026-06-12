@@ -14,10 +14,14 @@
   </div>
 </section>
 
-{% comment %} Output clean metadata into a fast JSON block (Max platform limit of 250 entries) {% endcomment %}
+{% comment %} 
+  Updated to use values_count to fetch all entries, 
+  bypassing the 250 limit for the random picker. 
+{% endcomment %}
 <script id="rc-collections-data" type="application/json">
 [
-  {% paginate shop.metaobjects.collection_mapping.values by 250 %}
+  {% assign rc_total = shop.metaobjects.collection_mapping.values_count %}
+  {% paginate shop.metaobjects.collection_mapping.values by rc_total %}
     {% assign first_item = true %}
     {% for entry in shop.metaobjects.collection_mapping.values %}
       {% assign col_handle = entry.wrestler_collection.value | strip %}
@@ -61,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
     allCollections[j] = temp;
   }
 
-  // Slice exactly what we need
+  // Slice exactly 8 from the now-shuffled full list
   var selected = allCollections.slice(0, 8);
   
   // Build clean HTML string directly
