@@ -1,10 +1,9 @@
 <div class="page-width" style="padding: 20px 0;">
 
-  {% comment %} Sticky controls bar — rendered immediately, no Liquid logic {% endcomment %}
-  <div id="sticky-controls" style="position:sticky; top:0; z-index:1; background:#fff; padding:10px 0; border-bottom:1px solid #e1e1e1; margin-bottom:20px;">
+  {% comment %} Sticky controls — pure HTML, no Liquid logic, renders instantly {% endcomment %}
+  <div id="sticky-controls" style="position:sticky; top:0; z-index:10; background:#fff; padding:10px 0; border-bottom:1px solid #e1e1e1; margin-bottom:20px;">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
 
-      {% comment %} Letter index {% endcomment %}
       <div id="letter-index" style="display:flex; flex-wrap:wrap; gap:3px; font-size:0.8em;">
         <a href="#" data-letter="all" class="letter-btn" style="padding:4px 8px; border:1px solid #333; border-radius:4px; color:#fff; background:#333; text-decoration:none; font-weight:bold;">All</a>
         {% assign letters = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' %}
@@ -13,7 +12,6 @@
         {% endfor %}
       </div>
 
-      {% comment %} Dropdowns {% endcomment %}
       <div style="display:flex; align-items:center; gap:8px; white-space:nowrap;">
         <label for="sort-select" style="font-size:0.9em; color:#555;">Sort by:</label>
         <select id="sort-select" style="padding:6px 10px; border:1px solid #d1d1d1; border-radius:6px; font-size:0.9em; background:#fff; cursor:pointer;">
@@ -34,7 +32,7 @@
     </div>
   </div>
 
-  {% comment %} Skeleton placeholders — shown instantly while JS builds the real grid {% endcomment %}
+  {% comment %} Skeleton placeholders — visible instantly while JS works {% endcomment %}
   <div id="wrestler-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px;">
     {% for i in (1..12) %}
       <div class="wl-skeleton">
@@ -43,6 +41,10 @@
         <div class="wl-skel-text wl-skel-count"></div>
       </div>
     {% endfor %}
+  </div>
+
+  <div id="wl-empty" style="display:none; text-align:center; padding:40px 20px; color:#999; font-size:1em;">
+    No wrestlers found for this filter.
   </div>
 
   <div id="pagination-controls" style="margin-top:30px; display:flex; justify-content:center; gap:6px; flex-wrap:wrap;"></div>
@@ -58,34 +60,35 @@
 </div>
 
 {% comment %}
-  Output all wrestler data as a single lightweight JSON block.
-  No HTML cards are built here — just raw data.
-  Max 250 entries per Shopify paginate limit.
+  ============================================================
+  DATA BLOCKS
+  Liquid outputs lightweight JSON only — no HTML cards.
+  4 blocks x 250 = covers up to 1000 wrestlers.
+  JavaScript merges all blocks then renders only visible cards.
+  ============================================================
 {% endcomment %}
-<script id="wl-data" type="application/json">
-[
-  {% paginate shop.metaobjects.collection_mapping.values by 250 %}
-    {% assign first_item = true %}
-    {% for entry in shop.metaobjects.collection_mapping.values %}
-      {% assign col_handle = entry.wrestler_collection.value | strip %}
-      {% assign target = collections[col_handle] %}
-      {% if target != blank %}
-        {% unless first_item %},{% endunless %}
-        {
-          "name":  {{ entry.wrestler_name | json }},
-          "url":   {{ target.url | json }},
-          "img":   {{ target.featured_image | image_url: width: 400 | json }},
-          "count": {{ target.products_count | json }}
-        }
-        {% assign first_item = false %}
-      {% endif %}
-    {% endfor %}
-  {% endpaginate %}
-]
+
+{% comment %} Block 1: wrestlers 1–250 {% endcomment %}
+<script id="wl-data-1" type="application/json">
+[{% paginate shop.metaobjects.collection_mapping.values by 250 %}{% assign wl_first = true %}{% for entry in shop.metaobjects.collection_mapping.values %}{% assign col_handle = entry.wrestler_collection.value | strip %}{% assign target = collections[col_handle] %}{% if target != blank %}{% unless wl_first %},{% endunless %}{"name":{{ entry.wrestler_name | json }},"url":{{ target.url | json }},"img":{{ target.featured_image | image_url: width: 400 | json }},"count":{{ target.products_count | json }}}{% assign wl_first = false %}{% endif %}{% endfor %}{% endpaginate %}]
+</script>
+
+{% comment %} Block 2: wrestlers 251–500 {% endcomment %}
+<script id="wl-data-2" type="application/json">
+[{% paginate shop.metaobjects.collection_mapping.values by 250, offset: 250 %}{% assign wl_first = true %}{% for entry in shop.metaobjects.collection_mapping.values %}{% assign col_handle = entry.wrestler_collection.value | strip %}{% assign target = collections[col_handle] %}{% if target != blank %}{% unless wl_first %},{% endunless %}{"name":{{ entry.wrestler_name | json }},"url":{{ target.url | json }},"img":{{ target.featured_image | image_url: width: 400 | json }},"count":{{ target.products_count | json }}}{% assign wl_first = false %}{% endif %}{% endfor %}{% endpaginate %}]
+</script>
+
+{% comment %} Block 3: wrestlers 501–750 {% endcomment %}
+<script id="wl-data-3" type="application/json">
+[{% paginate shop.metaobjects.collection_mapping.values by 250, offset: 500 %}{% assign wl_first = true %}{% for entry in shop.metaobjects.collection_mapping.values %}{% assign col_handle = entry.wrestler_collection.value | strip %}{% assign target = collections[col_handle] %}{% if target != blank %}{% unless wl_first %},{% endunless %}{"name":{{ entry.wrestler_name | json }},"url":{{ target.url | json }},"img":{{ target.featured_image | image_url: width: 400 | json }},"count":{{ target.products_count | json }}}{% assign wl_first = false %}{% endif %}{% endfor %}{% endpaginate %}]
+</script>
+
+{% comment %} Block 4: wrestlers 751–1000 {% endcomment %}
+<script id="wl-data-4" type="application/json">
+[{% paginate shop.metaobjects.collection_mapping.values by 250, offset: 750 %}{% assign wl_first = true %}{% for entry in shop.metaobjects.collection_mapping.values %}{% assign col_handle = entry.wrestler_collection.value | strip %}{% assign target = collections[col_handle] %}{% if target != blank %}{% unless wl_first %},{% endunless %}{"name":{{ entry.wrestler_name | json }},"url":{{ target.url | json }},"img":{{ target.featured_image | image_url: width: 400 | json }},"count":{{ target.products_count | json }}}{% assign wl_first = false %}{% endif %}{% endfor %}{% endpaginate %}]
 </script>
 
 <style>
-  /* Skeleton shimmer */
   .wl-skeleton { border:1px solid #e1e1e1; padding:15px; border-radius:8px; }
   .wl-skel-img { width:100%; aspect-ratio:1/1; border-radius:4px; background:linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%); background-size:200% 100%; animation:wl-sh 1.4s infinite; }
   .wl-skel-text { height:14px; border-radius:3px; margin-top:12px; background:linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%); background-size:200% 100%; animation:wl-sh 1.4s infinite; }
@@ -93,20 +96,13 @@
   .wl-skel-count { width:40%; margin-top:6px; }
   @keyframes wl-sh { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-  /* Real cards */
   .wl-card { border:1px solid #e1e1e1; padding:15px; border-radius:8px; text-align:center; }
   .wl-card a { text-decoration:none; color:inherit; display:block; }
   .wl-card img { width:100%; height:250px; object-fit:cover; border-radius:4px; display:block; }
   .wl-card .wl-no-img { height:250px; background:#f4f4f4; display:flex; align-items:center; justify-content:center; border-radius:4px; font-size:0.9em; color:#999; }
   .wl-card h3 { margin:15px 0 5px; font-size:1.2em; }
   .wl-card p { margin:0; font-size:0.9em; color:#666; }
-  .wl-card p a { color:#666; }
-
-  /* Empty state */
-  #wl-empty { display:none; text-align:center; padding:40px 20px; color:#999; font-size:1em; }
 </style>
-
-<div id="wl-empty">No wrestlers found for this filter.</div>
 
 <script>
 (function () {
@@ -119,17 +115,19 @@
   var letterBtns = Array.from(document.querySelectorAll('.letter-btn'));
   var stickyBar  = document.getElementById('sticky-controls');
 
-  // --- Parse data ---
+  // --- Merge all 4 data blocks into one array ---
   var allWrestlers = [];
-  try {
-    allWrestlers = JSON.parse(document.getElementById('wl-data').textContent);
-  } catch(e) {
-    grid.innerHTML = '<p style="color:#999;text-align:center">Could not load wrestlers.</p>';
-    return;
-  }
+  [1, 2, 3, 4].forEach(function(n) {
+    var el = document.getElementById('wl-data-' + n);
+    if (!el) return;
+    try {
+      var chunk = JSON.parse(el.textContent);
+      if (Array.isArray(chunk)) allWrestlers = allWrestlers.concat(chunk);
+    } catch(e) {}
+  });
 
   if (!allWrestlers.length) {
-    grid.innerHTML = '';
+    grid.innerHTML = '<p style="text-align:center;color:#999;">No wrestlers found.</p>';
     return;
   }
 
@@ -145,7 +143,7 @@
   if ([25, 50, 100, 250].indexOf(pp) !== -1) ppSelect.value = String(pp);
   if (params.get('letter')) activeLetter = params.get('letter');
 
-  // --- Sticky bar offset ---
+  // --- Sticky bar nav offset ---
   function getNavHeight() {
     var header = document.getElementById('shopify-section-header');
     if (header) { var h = header.getBoundingClientRect().height; if (h > 0) return Math.round(h); }
@@ -161,7 +159,7 @@
   setTimeout(applyNavOffset, 500);
   window.addEventListener('resize', applyNavOffset);
 
-  // --- Save URL state ---
+  // --- Save state to URL ---
   function saveURL() {
     var u = new URL(window.location.href);
     u.searchParams.set('sort',     sortSelect.value);
@@ -181,7 +179,7 @@
     });
   }
 
-  // --- Build a single card HTML string ---
+  // --- Build one card's HTML ---
   function buildCard(item) {
     var imgHtml = item.img
       ? '<img src="' + item.img + '" alt="' + item.name.replace(/"/g, '&quot;') + '" loading="lazy">'
@@ -197,15 +195,16 @@
     );
   }
 
-  // --- Main render ---
+  // --- Main render: filter → sort → paginate → build only visible cards ---
   function render() {
     var sort    = sortSelect.value;
     var perPage = parseInt(ppSelect.value);
     var letter  = activeLetter;
 
-    // 1. Filter
+    // 1. Filter by letter
     var filtered = allWrestlers.filter(function(w) {
-      return letter === 'all' || (w.name && w.name.charAt(0).toLowerCase() === letter);
+      if (!w.name) return false;
+      return letter === 'all' || w.name.charAt(0).toLowerCase() === letter;
     });
 
     // 2. Sort
@@ -220,27 +219,33 @@
     // 3. Paginate
     var totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
     if (currentPage > totalPages) currentPage = 1;
-    var start = (currentPage - 1) * perPage;
-    var page  = filtered.slice(start, start + perPage);
+    var visible = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
 
-    // 4. Build only the visible cards
-    if (page.length === 0) {
+    // 4. Build only the visible cards — not all 850
+    if (visible.length === 0) {
       grid.innerHTML = '';
       emptyMsg.style.display = 'block';
     } else {
       emptyMsg.style.display = 'none';
       var html = '';
-      page.forEach(function(item) { html += buildCard(item); });
+      visible.forEach(function(item) { html += buildCard(item); });
       grid.innerHTML = html;
     }
 
-    buildPagination(totalPages);
+    buildPagination(totalPages, filtered.length);
     setLetterStyles();
   }
 
-  // --- Pagination ---
-  function buildPagination(totalPages) {
+  // --- Pagination controls ---
+  function buildPagination(totalPages, totalCount) {
     controls.innerHTML = '';
+
+    // Total count label always shown
+    var info = document.createElement('span');
+    info.textContent = totalCount + ' wrestlers';
+    info.style.cssText = 'padding:6px 8px;font-size:0.85em;color:#999;align-self:center;width:100%;text-align:center;margin-bottom:6px;';
+    controls.appendChild(info);
+
     if (totalPages <= 1) return;
 
     var base   = 'padding:6px 11px;border:1px solid #d1d1d1;border-radius:5px;background:#fff;cursor:pointer;font-size:0.88em;color:#333;text-decoration:none;display:inline-block;';
@@ -262,7 +267,10 @@
       return a;
     }
 
-    if (currentPage > 1) controls.appendChild(makeBtn('&laquo; Prev', currentPage - 1));
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;justify-content:center;gap:6px;flex-wrap:wrap;';
+
+    if (currentPage > 1) row.appendChild(makeBtn('&laquo; Prev', currentPage - 1));
 
     var pages = [];
     for (var i = 1; i <= totalPages; i++) {
@@ -274,13 +282,14 @@
         var dots = document.createElement('span');
         dots.textContent = '…';
         dots.style.cssText = 'padding:6px 5px;font-size:0.88em;color:#999;';
-        controls.appendChild(dots);
+        row.appendChild(dots);
       }
-      controls.appendChild(makeBtn(p, p));
+      row.appendChild(makeBtn(p, p));
       last = p;
     });
 
-    if (currentPage < totalPages) controls.appendChild(makeBtn('Next &raquo;', currentPage + 1));
+    if (currentPage < totalPages) row.appendChild(makeBtn('Next &raquo;', currentPage + 1));
+    controls.appendChild(row);
   }
 
   // --- Events ---
@@ -300,7 +309,7 @@
     });
   });
 
-  // --- Initial render (replaces skeletons) ---
+  // --- First render (replaces skeleton placeholders) ---
   render();
 
 })();
