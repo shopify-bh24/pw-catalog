@@ -1,6 +1,6 @@
 <div class="page-width" style="padding: 20px 0;">
 
-  {% comment %} Sticky controls — pure HTML, no Liquid logic, renders instantly {% endcomment %}
+  {% comment %} Sticky controls — pure HTML, renders instantly {% endcomment %}
   <div id="sticky-controls" style="position:sticky; top:0; z-index:10; background:#fff; padding:10px 0; border-bottom:1px solid #e1e1e1; margin-bottom:20px;">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
 
@@ -32,7 +32,7 @@
     </div>
   </div>
 
-  {% comment %} Skeleton placeholders — visible instantly while JS works {% endcomment %}
+  {% comment %} Skeleton placeholders {% endcomment %}
   <div id="wrestler-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px;">
     {% for i in (1..12) %}
       <div class="wl-skeleton">
@@ -47,7 +47,7 @@
     No wrestlers found for this filter.
   </div>
 
-  <div id="pagination-controls" style="margin-top:30px; display:flex; justify-content:center; gap:6px; flex-wrap:wrap;"></div>
+  <div id="pagination-controls" style="margin-top:30px; display:flex; flex-direction:column; align-items:center; gap:10px;"></div>
 
   <div style="text-align:center; margin-top:24px; padding:16px; border-top:1px solid #e1e1e1; font-size:0.9em; color:#666;">
     Can't find the wrestler you're looking for? Try the
@@ -61,32 +61,21 @@
 
 {% comment %}
   ============================================================
-  DATA BLOCKS
-  Liquid outputs lightweight JSON only — no HTML cards.
-  4 blocks x 250 = covers up to 1000 wrestlers.
-  JavaScript merges all blocks then renders only visible cards.
+  SINGLE DATA BLOCK
+  One paginate block = 250 entries max (Shopify hard limit).
+  All sorting, filtering and pagination happens in JavaScript.
   ============================================================
 {% endcomment %}
-
-{% comment %} Block 1: wrestlers 1–250 {% endcomment %}
-<script id="wl-data-1" type="application/json">
+<script id="wl-data" type="application/json">
 [{% paginate shop.metaobjects.collection_mapping.values by 250 %}{% assign wl_first = true %}{% for entry in shop.metaobjects.collection_mapping.values %}{% assign col_handle = entry.wrestler_collection.value | strip %}{% assign target = collections[col_handle] %}{% if target != blank %}{% unless wl_first %},{% endunless %}{"name":{{ entry.wrestler_name | json }},"url":{{ target.url | json }},"img":{{ target.featured_image | image_url: width: 400 | json }},"count":{{ target.products_count | json }}}{% assign wl_first = false %}{% endif %}{% endfor %}{% endpaginate %}]
 </script>
 
-{% comment %} Block 2: wrestlers 251–500 {% endcomment %}
-<script id="wl-data-2" type="application/json">
-[{% paginate shop.metaobjects.collection_mapping.values by 250, offset: 250 %}{% assign wl_first = true %}{% for entry in shop.metaobjects.collection_mapping.values %}{% assign col_handle = entry.wrestler_collection.value | strip %}{% assign target = collections[col_handle] %}{% if target != blank %}{% unless wl_first %},{% endunless %}{"name":{{ entry.wrestler_name | json }},"url":{{ target.url | json }},"img":{{ target.featured_image | image_url: width: 400 | json }},"count":{{ target.products_count | json }}}{% assign wl_first = false %}{% endif %}{% endfor %}{% endpaginate %}]
-</script>
-
-{% comment %} Block 3: wrestlers 501–750 {% endcomment %}
-<script id="wl-data-3" type="application/json">
-[{% paginate shop.metaobjects.collection_mapping.values by 250, offset: 500 %}{% assign wl_first = true %}{% for entry in shop.metaobjects.collection_mapping.values %}{% assign col_handle = entry.wrestler_collection.value | strip %}{% assign target = collections[col_handle] %}{% if target != blank %}{% unless wl_first %},{% endunless %}{"name":{{ entry.wrestler_name | json }},"url":{{ target.url | json }},"img":{{ target.featured_image | image_url: width: 400 | json }},"count":{{ target.products_count | json }}}{% assign wl_first = false %}{% endif %}{% endfor %}{% endpaginate %}]
-</script>
-
-{% comment %} Block 4: wrestlers 751–1000 {% endcomment %}
-<script id="wl-data-4" type="application/json">
-[{% paginate shop.metaobjects.collection_mapping.values by 250, offset: 750 %}{% assign wl_first = true %}{% for entry in shop.metaobjects.collection_mapping.values %}{% assign col_handle = entry.wrestler_collection.value | strip %}{% assign target = collections[col_handle] %}{% if target != blank %}{% unless wl_first %},{% endunless %}{"name":{{ entry.wrestler_name | json }},"url":{{ target.url | json }},"img":{{ target.featured_image | image_url: width: 400 | json }},"count":{{ target.products_count | json }}}{% assign wl_first = false %}{% endif %}{% endfor %}{% endpaginate %}]
-</script>
+{% comment %}
+  NOTE FOR FUTURE: This section currently shows up to 250 wrestlers
+  due to Shopify's paginate limit. To show all 850+, the metaobject
+  list needs to be split across multiple sections or a Storefront API
+  solution implemented. This is a known limitation to address later.
+{% endcomment %}
 
 <style>
   .wl-skeleton { border:1px solid #e1e1e1; padding:15px; border-radius:8px; }
@@ -115,16 +104,14 @@
   var letterBtns = Array.from(document.querySelectorAll('.letter-btn'));
   var stickyBar  = document.getElementById('sticky-controls');
 
-  // --- Merge all 4 data blocks into one array ---
+  // --- Parse data ---
   var allWrestlers = [];
-  [1, 2, 3, 4].forEach(function(n) {
-    var el = document.getElementById('wl-data-' + n);
-    if (!el) return;
-    try {
-      var chunk = JSON.parse(el.textContent);
-      if (Array.isArray(chunk)) allWrestlers = allWrestlers.concat(chunk);
-    } catch(e) {}
-  });
+  try {
+    allWrestlers = JSON.parse(document.getElementById('wl-data').textContent);
+  } catch(e) {
+    grid.innerHTML = '<p style="text-align:center;color:#999;">Could not load wrestlers.</p>';
+    return;
+  }
 
   if (!allWrestlers.length) {
     grid.innerHTML = '<p style="text-align:center;color:#999;">No wrestlers found.</p>';
@@ -179,7 +166,7 @@
     });
   }
 
-  // --- Build one card's HTML ---
+  // --- Build one card HTML ---
   function buildCard(item) {
     var imgHtml = item.img
       ? '<img src="' + item.img + '" alt="' + item.name.replace(/"/g, '&quot;') + '" loading="lazy">'
@@ -216,12 +203,12 @@
       return 0;
     });
 
-    // 3. Paginate
+    // 3. Paginate — slice only what's visible
     var totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
     if (currentPage > totalPages) currentPage = 1;
     var visible = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
 
-    // 4. Build only the visible cards — not all 850
+    // 4. Build only visible cards
     if (visible.length === 0) {
       grid.innerHTML = '';
       emptyMsg.style.display = 'block';
@@ -240,10 +227,9 @@
   function buildPagination(totalPages, totalCount) {
     controls.innerHTML = '';
 
-    // Total count label always shown
     var info = document.createElement('span');
     info.textContent = totalCount + ' wrestlers';
-    info.style.cssText = 'padding:6px 8px;font-size:0.85em;color:#999;align-self:center;width:100%;text-align:center;margin-bottom:6px;';
+    info.style.cssText = 'font-size:0.85em;color:#999;';
     controls.appendChild(info);
 
     if (totalPages <= 1) return;
@@ -309,7 +295,7 @@
     });
   });
 
-  // --- First render (replaces skeleton placeholders) ---
+  // --- First render (replaces skeletons) ---
   render();
 
 })();
